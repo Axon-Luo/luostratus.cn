@@ -1,6 +1,6 @@
 ---
 date: '2026-07-22T14:31:24+08:00'
-draft: true
+draft: false
 title: 关于
 ---
 
@@ -16,4 +16,4 @@ title: 关于
 
 ### 联系我
 
-- GitHub: [https://github.com/](https://github.com/)
+- GitHub: [github.com/Axon-Luo](https://github.com/Axon-Luo)
