@@ -3,9 +3,6 @@ locale: zh-cn
 title: LuoStratus 的个人站
 theme: PaperMod
 
-# 启用 emoji
-enableEmoji: true
-
 # 分页
 pagination:
   pagerSize: 10
@@ -20,7 +17,7 @@ markup:
 params:
   # 首页信息
   homeInfoParams:
-    Title: 👋 你好，我是洛云
+    Title: 你好，我是洛云
     Content: 欢迎来到我的个人站点。
 
   # 社交链接（先留空，后面添加）
