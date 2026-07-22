@@ -1,6 +1,6 @@
 baseURL: https://luostratus.cn/
 locale: zh-cn
-title: LuoYun 的个人站
+title: LuoStratus 的个人站
 theme: PaperMod
 
 # 启用 emoji
@@ -20,7 +20,7 @@ markup:
 params:
   # 首页信息
   homeInfoParams:
-    Title: 👋 你好，我是罗云
+    Title: 👋 你好，我是洛云
     Content: 欢迎来到我的个人站点。
 
   # 社交链接（先留空，后面添加）
