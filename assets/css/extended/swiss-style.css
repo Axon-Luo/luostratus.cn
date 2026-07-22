@@ -1,0 +1,270 @@
+/* ============================================
+   Swiss International Style · IKB Blue
+   ============================================ */
+
+/* --- Design Tokens --- */
+:root {
+  --paper: #fafaf8;
+  --ink: #0a0a0a;
+  --grey-1: #f0f0ee;
+  --grey-2: #d4d4d2;
+  --grey-3: #737373;
+  --accent: #002FA7;
+  --accent-rgb: 0, 47, 167;
+  --accent-on: #ffffff;
+}
+
+/* --- Reset: No rounded corners, no shadows --- */
+*,
+*::before,
+*::after {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* --- Typography --- */
+body {
+  font-family: "Inter", "Noto Sans SC", "Microsoft YaHei UI", sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 350;
+  line-height: 1.65;
+}
+
+/* Headings — lighter weight, larger size */
+h1, .entry-header h1 {
+  font-family: "Inter", "Noto Sans SC", "Microsoft YaHei UI", sans-serif;
+  font-weight: 200;
+  font-size: min(5.8vw, 3.6rem);
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  border-bottom: 1px solid var(--grey-2);
+  padding-bottom: 0.4em;
+}
+
+h2 {
+  font-weight: 300;
+  font-size: 1.8rem;
+  color: var(--ink);
+}
+
+h3 {
+  font-weight: 400;
+  font-size: 1.2rem;
+  color: var(--grey-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Post titles in list */
+.post-title {
+  font-family: "Inter", "Noto Sans SC", "Microsoft YaHei UI", sans-serif;
+  font-weight: 300;
+  font-size: 1.6rem;
+}
+
+/* --- Links --- */
+a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s;
+}
+
+a:hover {
+  border-bottom-color: var(--accent);
+}
+
+/* --- Header / Nav --- */
+.header,
+.nav {
+  background: var(--paper);
+  border-bottom: 1px solid var(--grey-2);
+}
+
+.nav a,
+#menu a {
+  font-family: "Inter", "Noto Sans SC", "Microsoft YaHei UI", sans-serif;
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: var(--grey-3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.nav a:hover,
+#menu a:hover,
+.nav a.active,
+#menu a.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Logo / Site title */
+.logo a {
+  font-weight: 200;
+  font-size: 1.5rem;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  text-transform: none;
+}
+
+/* --- Cards (posts list) --- */
+.post-entry {
+  background: var(--paper);
+  border-bottom: 1px solid var(--grey-2);
+  padding: 1.6rem 0;
+}
+
+/* --- Tags --- */
+.post-tags a {
+  font-family: "Inter", "Noto Sans SC", "Microsoft YaHei UI", sans-serif;
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: var(--grey-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border: 1px solid var(--grey-2);
+  padding: 0.2em 0.6em;
+  background: var(--paper);
+}
+
+.post-tags a:hover {
+  background: var(--accent);
+  color: var(--accent-on);
+  border-color: var(--accent);
+}
+
+/* --- Meta / Date --- */
+.post-meta {
+  font-family: "SF Mono", "Cascadia Code", "Consolas", monospace;
+  font-size: 0.75rem;
+  color: var(--grey-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* --- Code blocks --- */
+pre, code {
+  font-family: "SF Mono", "Cascadia Code", "Consolas", monospace;
+  background:  var(--grey-1);
+  border: 1px solid var(--grey-2);
+  font-size: 0.85rem;
+}
+
+pre {
+  padding: 1.2rem;
+  overflow-x: auto;
+}
+
+/* --- Blockquote --- */
+blockquote {
+  border-left: 2px solid var(--accent);
+  padding-left: 1.2rem;
+  margin: 2rem 0;
+  color: var(--ink);
+  font-weight: 300;
+  font-size: 1.1rem;
+}
+
+/* --- Tables --- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  font-weight: 500;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--grey-3);
+  border-bottom: 1px solid var(--ink);
+  text-align: left;
+  padding: 0.6rem 0.8rem;
+}
+
+td {
+  border-bottom: 1px solid var(--grey-2);
+  padding: 0.6rem 0.8rem;
+}
+
+/* --- Horizontal rule --- */
+hr {
+  border: none;
+  border-top: 1px solid var(--grey-2);
+  margin: 2.5rem 0;
+}
+
+/* --- Footer --- */
+.footer {
+  background: var(--paper);
+  border-top: 1px solid var(--grey-2);
+  color: var(--grey-3);
+  font-size: 0.75rem;
+}
+
+/* --- Pagination --- */
+.paginav a {
+  font-weight: 400;
+  color: var(--accent);
+  border: 1px solid var(--grey-2);
+}
+
+.paginav a:hover {
+  background: var(--accent);
+  color: var(--accent-on);
+  border-color: var(--accent);
+}
+
+/* --- Buttons / Input --- */
+button,
+input[type="submit"] {
+  background: var(--accent);
+  color: var(--accent-on);
+  border: none;
+  padding: 0.6rem 1.4rem;
+  font-weight: 500;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+button:hover,
+input[type="submit"]:hover {
+  background: var(--ink);
+}
+
+input,
+textarea {
+  border: 1px solid var(--grey-2);
+  background: var(--paper);
+  padding: 0.6rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+/* --- Scrollbar --- */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--grey-1);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--grey-2);
+}
+
+/* --- Swiss accent elements --- */
+.accent-block {
+  background: var(--accent);
+  color: var(--accent-on);
+  padding: 0.2em 0.5em;
+}
+
+/* --- Selection --- */
+::selection {
+  background: var(--accent);
+  color: var(--accent-on);
+}
