@@ -15,6 +15,10 @@ markup:
 
 # PaperMod 主题配置
 params:
+  # 暗色模式 - 固定
+  defaultTheme: dark
+  disableThemeToggle: true
+
   # 首页信息
   homeInfoParams:
     Title: 你好，我是洛云
