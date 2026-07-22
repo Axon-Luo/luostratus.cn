@@ -1,0 +1,12 @@
+# Hugo 自动生成的构建文件
+/public/
+
+# Hugo 资源缓存
+/resources/
+
+# Node modules（如果你以后用到）
+node_modules/
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
