@@ -39,6 +39,8 @@ params:
   socialIcons:
     - name: github
       url: "https://github.com/Axon-Luo"
+    - name: bilibili
+      url: "https://space.bilibili.com/438193192"
 
   # 显示功能开启
   ShowReadingTime: true
