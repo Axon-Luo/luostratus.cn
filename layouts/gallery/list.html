@@ -33,7 +33,7 @@
 
 <style>
 .gallery-masonry {
-  column-count: 3;
+  column-count: 2;
   column-gap: 12px;
   margin-top: 24px;
 }
@@ -49,6 +49,7 @@
   height: auto;
   display: block;
   cursor: zoom-in;
+  border-radius: 8px;
   transition: opacity 0.2s;
 }
 .gallery-item img:hover {
@@ -90,15 +91,6 @@
   font-size: 1.1rem;
 }
 
-@media (max-width: 768px) {
-  .gallery-masonry {
-    column-count: 2;
-    column-gap: 8px;
-  }
-  .gallery-item {
-    margin-bottom: 8px;
-  }
-}
 @media (max-width: 480px) {
   .gallery-masonry {
     column-count: 1;
