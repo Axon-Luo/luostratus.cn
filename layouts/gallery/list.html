@@ -6,47 +6,93 @@
 
 {{ $images := .Resources.ByType "image" }}
 {{ if $images }}
-<div class="gallery-masonry">
-  {{ range $images }}
+
+{{/* 第一步: 分类——有日期 vs 无日期 */}}
+{{ $dated := slice }}
+{{ $undated := slice }}
+
+{{ range $images }}
   {{ $filename := path.Base .Name }}
   {{ $dateStr := "—" }}
-  {{/* 尝试匹配 YYYY-MM-DD 格式 */}}
   {{ $m1 := findRE `^(\d{4}-\d{2}-\d{2})` $filename 1 }}
   {{ if $m1 }}
     {{ $dateStr = index $m1 0 }}
   {{ else }}
-    {{/* 尝试匹配 20xxMMDD 格式 (IMG, MVIMG, DJI, mmexport 等) */}}
     {{ $m2 := findRE `(20\d{6})` $filename 1 }}
     {{ if $m2 }}
       {{ $raw := index $m2 0 }}
       {{ $dateStr = printf "%s-%s-%s" (substr $raw 0 4) (substr $raw 4 2) (substr $raw 6 2) }}
     {{ end }}
   {{ end }}
-  <figure class="gallery-item">
-    <img
-      src="{{ .RelPermalink }}"
-      alt="{{ $filename }}"
-      loading="lazy"
-      onclick="this.classList.toggle('zoomed')"
-    >
-    <figcaption>
-      <time>{{ $dateStr }}</time>
-    </figcaption>
-  </figure>
+
+  {{ if ne $dateStr "—" }}
+    {{ $dated = $dated | append (dict "r" . "d" $dateStr) }}
+  {{ else }}
+    {{ $undated = $undated | append . }}
+  {{ end }}
+{{ end }}
+
+{{/* 第二步: 排序——有日期的新到旧，无日期的随机 */}}
+{{ $dated = sort $dated "d" "desc" }}
+{{ $undated = shuffle $undated }}
+{{ $dt := len $dated }}
+{{ $ut := len $undated }}
+
+{{/* 第三步: 计算穿插间隔 */}}
+{{ $gap := 3 }}
+{{ if gt $ut 0 }}
+  {{ $gap = div $dt (add $ut 1) }}
+  {{ if lt $gap 1 }}{{ $gap = 1 }}{{ end }}
+{{ end }}
+
+{{/* 第四步: 渲染——有日期按序排，无日期每隔 gap 张插入一张 */}}
+{{ $.Scratch.Set "di" 0 }}
+{{ $.Scratch.Set "ui" 0 }}
+{{ $.Scratch.Set "slot" $gap }}
+
+<div class="gallery-masonry">
+  {{ range $idx := seq (add $dt $ut) }}
+    {{ $di := $.Scratch.Get "di" | default 0 }}
+    {{ $ui := $.Scratch.Get "ui" | default 0 }}
+    {{ $slot := $.Scratch.Get "slot" | default 1 }}
+
+    {{ $useUndated := false }}
+    {{ if and (lt $ui $ut) (ge $di $dt) }}
+      {{ $useUndated = true }}
+    {{ else if and (lt $ui $ut) (lt $di $dt) }}
+      {{ if ge (sub $idx 1) $slot }}
+        {{ $useUndated = true }}
+      {{ end }}
+    {{ end }}
+
+    {{ if $useUndated }}
+      {{ $img := index $undated $ui }}
+      {{ $.Scratch.Set "ui" (add $ui 1) }}
+      {{ $.Scratch.Set "slot" (add $slot (add $gap 1)) }}
+      {{ $fname := path.Base $img.Name }}
+      <figure class="gallery-item">
+        <img src="{{ $img.RelPermalink }}" alt="{{ $fname }}" loading="lazy" onclick="this.classList.toggle('zoomed')">
+        <figcaption><time>—</time></figcaption>
+      </figure>
+    {{ else if lt $di $dt }}
+      {{ $entry := index $dated $di }}
+      {{ $.Scratch.Set "di" (add $di 1) }}
+      {{ $fname := path.Base $entry.r.Name }}
+      <figure class="gallery-item">
+        <img src="{{ $entry.r.RelPermalink }}" alt="{{ $fname }}" loading="lazy" onclick="this.classList.toggle('zoomed')">
+        <figcaption><time>{{ $entry.d }}</time></figcaption>
+      </figure>
+    {{ end }}
   {{ end }}
 </div>
+
 {{ else }}
 <p class="gallery-empty">还没有图片。</p>
 {{ end }}
 
 <style>
-/* 缩小页边距，让画廊内容更宽 */
-.main {
-  max-width: 82vw;
-}
-.post-content {
-  max-width: 82vw;
-}
+.main { max-width: 82vw; }
+.post-content { max-width: 82vw; }
 
 .gallery-masonry {
   column-count: 2;
@@ -68,49 +114,28 @@
   border-radius: 8px;
   transition: opacity 0.2s;
 }
-.gallery-item img:hover {
-  opacity: 0.9;
-}
+.gallery-item img:hover { opacity: 0.9; }
 
-/* 点击放大 */
 .gallery-item img.zoomed {
   position: fixed;
-  top: 50%;
-  left: 50%;
+  top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  width: auto;
-  height: auto;
-  max-width: 92vw;
-  max-height: 92vh;
+  width: auto; height: auto;
+  max-width: 92vw; max-height: 92vh;
   z-index: 1000;
   cursor: zoom-out;
   opacity: 1;
   box-shadow: 0 0 0 2000px rgba(0,0,0,0.8);
 }
 
-.gallery-item figcaption {
-  padding: 4px 0 0 0;
-}
-.gallery-item time {
-  font-size: 0.8rem;
-  color: var(--secondary);
-}
+.gallery-item figcaption { padding: 4px 0 0 0; }
+.gallery-item time { font-size: 0.8rem; color: var(--secondary); }
 
-.page-description {
-  color: var(--secondary);
-  font-size: 1.1rem;
-}
-.gallery-empty {
-  text-align: center;
-  color: var(--secondary);
-  padding: 60px 0;
-  font-size: 1.1rem;
-}
+.page-description { color: var(--secondary); font-size: 1.1rem; }
+.gallery-empty { text-align: center; color: var(--secondary); padding: 60px 0; font-size: 1.1rem; }
 
 @media (max-width: 480px) {
-  .gallery-masonry {
-    column-count: 1;
-  }
+  .gallery-masonry { column-count: 1; }
 }
 </style>
 {{ end }}
