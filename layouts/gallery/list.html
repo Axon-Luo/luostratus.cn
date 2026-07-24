@@ -10,9 +10,17 @@
   {{ range $images }}
   {{ $filename := path.Base .Name }}
   {{ $dateStr := "—" }}
-  {{ $dateMatch := findRE `^(\d{4}-\d{2}-\d{2})` $filename 1 }}
-  {{ if $dateMatch }}
-    {{ $dateStr = index $dateMatch 0 }}
+  {{/* 尝试匹配 YYYY-MM-DD 格式 */}}
+  {{ $m1 := findRE `^(\d{4}-\d{2}-\d{2})` $filename 1 }}
+  {{ if $m1 }}
+    {{ $dateStr = index $m1 0 }}
+  {{ else }}
+    {{/* 尝试匹配 20xxMMDD 格式 (IMG, MVIMG, DJI, mmexport 等) */}}
+    {{ $m2 := findRE `(20\d{6})` $filename 1 }}
+    {{ if $m2 }}
+      {{ $raw := index $m2 0 }}
+      {{ $dateStr = printf "%s-%s-%s" (substr $raw 0 4) (substr $raw 4 2) (substr $raw 6 2) }}
+    {{ end }}
   {{ end }}
   <figure class="gallery-item">
     <img
