@@ -34,11 +34,65 @@ a:hover:not(.gallery-card-link) {
 }
 
 /* === 导航菜单项 === */
-#menu a, .nav a, .menu a {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+#menu, .nav, .menu {
+  display: flex;
+  gap: 4px;
 }
-#menu a:hover, .nav a:hover, .menu a:hover {
-  opacity: 0.7;
+
+#menu a, #menu li a,
+.nav a, .menu a {
+  position: relative;
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 8px;
+  color: var(--primary);
+  font-weight: 450;
+  text-decoration: none !important;
+  background-image: none !important;
+  background-size: unset !important;
+  transition: background 0.25s ease, color 0.25s ease, transform 0.2s ease;
+}
+
+/* hover 背景浮现 */
+#menu a:hover, #menu li a:hover,
+.nav a:hover, .menu a:hover {
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  transform: translateY(-1px);
+  opacity: 1;
+}
+
+/* 当前页：底部指示条 + 加粗 */
+#menu a[aria-current="page"],
+#menu li a.active,
+.nav a.active,
+.menu a.active,
+#menu a.active {
+  font-weight: 600;
+}
+#menu a[aria-current="page"]::after,
+#menu li a.active::after,
+.nav a.active::after,
+.menu a.active::after,
+#menu a.active::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--primary);
+  transition: width 0.3s ease;
+}
+#menu a[aria-current="page"]:hover::after,
+.nav a.active:hover::after {
+  width: 28px;
+}
+
+/* 点击波纹 */
+#menu a:active, .nav a:active, .menu a:active {
+  transform: scale(0.95);
 }
 
 /* === 代码块悬浮 === */
