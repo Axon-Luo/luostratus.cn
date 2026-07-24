@@ -1,0 +1,17 @@
+<!-- 返回顶部 -->
+<button id="back-to-top" aria-label="返回顶部" title="返回顶部">↑</button>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('back-to-top');
+  if (!btn) return;
+
+  const toggle = () => {
+    const show = window.scrollY > 400;
+    btn.classList.toggle('show', show);
+  };
+
+  window.addEventListener('scroll', toggle, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+});
+</script>

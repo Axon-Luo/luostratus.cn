@@ -1,0 +1,142 @@
+<!-- 全站交互效果 -->
+<style>
+/* === 全局平滑滚动 === */
+html { scroll-behavior: smooth; }
+
+/* === 选中文字颜色 === */
+::selection { background: var(--primary); color: var(--theme); }
+
+/* === 图片加载淡入 === */
+img { transition: opacity 0.4s ease; }
+img[loading="lazy"] { opacity: 0; }
+img[loading="lazy"].loaded { opacity: 1; }
+
+/* === 链接下划线动画 === */
+a:not(.gallery-card-link):not(.gallery-item a) {
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-position: 0% 100%;
+  background-repeat: no-repeat;
+  background-size: 0% 1px;
+  transition: background-size 0.3s ease;
+}
+a:hover:not(.gallery-card-link) {
+  background-size: 100% 1px;
+}
+
+/* === 文章卡片悬浮 === */
+.post-entry {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.post-entry:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+}
+
+/* === 导航菜单项 === */
+#menu a, .nav a, .menu a {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+#menu a:hover, .nav a:hover, .menu a:hover {
+  opacity: 0.7;
+}
+
+/* === 代码块悬浮 === */
+pre {
+  transition: box-shadow 0.3s ease;
+}
+pre:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+/* === 分隔线脉动 === */
+.post-content hr {
+  transition: opacity 0.3s ease;
+}
+.post-content hr:hover {
+  opacity: 0.6;
+}
+
+/* === 滚动渐入动画 === */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* === 返回顶部按钮 === */
+#back-to-top {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--entry);
+  border: 1px solid var(--border);
+  color: var(--primary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease, background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+}
+#back-to-top.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+#back-to-top:hover {
+  background: var(--primary);
+  color: var(--theme);
+}
+
+/* === 按钮/标签点击反馈 === */
+button, .button, .post-tag {
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+button:active, .button:active, .post-tag:active {
+  transform: scale(0.96);
+}
+
+/* === 页面切换（非浏览器导航） === */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.main {
+  animation: fadeIn 0.4s ease;
+}
+
+/* === 暗色模式过渡 === */
+body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  /* 图片加载后淡入 */
+  document.querySelectorAll('img[loading="lazy"]').forEach(img => {
+    if (img.complete) { img.classList.add('loaded'); return; }
+    img.addEventListener('load', () => img.classList.add('loaded'));
+    img.addEventListener('error', () => img.classList.add('loaded'));
+  });
+
+  /* 滚动渐入动画 */
+  const revealEls = document.querySelectorAll('.reveal');
+  const revealObs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); }});
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  revealEls.forEach(el => revealObs.observe(el));
+});
+</script>
