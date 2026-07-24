@@ -7,7 +7,10 @@
 {{ $images := .Resources.ByType "image" }}
 {{ if $images }}
 
-{{/* 第一步: 分类——有日期 vs 无日期 */}}
+{{/* 固定首位的图片 */}}
+{{ $pinned := .Resources.GetMatch "00-校色卡*" }}
+
+{{/* 第一步: 分类——有日期 vs 无日期（排除固定图片） */}}
 {{ $dated := slice }}
 {{ $undated := slice }}
 
@@ -25,10 +28,12 @@
     {{ end }}
   {{ end }}
 
-  {{ if ne $dateStr "—" }}
-    {{ $dated = $dated | append (dict "r" . "d" $dateStr) }}
-  {{ else }}
-    {{ $undated = $undated | append . }}
+  {{ if ne . $pinned }}
+    {{ if ne $dateStr "—" }}
+      {{ $dated = $dated | append (dict "r" . "d" $dateStr) }}
+    {{ else }}
+      {{ $undated = $undated | append . }}
+    {{ end }}
   {{ end }}
 {{ end }}
 
@@ -51,6 +56,15 @@
 {{ $.Scratch.Set "slot" $gap }}
 
 <div class="gallery-masonry">
+  {{/* 固定首位的图片 */}}
+  {{ if $pinned }}
+  {{ $pf := path.Base $pinned.Name }}
+  <figure class="gallery-item">
+    <img src="{{ $pinned.RelPermalink }}" alt="{{ $pf }}" loading="lazy" onclick="this.classList.toggle('zoomed')">
+    <figcaption><time>校色卡</time></figcaption>
+  </figure>
+  {{ end }}
+
   {{ range $idx := seq (add $dt $ut) }}
     {{ $di := $.Scratch.Get "di" | default 0 }}
     {{ $ui := $.Scratch.Get "ui" | default 0 }}
