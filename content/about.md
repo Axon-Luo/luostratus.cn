@@ -17,3 +17,5 @@ title: 关于
 ### 联系我
 
 - GitHub: [github.com/Axon-Luo](https://github.com/Axon-Luo)
+- Bilibili: [space.bilibili.com/438193192](https://space.bilibili.com/438193192)
+- 邮箱: 3226679112@qq.com
