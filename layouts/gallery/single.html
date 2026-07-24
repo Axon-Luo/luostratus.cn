@@ -1,0 +1,84 @@
+{{ define "main" }}
+<article class="gallery-post">
+  <header class="post-header">
+    <h1>{{ .Title }}</h1>
+    <div class="post-meta">
+      <time>{{ .Date.Format "2006-01-02" }}</time>
+      {{ with .Resources.ByType "image" }}
+      <span> · {{ len . }} 张图片</span>
+      {{ end }}
+    </div>
+  </header>
+
+  {{/* 文章内图片网格 */}}
+  {{ $images := .Resources.ByType "image" }}
+  {{ if gt (len $images) 0 }}
+  <div class="gallery-post-grid">
+    {{ range $images }}
+    <figure class="gallery-figure">
+      <img src="{{ .RelPermalink }}" alt="{{ $.Title }}" loading="lazy" data-src="{{ .RelPermalink }}" onclick="this.classList.toggle('zoomed')">
+      {{ with .Title }}
+      <figcaption>{{ . }}</figcaption>
+      {{ end }}
+    </figure>
+    {{ end }}
+  </div>
+  {{ end }}
+
+  <div class="post-content gallery-post-content">
+    {{ .Content }}
+  </div>
+</article>
+
+<style>
+.gallery-post-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+.gallery-figure {
+  margin: 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.gallery-figure img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: zoom-in;
+  transition: transform 0.2s;
+}
+.gallery-figure img:hover {
+  transform: scale(1.02);
+}
+/* 点击放大效果 */
+.gallery-figure img.zoomed {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: auto;
+  height: auto;
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  z-index: 1000;
+  cursor: zoom-out;
+  border-radius: 4px;
+  box-shadow: 0 0 0 2000px rgba(0,0,0,0.8);
+}
+.gallery-figure figcaption {
+  font-size: 0.85rem;
+  color: var(--secondary);
+  text-align: center;
+  margin-top: 6px;
+}
+.post-meta {
+  color: var(--secondary);
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+</style>
+{{ end }}
