@@ -1,0 +1,91 @@
+<style>
+.mine-wrap { max-width: 600px; margin: 0 auto; }
+.mine-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+.mine-bar select, .mine-bar button, .mine-bar input { padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.82rem; }
+.mine-bar input[type="number"] { width: 55px; }
+.mine-info { display: flex; gap: 20px; margin-bottom: 8px; font-size: 0.9rem; color: var(--secondary); }
+.mine-info strong { color: var(--primary); }
+.mine-grid { display: inline-grid; gap: 1px; background: var(--border); border-radius: 4px; padding: 2px; user-select: none; }
+.mine-cell { width: 28px; height: 28px; border-radius: 3px; background: var(--entry); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: background 0.1s; }
+.mine-cell.revealed { background: transparent; cursor: default; }
+.mine-cell:hover:not(.revealed) { background: color-mix(in srgb, var(--primary) 20%, transparent); }
+.mine-cell.n1{color:#2563eb}.mine-cell.n2{color:#16a34a}.mine-cell.n3{color:#dc2626}.mine-cell.n4{color:#7c3aed}.mine-cell.n5{color:#b91c1c}.mine-cell.n6{color:#0891b2}.mine-cell.n7{color:#000}.mine-cell.n8{color:#6b7280}
+</style>
+
+<div class="mine-wrap">
+  <div class="mine-bar">
+    <select id="mineDiff"><option value="easy">初级 9×9</option><option value="medium" selected>中级 16×16</option><option value="hard">高级 30×16</option><option value="custom">自定义</option></select>
+    <span id="mineCustom" hidden>宽<input type="number" id="mineW" value="9" min="5" max="30"> 高<input type="number" id="mineH" value="9" min="5" max="24"> 雷<input type="number" id="mineM" value="10" min="5" max="200"></span>
+    <button id="mineRestart">新游戏</button>
+  </div>
+  <div class="mine-info">
+    <span>💣 <strong id="mineLeft">10</strong></span>
+    <span>⏱ <strong id="mineTimer">0</strong>s</span>
+  </div>
+  <div class="mine-grid" id="mineGrid"></div>
+</div>
+
+<script>
+(()=>{
+  let w=16,h=16,mines=40,board=[],revealed=[],flagged=[],timerSec=0,timerId=null,started=false,gameOver=false;
+
+  const gridEl=document.getElementById('mineGrid'),mineLeftEl=document.getElementById('mineLeft'),timerEl=document.getElementById('mineTimer');
+  const diffSel=document.getElementById('mineDiff'),customSpan=document.getElementById('mineCustom');
+
+  function init(){
+    const d=diffSel.value; gameOver=false; started=false;
+    if(d==='easy'){ w=9;h=9;mines=10; } else if(d==='medium'){ w=16;h=16;mines=40; } else if(d==='hard'){ w=30;h=16;mines=99; } else{ w=+document.getElementById('mineW').value; h=+document.getElementById('mineH').value; mines=+document.getElementById('mineM').value; }
+    customSpan.hidden=d!=='custom';
+    board=Array.from({length:h},()=>Array(w).fill(0)); revealed=Array.from({length:h},()=>Array(w).fill(false)); flagged=Array.from({length:h},()=>Array(w).fill(false));
+    clearInterval(timerId); timerSec=0; timerEl.textContent='0'; mineLeftEl.textContent=mines;
+    gridEl.style.gridTemplateColumns=`repeat(${w},28px)`;
+    render();
+  }
+
+  function placeMines(sx,sy){
+    const positions=[]; for(let y=0;y<h;y++) for(let x=0;x<w;x++) if(Math.abs(x-sx)>1||Math.abs(y-sy)>1) positions.push({x,y});
+    for(let i=positions.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1));[positions[i],positions[j]]=[positions[j],positions[i]]; }
+    positions.slice(0,mines).forEach(({x,y})=>{ board[y][x]=-1; });
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++) if(board[y][x]!==-1){ let c=0; for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ const ny=y+dy,nx=x+dx; if(ny>=0&&ny<h&&nx>=0&&nx<w&&board[ny][nx]===-1) c++; } board[y][x]=c; }
+  }
+
+  function reveal(x,y){
+    if(x<0||x>=w||y<0||y>=h||revealed[y][x]||flagged[y][x]) return;
+    revealed[y][x]=true;
+    if(board[y][x]===0){ for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++) reveal(x+dx,y+dy); }
+    if(board[y][x]===-1){ gameOver=true; clearInterval(timerId); for(let yy=0;yy<h;yy++) for(let xx=0;xx<w;xx++) if(board[yy][xx]===-1) revealed[yy][xx]=true; }
+    if(revealed.flat().filter(v=>v).length===w*h-mines){ gameOver=true; clearInterval(timerId); }
+  }
+
+  function chord(x,y){
+    if(!revealed[y][x]||board[y][x]<=0) return;
+    let fc=0; for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ const nx=x+dx,ny=y+dy; if(ny>=0&&ny<h&&nx>=0&&nx<w&&flagged[ny][nx]) fc++; }
+    if(fc===board[y][x]){ for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++) if(x+dx>=0&&x+dx<w&&y+dy>=0&&y+dy<h&&!flagged[y+dy][x+dx]) reveal(x+dx,y+dy); }
+  }
+
+  function render(){
+    mineLeftEl.textContent=mines - flagged.flat().filter(v=>v).length;
+    gridEl.innerHTML='';
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+      const cell=document.createElement('div'); cell.className='mine-cell';
+      if(revealed[y][x]){
+        cell.classList.add('revealed');
+        if(board[y][x]===-1) cell.textContent='💣';
+        else if(board[y][x]>0){ cell.textContent=board[y][x]; cell.classList.add('n'+board[y][x]); }
+      }else if(flagged[y][x]){ cell.textContent='🚩'; }
+      cell.addEventListener('click',()=>{
+        if(gameOver) return;
+        if(!started){ started=true; placeMines(x,y); timerId=setInterval(()=>{ timerSec++; timerEl.textContent=timerSec; },1000); }
+        reveal(x,y); render();
+      });
+      cell.addEventListener('contextmenu',e=>{ e.preventDefault(); if(gameOver||revealed[y][x]) return; if(!started){ started=true; placeMines(x,y); timerId=setInterval(()=>{ timerSec++; timerEl.textContent=timerSec; },1000); } flagged[y][x]=!flagged[y][x]; render(); });
+      cell.addEventListener('dblclick',()=>{ if(gameOver||!started) return; chord(x,y); render(); });
+      gridEl.appendChild(cell);
+    }
+  }
+
+  diffSel.onchange=init; document.getElementById('mineRestart').onclick=init;
+  document.getElementById('mineW').onchange=init; document.getElementById('mineH').onchange=init; document.getElementById('mineM').onchange=init;
+  init();
+})();
+</script>

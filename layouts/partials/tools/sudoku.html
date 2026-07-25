@@ -1,0 +1,123 @@
+<style>
+.sd-wrap { max-width: 480px; margin: 0 auto; }
+.sd-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.sd-bar select, .sd-bar button { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.85rem; cursor: pointer; }
+.sd-info { display: flex; gap: 16px; margin-bottom: 10px; font-size: 0.88rem; color: var(--secondary); }
+.sd-info strong { color: var(--primary); }
+.sd-grid { display: grid; grid-template-columns: repeat(9,1fr); gap: 1px; background: var(--primary); border: 2px solid var(--primary); border-radius: 6px; overflow: hidden; max-width: 378px; margin: 0 auto; }
+.sd-cell { aspect-ratio: 1; background: var(--entry); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: background 0.15s; user-select: none; }
+.sd-cell.given { color: var(--primary); cursor: default; }
+.sd-cell.selected { background: color-mix(in srgb, var(--primary) 20%, transparent); }
+.sd-cell.error { color: #ef4444; }
+.sd-cell.hint { background: color-mix(in srgb, #22c55e 25%, transparent); }
+.sd-cell:nth-child(3n){ border-right: 2px solid var(--primary); }
+.sd-cell:nth-child(9n){ border-right: none; }
+.sd-numpad { display: flex; gap: 6px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+.sd-num { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); font-size: 1rem; font-weight: 600; cursor: pointer; color: var(--primary); transition: all 0.15s; }
+.sd-num:hover { background: color-mix(in srgb, var(--primary) 15%, transparent); }
+.sd-num.erase { font-size: 0.8rem; }
+</style>
+
+<div class="sd-wrap">
+  <div class="sd-bar">
+    <select id="sdDiff"><option value="easy">简单</option><option value="medium" selected>中等</option><option value="hard">困难</option><option value="expert">专家</option></select>
+    <button id="sdNew">新游戏</button>
+    <button id="sdHint">提示(3)</button>
+    <button id="sdCheck">检查</button>
+  </div>
+  <div class="sd-info">
+    <span>⏱ <strong id="sdTimer">00:00</strong></span>
+    <span>错误：<strong id="sdErrors">0</strong></span>
+    <span>提示剩余：<strong id="sdHintsLeft">3</strong></span>
+  </div>
+  <div class="sd-grid" id="sdGrid"></div>
+  <div class="sd-numpad" id="sdNumpad"></div>
+</div>
+
+<script>
+(()=>{
+  let puzzle=[], solution=[], given=[], player=[], selected=null, hints=3, errors=0, timerSec=0, timerId=null;
+
+  const gridEl=document.getElementById('sdGrid'),timerEl=document.getElementById('sdTimer'),errorsEl=document.getElementById('sdErrors'),hintsEl=document.getElementById('sdHintsLeft');
+
+  function newGame(){
+    const d=document.getElementById('sdDiff').value;
+    const clues=d==='easy'?45:d==='medium'?36:d==='hard'?28:22;
+    hints=3; errors=0; timerSec=0; selected=null; hintsEl.textContent='3'; errorsEl.textContent='0'; timerEl.textContent='00:00';
+    clearInterval(timerId); timerId=null;
+    generate(clues); render();
+  }
+
+  function generate(clues){
+    // Generate a valid solved board then remove cells
+    solution=Array.from({length:9},()=>Array(9).fill(0));
+    fillBoard(solution);
+    puzzle=solution.map(r=>[...r]);
+    given=Array.from({length:9},()=>Array(9).fill(true));
+    // Remove cells
+    const positions=[]; for(let r=0;r<9;r++) for(let c=0;c<9;c++) positions.push({r,c});
+    for(let i=positions.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1));[positions[i],positions[j]]=[positions[j],positions[i]]; }
+    let removed=0;
+    for(const {r,c} of positions){ if(removed>=81-clues) break; puzzle[r][c]=0; given[r][c]=false; removed++; }
+    player=puzzle.map(r=>[...r]);
+  }
+
+  function fillBoard(board){
+    const nums=[1,2,3,4,5,6,7,8,9];
+    for(let r=0;r<9;r++) for(let c=0;c<9;c++){
+      if(board[r][c]) continue;
+      const shuffled=[...nums].sort(()=>Math.random()-0.5);
+      for(const n of shuffled){
+        if(isValid(board,r,c,n)){ board[r][c]=n; if(fillBoard(board)) return true; board[r][c]=0; }
+      }
+      return false;
+    }
+    return true;
+  }
+
+  function isValid(board,r,c,n){
+    for(let i=0;i<9;i++) if(board[r][i]===n||board[i][c]===n) return false;
+    const br=Math.floor(r/3)*3,bc=Math.floor(c/3)*3;
+    for(let rr=br;rr<br+3;rr++) for(let cc=bc;cc<bc+3;cc++) if(board[rr][cc]===n) return false;
+    return true;
+  }
+
+  function render(){
+    gridEl.innerHTML='';
+    for(let r=0;r<9;r++) for(let c=0;c<9;c++){
+      const cell=document.createElement('div'); cell.className='sd-cell';
+      if(given[r][c]){ cell.classList.add('given'); cell.textContent=puzzle[r][c]; }
+      else if(player[r][c]){ cell.textContent=player[r][c]; if(player[r][c]!==solution[r][c]) cell.classList.add('error'); }
+      if(selected&&selected.r===r&&selected.c===c) cell.classList.add('selected');
+      cell.addEventListener('click',()=>{ if(given[r][c]) return; selected={r,c}; render(); });
+      gridEl.appendChild(cell);
+    }
+    // numpad
+    const pad=document.getElementById('sdNumpad'); pad.innerHTML='';
+    for(let n=1;n<=9;n++){
+      const btn=document.createElement('button'); btn.className='sd-num'; btn.textContent=n;
+      btn.onclick=()=>{ if(!selected||given[selected.r][selected.c]) return; if(!timerId){ timerId=setInterval(()=>{ timerSec++; const m=Math.floor(timerSec/60),s=timerSec%60; timerEl.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; },1000); } player[selected.r][selected.c]=n; if(n!==solution[selected.r][selected.c]) errors++; errorsEl.textContent=errors; render(); checkWin(); };
+      pad.appendChild(btn);
+    }
+    const del=document.createElement('button'); del.className='sd-num erase'; del.textContent='✕';
+    del.onclick=()=>{ if(!selected||given[selected.r][selected.c]) return; player[selected.r][selected.c]=0; render(); };
+    pad.appendChild(del);
+  }
+
+  function checkWin(){
+    for(let r=0;r<9;r++) for(let c=0;c<9;c++) if(player[r][c]!==solution[r][c]) return;
+    clearInterval(timerId);
+  }
+
+  document.getElementById('sdHint').onclick=()=>{
+    if(!selected||hints<=0||given[selected.r][selected.c]) return;
+    hints--; hintsEl.textContent=hints;
+    player[selected.r][selected.c]=solution[selected.r][selected.c]; render(); checkWin();
+  };
+  document.getElementById('sdCheck').onclick=()=>{ for(let r=0;r<9;r++) for(let c=0;c<9;c++) if(!given[r][c]&&player[r][c]&&player[r][c]!==solution[r][c]) errors++; errorsEl.textContent=errors; render(); };
+  document.getElementById('sdNew').onclick=newGame;
+  document.getElementById('sdDiff').onchange=newGame;
+
+  newGame();
+})();
+</script>

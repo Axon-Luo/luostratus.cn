@@ -1,0 +1,103 @@
+<style>
+.p24-wrap { max-width: 480px; margin: 0 auto; text-align: center; }
+.p24-bar { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+.p24-bar select, .p24-bar button { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.85rem; cursor: pointer; }
+.p24-cards { display: flex; gap: 16px; justify-content: center; margin-bottom: 20px; }
+.p24-card { width: 80px; height: 110px; border-radius: 12px; background: var(--entry); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 700; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.p24-input-wrap { margin-bottom: 16px; }
+.p24-input-wrap input { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 1.1rem; width: 220px; text-align: center; }
+.p24-input-wrap button { padding: 10px 18px; border-radius: 8px; border: none; background: var(--primary); color: var(--theme); font-size: 0.95rem; cursor: pointer; font-weight: 600; margin-left: 8px; }
+.p24-result { font-size: 0.95rem; min-height: 24px; margin-bottom: 10px; }
+.p24-info { display: flex; justify-content: center; gap: 24px; font-size: 0.88rem; color: var(--secondary); }
+.p24-info strong { color: var(--primary); }
+</style>
+
+<div class="p24-wrap">
+  <h3 style="margin-bottom:12px">24点</h3>
+  <div class="p24-bar">
+    <select id="p24Diff"><option value="easy">简单 (1-9)</option><option value="normal" selected>普通 (1-13)</option><option value="hard">困难 (含负数)</option></select>
+    <button id="p24New">新题目</button>
+    <button id="p24Solve">💡 查看解法</button>
+  </div>
+  <div class="p24-cards" id="p24Cards"></div>
+  <div class="p24-input-wrap">
+    <input id="p24Input" placeholder="输入算式，如 (3+5)×(8-5)">
+    <button id="p24Submit">验证</button>
+  </div>
+  <div class="p24-result" id="p24Result"></div>
+  <div class="p24-info">
+    <span>⏱ <strong id="p24Timer">00:00</strong></span>
+    <span>正确：<strong id="p24Correct">0</strong></span>
+    <span>总计：<strong id="p24Total">0</strong></span>
+  </div>
+</div>
+
+<script>
+(()=>{
+  let nums=[], timerSec=0, timerId=null, correct=0, total=0, solved=false;
+  const cardsEl=document.getElementById('p24Cards'),resultEl=document.getElementById('p24Result'),inputEl=document.getElementById('p24Input');
+  const timerEl=document.getElementById('p24Timer'),correctEl=document.getElementById('p24Correct'),totalEl=document.getElementById('p24Total');
+
+  function newPuzzle(){
+    const d=document.getElementById('p24Diff').value; solved=false;
+    const max=d==='easy'?9:13; const min=d==='hard'?-6:1;
+    do{ nums=Array.from({length:4},()=>Math.floor(Math.random()*(max-min+1))+min); } while(!hasSolution(nums));
+    cardsEl.innerHTML=nums.map(n=>`<div class="p24-card">${n}</div>`).join('');
+    inputEl.value=''; resultEl.textContent=''; resultEl.style.color='var(--secondary)';
+    clearInterval(timerId); timerSec=0; timerEl.textContent='00:00'; timerId=null;
+  }
+
+  function hasSolution(arr){
+    return solve(arr,24)!=null;
+  }
+
+  function solve(arr,target){
+    if(arr.length===1) return Math.abs(arr[0]-target)<1e-9?`${arr[0]}`:null;
+    for(let i=0;i<arr.length;i++){
+      for(let j=0;j<arr.length;j++){
+        if(i===j) continue;
+        const rest=arr.filter((_,k)=>k!==i&&k!==j);
+        const ops=[
+          [arr[i]+arr[j],`(${arr[i]}+${arr[j]})`],
+          [arr[i]-arr[j],`(${arr[i]}-${arr[j]})`],
+          [arr[i]*arr[j],`(${arr[i]}×${arr[j]})`],
+        ];
+        if(arr[j]!==0) ops.push([arr[i]/arr[j],`(${arr[i]}÷${arr[j]})`]);
+        for(const [val,expr] of ops){
+          const r=solve([val,...rest],target);
+          if(r) return r.replace(`${val}`,expr);
+        }
+      }
+    }
+    return null;
+  }
+
+  function checkAnswer(){
+    const expr=inputEl.value.trim(); if(!expr) return;
+    if(!timerId){ timerId=setInterval(()=>{ timerSec++; const m=Math.floor(timerSec/60),s=timerSec%60; timerEl.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; },1000); }
+    total++; totalEl.textContent=total;
+    try{
+      // Evaluate expression safely
+      const clean=expr.replace(/×/g,'*').replace(/÷/g,'/').replace(/x/gi,'*').replace(/[^0-9+\-*/().\s]/g,'');
+      const used=clean.match(/\d+/g)?.map(Number)||[];
+      const sortedUsed=[...used].sort((a,b)=>a-b); const sortedNums=[...nums].sort((a,b)=>a-b);
+      if(JSON.stringify(sortedUsed)!==JSON.stringify(sortedNums)){ resultEl.textContent='必须使用给出的4个数字'; resultEl.style.color='#ef4444'; return; }
+      const result=Function(`"use strict"; return (${clean})`)();
+      if(Math.abs(result-24)<1e-9){
+        if(!solved){ correct++; correctEl.textContent=correct; solved=true; }
+        resultEl.textContent='✅ 正确！'; resultEl.style.color='#22c55e'; clearInterval(timerId);
+      }else{ resultEl.textContent=`❌ 结果是 ${result}，不是24`; resultEl.style.color='#ef4444'; }
+    }catch(e){ resultEl.textContent='算式格式错误'; resultEl.style.color='#ef4444'; }
+  }
+
+  document.getElementById('p24Submit').onclick=checkAnswer;
+  inputEl.addEventListener('keydown',e=>{ if(e.key==='Enter') checkAnswer(); });
+  document.getElementById('p24New').onclick=newPuzzle;
+  document.getElementById('p24Solve').onclick=()=>{
+    const sol=solve(nums,24); resultEl.textContent=sol?`解法：${sol}`:'此题无解'; resultEl.style.color='var(--primary)';
+  };
+  document.getElementById('p24Diff').onchange=newPuzzle;
+
+  newPuzzle();
+})();
+</script>

@@ -1,0 +1,76 @@
+<style>
+.cr-wrap { max-width: 500px; margin: 0 auto; text-align: center; }
+.cr-bar { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+.cr-bar button { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.85rem; cursor: pointer; }
+.cr-bar button.active { background: var(--primary); color: var(--theme); }
+.cr-color { width: 180px; height: 180px; border-radius: 16px; margin: 0 auto 20px; border: 2px solid var(--border); transition: background 0.2s; }
+.cr-options { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.cr-opt { width: 60px; height: 60px; border-radius: 12px; cursor: pointer; border: 3px solid transparent; transition: transform 0.15s, border-color 0.15s; }
+.cr-opt:hover { transform: scale(1.08); }
+.cr-opt.correct { border-color: #22c55e; }
+.cr-opt.wrong { border-color: #ef4444; }
+.cr-info { display: flex; justify-content: center; gap: 24px; margin-top: 16px; font-size: 0.9rem; color: var(--secondary); }
+.cr-info strong { color: var(--primary); }
+</style>
+
+<div class="cr-wrap">
+  <h3 style="margin-bottom:12px">颜色识别测试</h3>
+  <div class="cr-bar" id="crDiffs">
+    <button data-mode="easy" class="active">基础色</button>
+    <button data-mode="medium">进阶混合</button>
+    <button data-mode="hard">渐变微差</button>
+  </div>
+  <div class="cr-color" id="crTarget"></div>
+  <p style="color:var(--secondary);margin-bottom:12px">选出与上方色块最接近的颜色</p>
+  <div class="cr-options" id="crOptions"></div>
+  <div class="cr-info">
+    <span>得分：<strong id="crScore">0</strong></span>
+    <span>正确：<strong id="crCorrect">0</strong></span>
+    <span>总计：<strong id="crTotal">0</strong></span>
+  </div>
+</div>
+
+<script>
+(()=>{
+  let mode='easy', score=0, correct=0, total=0, targetColor='', options=[];
+  const COLORS_EASY=['#EF4444','#F97316','#EAB308','#22C55E','#3B82F6','#8B5CF6','#EC4899','#000000','#FFFFFF','#6B7280'];
+  const COLORS_MEDIUM=['#FF6B6B','#C44569','#F8B739','#78E08F','#38ADA9','#4A69BD','#6F1E51','#FEA47F','#25CCF7','#EAB543','#58B19F','#BDC581','#E66767','#574B90','#F19066','#3DC1D3'];
+  const COLORS_HARD=['#2B2D42','#8D99AE','#D90429','#EF233C','#7209B7','#3A0CA3','#4361EE','#4CC9F0','#F72585','#B5179E','#4895EF','#560BAD','#F72585','#B5179E'];
+
+  const targetEl=document.getElementById('crTarget'),optionsEl=document.getElementById('crOptions');
+  const scoreEl=document.getElementById('crScore'),correctEl=document.getElementById('crCorrect'),totalEl=document.getElementById('crTotal');
+
+  function getColors(){
+    if(mode==='easy') return COLORS_EASY;
+    if(mode==='medium') return COLORS_MEDIUM;
+    return COLORS_HARD;
+  }
+
+  function generate(){
+    const colors=getColors(); const pool=shuffle([...colors]).slice(0,Math.min(6,colors.length));
+    targetColor=pool[Math.floor(Math.random()*pool.length)]; options=pool;
+    targetEl.style.background=targetColor;
+    optionsEl.innerHTML=options.map(c=>`<div class="cr-opt" style="background:${c}" data-color="${c}"></div>`).join('');
+  }
+
+  function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+
+  optionsEl.addEventListener('click',e=>{
+    const opt=e.target.closest('.cr-opt'); if(!opt) return;
+    total++;
+    const chosen=opt.dataset.color;
+    if(chosen===targetColor){ score+=10; correct++; opt.classList.add('correct'); }
+    else{ opt.classList.add('wrong'); document.querySelector(`.cr-opt[data-color="${targetColor}"]`)?.classList.add('correct'); }
+    scoreEl.textContent=score; correctEl.textContent=correct; totalEl.textContent=total;
+    setTimeout(generate,800);
+  });
+
+  document.getElementById('crDiffs').addEventListener('click',e=>{
+    const btn=e.target.closest('button'); if(!btn) return;
+    document.querySelectorAll('#crDiffs button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); mode=btn.dataset.mode; score=0; correct=0; total=0; scoreEl.textContent='0'; correctEl.textContent='0'; totalEl.textContent='0'; generate();
+  });
+
+  generate();
+})();
+</script>

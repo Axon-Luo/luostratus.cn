@@ -1,0 +1,121 @@
+<style>
+.nc-wrap { max-width: 550px; margin: 0 auto; }
+.nc-section { margin-bottom: 24px; padding: 20px; border-radius: 12px; background: var(--entry); border: 1px solid var(--border); }
+.nc-section h3 { margin-bottom: 12px; font-size: 1rem; }
+.nc-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+.nc-row input, .nc-row select { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.9rem; }
+.nc-row input { width: 200px; }
+.nc-row span { color: var(--secondary); font-size: 0.9rem; }
+.nc-sub { display: flex; flex-wrap: wrap; gap: 8px; }
+.nc-sub input { width: 140px; }
+</style>
+
+<div class="nc-wrap">
+  <div class="nc-section">
+    <h3>🔢 进制转换</h3>
+    <div class="nc-row">
+      <input type="text" id="ncDec" placeholder="十进制" oninput="convertBase('dec')">
+      <span>DEC</span>
+    </div>
+    <div class="nc-row">
+      <input type="text" id="ncBin" placeholder="二进制" oninput="convertBase('bin')">
+      <span>BIN</span>
+    </div>
+    <div class="nc-row">
+      <input type="text" id="ncOct" placeholder="八进制" oninput="convertBase('oct')">
+      <span>OCT</span>
+    </div>
+    <div class="nc-row">
+      <input type="text" id="ncHex" placeholder="十六进制" oninput="convertBase('hex')">
+      <span>HEX</span>
+    </div>
+  </div>
+
+  <div class="nc-section">
+    <h3>🈶 中文大写数字 ↔ 阿拉伯数字</h3>
+    <div class="nc-row">
+      <input type="text" id="ncArabic" placeholder="阿拉伯数字" oninput="arabicToChinese()" style="width:220px">
+      <span>↔</span>
+      <input type="text" id="ncChinese" placeholder="中文大写" oninput="chineseToArabic()" style="width:220px">
+    </div>
+  </div>
+
+  <div class="nc-section">
+    <h3>🏛️ 罗马数字 ↔ 阿拉伯数字</h3>
+    <div class="nc-row">
+      <input type="text" id="ncRomArabic" placeholder="阿拉伯数字" oninput="arabicToRoman()" style="width:180px">
+      <span>↔</span>
+      <input type="text" id="ncRoman" placeholder="罗马数字" oninput="romanToArabic()" style="width:180px">
+    </div>
+  </div>
+</div>
+
+<script>
+// Base conversion
+let baseLock=null;
+function convertBase(from){
+  if(baseLock) return; baseLock=true;
+  const dec=document.getElementById('ncDec'),bin=document.getElementById('ncBin'),oct=document.getElementById('ncOct'),hex=document.getElementById('ncHex');
+  try{
+    let val;
+    if(from==='dec') val=BigInt(dec.value||'0');
+    else if(from==='bin') val=BigInt('0b'+(bin.value||'0'));
+    else if(from==='oct') val=BigInt('0o'+(oct.value||'0'));
+    else val=BigInt('0x'+(hex.value||'0'));
+    if(from!=='dec') dec.value=val.toString();
+    if(from!=='bin') bin.value=val.toString(2);
+    if(from!=='oct') oct.value=val.toString(8);
+    if(from!=='hex') hex.value=val.toString(16).toUpperCase();
+  }catch(e){ if(from!=='dec') dec.value='错误'; }
+  setTimeout(()=>{ baseLock=false; },0);
+}
+
+// Chinese uppercase
+const CN_DIGITS=['零','壹','贰','叁','肆','伍','陆','柒','捌','玖'];
+const CN_UNITS=['','拾','佰','仟','万','拾','佰','仟','亿','拾','佰','仟','万'];
+function arabicToChinese(){
+  const val=document.getElementById('ncArabic').value.trim();
+  if(!val||isNaN(val)) return;
+  let n=BigInt(val); if(n===0n){ document.getElementById('ncChinese').value='零'; return; }
+  const digits=String(n).split('').reverse().map(Number);
+  let result='';
+  for(let i=0;i<digits.length;i++){
+    const d=digits[i]; if(d===0){ if(i===0||(i%4===0)) result='零'+result; }
+    else result=CN_DIGITS[d]+CN_UNITS[i]+result;
+  }
+  result=result.replace(/零+/g,'零').replace(/零$/,'').replace(/零万/g,'万').replace(/零亿/g,'亿');
+  document.getElementById('ncChinese').value=result||'零';
+}
+function chineseToArabic(){
+  // Simplified: basic reverse mapping
+  const cnMap={'零':0,'壹':1,'贰':2,'叁':3,'肆':4,'伍':5,'陆':6,'柒':7,'捌':8,'玖':9,'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9};
+  const unitMap={'拾':10,'佰':100,'仟':1000,'万':10000,'亿':100000000};
+  const val=document.getElementById('ncChinese').value.trim();
+  if(!val) return;
+  try{
+    let result=0,curr=0,section=0;
+    for(const ch of val){
+      if(cnMap[ch]!==undefined) curr=cnMap[ch];
+      else if(unitMap[ch]){ section+=curr*unitMap[ch]||unitMap[ch]; curr=0;
+        if(ch==='万'||ch==='亿'){ result+=section*(ch==='亿'?100000000:1); section=0; }
+      }
+    }
+    result+=section+curr;
+    if(result) document.getElementById('ncArabic').value=result;
+  }catch(e){}
+}
+
+// Roman numerals
+const ROM_MAP=[['M',1000],['CM',900],['D',500],['CD',400],['C',100],['XC',90],['L',50],['XL',40],['X',10],['IX',9],['V',5],['IV',4],['I',1]];
+function arabicToRoman(){
+  let n=+document.getElementById('ncRomArabic').value; if(!n||n<=0||n>3999) return;
+  let r=''; for(const [sym,val] of ROM_MAP){ while(n>=val){ r+=sym; n-=val; } }
+  document.getElementById('ncRoman').value=r;
+}
+function romanToArabic(){
+  const ROM_VAL={'I':1,'V':5,'X':10,'L':50,'C':100,'D':500,'M':1000};
+  const s=document.getElementById('ncRoman').value.trim().toUpperCase();
+  let result=0; for(let i=0;i<s.length;i++){ const cv=ROM_VAL[s[i]]; if(!cv) return; const nv=ROM_VAL[s[i+1]]||0; result+=cv<nv?-cv:cv; }
+  if(result) document.getElementById('ncRomArabic').value=result;
+}
+</script>

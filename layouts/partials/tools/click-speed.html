@@ -1,0 +1,70 @@
+<style>
+.cps-wrap { max-width: 500px; margin: 0 auto; text-align: center; }
+.cps-bar { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+.cps-bar button { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
+.cps-bar button.active { background: var(--primary); color: var(--theme); border-color: var(--primary); }
+.cps-area { width: 100%; height: 200px; border-radius: 12px; background: var(--entry); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; transition: background 0.1s; margin-bottom: 16px; }
+.cps-area:active { background: color-mix(in srgb, var(--primary) 15%, transparent); }
+.cps-area .big { font-size: 3rem; color: var(--primary); font-weight: 700; }
+.cps-progress { height: 6px; background: var(--border); border-radius: 3px; margin-bottom: 16px; overflow: hidden; }
+.cps-progress div { height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.3s linear; width: 0; }
+.cps-stats { display: flex; justify-content: center; gap: 32px; font-size: 1rem; color: var(--secondary); }
+.cps-stats strong { color: var(--primary); font-size: 1.3rem; }
+</style>
+
+<div class="cps-wrap">
+  <h3 style="margin-bottom:12px">点击速度测试</h3>
+  <div class="cps-bar" id="cpsDurations">
+    <button data-dur="5" class="active">5秒</button>
+    <button data-dur="10">10秒</button>
+    <button data-dur="30">30秒</button>
+    <button data-dur="60">60秒</button>
+  </div>
+  <div class="cps-progress"><div id="cpsBar"></div></div>
+  <div class="cps-area" id="cpsArea"><span class="big" id="cpsLabel">点击这里开始</span></div>
+  <div class="cps-stats">
+    <div>点击数<br><strong id="cpsClicks">0</strong></div>
+    <div>CPS<br><strong id="cpsRate">0</strong></div>
+    <div>最高CPS<br><strong id="cpsBest">0</strong></div>
+  </div>
+</div>
+
+<script>
+(()=>{
+  let duration=5, clicks=0, running=false, timer=null, startTime=0;
+  const area=document.getElementById('cpsArea'),label=document.getElementById('cpsLabel');
+  const clicksEl=document.getElementById('cpsClicks'),rateEl=document.getElementById('cpsRate'),bestEl=document.getElementById('cpsBest'),barEl=document.getElementById('cpsBar');
+
+  bestEl.textContent=localStorage.getItem('cpsBest')||'0';
+  const best=+bestEl.textContent;
+
+  document.getElementById('cpsDurations').addEventListener('click',e=>{
+    const btn=e.target.closest('button'); if(!btn||running) return;
+    document.querySelectorAll('#cpsDurations button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); duration=+btn.dataset.dur; reset_();
+  });
+
+  function reset_(){ clicks=0; running=false; clearInterval(timer); clicksEl.textContent='0'; rateEl.textContent='0'; barEl.style.width='0'; label.textContent='点击这里开始'; }
+
+  area.addEventListener('mousedown',e=>{
+    e.preventDefault();
+    if(!running){
+      running=true; clicks=0; startTime=Date.now();
+      barEl.style.transition='none'; barEl.style.width='0';
+      setTimeout(()=>{ barEl.style.transition='width 0.3s linear'; barEl.style.width='100%'; },10);
+      timer=setTimeout(end_,duration*1000);
+    }
+    if(running){ clicks++; clicksEl.textContent=clicks; const elapsed=(Date.now()-startTime)/1000; rateEl.textContent=elapsed>0?(clicks/elapsed).toFixed(1):'0'; }
+  });
+
+  function end_(){
+    running=false; clearTimeout(timer); barEl.style.width='0';
+    const elapsed=(Date.now()-startTime)/1000; const cps=elapsed>0?clicks/elapsed:0;
+    rateEl.textContent=cps.toFixed(1);
+    if(cps>best){ localStorage.setItem('cpsBest',cps.toFixed(1)); bestEl.textContent=cps.toFixed(1); }
+    label.textContent=`${clicks} 次点击 · CPS: ${cps.toFixed(1)}`;
+  }
+
+  area.addEventListener('touchstart',e=>{ e.preventDefault(); area.dispatchEvent(new MouseEvent('mousedown')); });
+})();
+</script>

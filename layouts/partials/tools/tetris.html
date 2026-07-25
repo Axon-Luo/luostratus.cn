@@ -1,0 +1,152 @@
+<style>
+.tetris-wrap { max-width: 500px; margin: 0 auto; }
+.tetris-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.tetris-bar select, .tetris-bar button { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.85rem; cursor: pointer; }
+.tetris-main { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+#tetrisCanvas { border: 2px solid var(--border); border-radius: 8px; background: #1a1a2e; }
+.tetris-side { min-width: 100px; }
+.tetris-side canvas { border: 1px solid var(--border); border-radius: 6px; background: #1a1a2e; }
+.tetris-info { font-size: 0.9rem; color: var(--secondary); margin-top: 8px; }
+.tetris-info strong { color: var(--primary); }
+.tetris-keys { font-size: 0.78rem; color: var(--secondary); margin-top: 12px; }
+</style>
+
+<div class="tetris-wrap">
+  <div class="tetris-bar">
+    <select id="tetrisDiff"><option value="easy">简单</option><option value="normal" selected>普通</option><option value="hard">困难</option></select>
+    <button id="tetrisStart">开始</button>
+    <button id="tetrisPause">暂停</button>
+  </div>
+  <div class="tetris-main">
+    <canvas id="tetrisCanvas" width="200" height="400"></canvas>
+    <div class="tetris-side">
+      <canvas id="tetrisNext" width="100" height="80"></canvas>
+      <div class="tetris-info">
+        <div>分数：<strong id="tetrisScore">0</strong></div>
+        <div>行数：<strong id="tetrisLines">0</strong></div>
+        <div>等级：<strong id="tetrisLevel">1</strong></div>
+        <div>最高：<strong id="tetrisBest">0</strong></div>
+      </div>
+      <div class="tetris-keys">← → 移动<br>↑ 旋转 ↓ 加速<br>空格 硬降</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(()=>{
+  const COLS=10,ROWS=20,CELL=20;
+  const canvas=document.getElementById('tetrisCanvas'),ctx=canvas.getContext('2d');
+  const nextCanvas=document.getElementById('tetrisNext'),nctx=nextCanvas.getContext('2d');
+  const scoreEl=document.getElementById('tetrisScore'),linesEl=document.getElementById('tetrisLines'),levelEl=document.getElementById('tetrisLevel'),bestEl=document.getElementById('tetrisBest');
+  const diffSel=document.getElementById('tetrisDiff'),startBtn=document.getElementById('tetrisStart'),pauseBtn=document.getElementById('tetrisPause');
+
+  const PIECES=[
+    [[1,1,1,1]], // I
+    [[1,1],[1,1]], // O
+    [[0,1,0],[1,1,1]], // T
+    [[1,0,0],[1,1,1]], // L
+    [[0,0,1],[1,1,1]], // J
+    [[0,1,1],[1,1,0]], // S
+    [[1,1,0],[0,1,1]] // Z
+  ];
+  const COLORS=['#0ff','#ff0','#a0f','#fa0','#06f','#0f0','#f00'];
+
+  let board=[],piece=null,pieceType=0,pieceX=0,pieceY=0,nextType=0;
+  let score=0,lines=0,level=1,running=false,paused=false,timer=null;
+  let baseSpeed=500;
+
+  function createBoard(){ board=Array.from({length:ROWS},()=>Array(COLS).fill(0)); }
+  function randPiece(){ return Math.floor(Math.random()*PIECES.length); }
+
+  function spawn(){
+    pieceType=nextType; nextType=randPiece();
+    piece=PIECES[pieceType].map(r=>[...r]);
+    pieceX=Math.floor((COLS-piece[0].length)/2);
+    pieceY=0;
+    if(!valid(piece,pieceX,pieceY)) endGame();
+  }
+
+  function valid(p,px,py){
+    for(let y=0;y<p.length;y++) for(let x=0;x<p[y].length;x++)
+      if(p[y][x]&&(px+x<0||px+x>=COLS||py+y>=ROWS||(py+y>=0&&board[py+y][px+x]))) return false;
+    return true;
+  }
+
+  function place(){
+    for(let y=0;y<piece.length;y++) for(let x=0;x<piece[y].length;x++)
+      if(piece[y][x]&&pieceY+y>=0) board[pieceY+y][pieceX+x]=pieceType+1;
+  }
+
+  function clearLines(){
+    let cleared=0;
+    for(let y=ROWS-1;y>=0;y--){
+      if(board[y].every(c=>c)){
+        board.splice(y,1); board.unshift(Array(COLS).fill(0)); y++; cleared++;
+      }
+    }
+    if(cleared){ lines+=cleared; score+=[0,40,100,300,1200][cleared]*level; level=Math.floor(lines/10)+1; }
+  }
+
+  function drop(){ if(valid(piece,pieceX,pieceY+1)) pieceY++; else{ place(); clearLines(); spawn(); } updateUI(); draw(); }
+
+  function hardDrop(){ while(valid(piece,pieceX,pieceY+1)) pieceY++; score+=2; drop(); }
+
+  function rotate(){
+    const p=piece[0].map((_,i)=>piece.map(r=>r[i]).reverse());
+    if(valid(p,pieceX,pieceY)) piece=p;
+  }
+
+  function move(dx){ if(valid(piece,pieceX+dx,pieceY)) pieceX+=dx; }
+
+  function endGame(){ running=false; clearInterval(timer); drawGameOver(); updateUI(); }
+
+  function updateUI(){
+    scoreEl.textContent=score; linesEl.textContent=lines; levelEl.textContent=level;
+    const b=localStorage.getItem('tetrisBest')||0; if(score>b){ localStorage.setItem('tetrisBest',score); bestEl.textContent=score; } else bestEl.textContent=b;
+  }
+  bestEl.textContent=localStorage.getItem('tetrisBest')||0;
+
+  function draw(){
+    ctx.fillStyle='#1a1a2e'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    for(let y=0;y<ROWS;y++) for(let x=0;x<COLS;x++){
+      if(board[y][x]){ ctx.fillStyle=COLORS[board[y][x]-1]; ctx.fillRect(x*CELL,y*CELL,CELL-1,CELL-1); }
+    }
+    if(piece&&running) for(let y=0;y<piece.length;y++) for(let x=0;x<piece[y].length;x++){
+      if(piece[y][x]){ ctx.fillStyle=COLORS[pieceType]; ctx.fillRect((pieceX+x)*CELL,(pieceY+y)*CELL,CELL-1,CELL-1); }
+    }
+    // next
+    nctx.fillStyle='#1a1a2e'; nctx.fillRect(0,0,nextCanvas.width,nextCanvas.height);
+    const np=PIECES[nextType]; nctx.fillStyle=COLORS[nextType];
+    for(let y=0;y<np.length;y++) for(let x=0;x<np[y].length;x++)
+      if(np[y][x]) nctx.fillRect(x*CELL+10,y*CELL+10,CELL-1,CELL-1);
+  }
+
+  function drawGameOver(){
+    ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#fff'; ctx.font='20px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('游戏结束',canvas.width/2,canvas.height/2);
+  }
+
+  function tick(){ if(!paused&&running){ drop(); if(!running) return; const sp=Math.max(50,baseSpeed-(level-1)*30); clearInterval(timer); timer=setInterval(tick,sp); }}
+
+  startBtn.onclick=()=>{
+    const d=diffSel.value; baseSpeed=d==='easy'?800:d==='hard'?250:500;
+    createBoard(); score=0; lines=0; level=1; running=true; paused=false;
+    nextType=randPiece(); spawn(); updateUI(); draw();
+    clearInterval(timer); timer=setInterval(tick,baseSpeed);
+  };
+  pauseBtn.onclick=()=>{ if(!running) return; paused=!paused; pauseBtn.textContent=paused?'继续':'暂停'; if(!paused) tick(); };
+
+  document.addEventListener('keydown',e=>{
+    if(!running||paused) return;
+    const k=e.key;
+    if(k==='ArrowLeft'){ e.preventDefault(); move(-1); draw(); }
+    else if(k==='ArrowRight'){ e.preventDefault(); move(1); draw(); }
+    else if(k==='ArrowDown'){ e.preventDefault(); drop(); draw(); }
+    else if(k==='ArrowUp'){ e.preventDefault(); rotate(); draw(); }
+    else if(k===' '){ e.preventDefault(); hardDrop(); draw(); }
+  });
+
+  createBoard(); nextType=randPiece(); draw();
+})();
+</script>

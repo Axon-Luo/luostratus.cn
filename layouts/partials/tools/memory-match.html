@@ -1,0 +1,79 @@
+<style>
+.mem-wrap { max-width: 500px; margin: 0 auto; }
+.mem-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.mem-bar select, .mem-bar button { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.85rem; cursor: pointer; }
+.mem-info { display: flex; gap: 20px; margin-bottom: 10px; font-size: 0.9rem; color: var(--secondary); }
+.mem-info strong { color: var(--primary); }
+.mem-grid { display: grid; gap: 8px; justify-content: center; }
+.mem-card { aspect-ratio: 1; border-radius: 8px; background: var(--primary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; transition: transform 0.3s, background 0.3s; transform-style: preserve-3d; user-select: none; }
+.mem-card.flipped { background: var(--entry); border: 2px solid var(--border); transform: rotateY(180deg); }
+.mem-card.matched { background: color-mix(in srgb, var(--primary) 25%, transparent); border-color: var(--primary); cursor: default; opacity: 0.7; }
+</style>
+
+<div class="mem-wrap">
+  <div class="mem-bar">
+    <select id="memDiff"><option value="6">4×3 (6对)</option><option value="8" selected>4×4 (8对)</option><option value="12">6×4 (12对)</option><option value="18">6×6 (18对)</option></select>
+    <button id="memRestart">重新开始</button>
+  </div>
+  <div class="mem-info">
+    <span>步数：<strong id="memMoves">0</strong></span>
+    <span>时间：<strong id="memTimer">0</strong>s</span>
+    <span>最高：<strong id="memBest">—</strong></span>
+  </div>
+  <div class="mem-grid" id="memGrid"></div>
+</div>
+
+<script>
+(()=>{
+  const EMOJIS=['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🦆','🦅'];
+  let pairs=8, cards=[], flipped=[], matched=[], moves=0, lock=false, timer=0, timerId=null, started=false;
+  let cols=4;
+
+  const gridEl=document.getElementById('memGrid'),movesEl=document.getElementById('memMoves'),timerEl=document.getElementById('memTimer'),bestEl=document.getElementById('memBest');
+
+  function init(){
+    pairs=+document.getElementById('memDiff').value; cols=pairs<=8?4:6;
+    const emojis=EMOJIS.slice(0,pairs);
+    cards=shuffle([...emojis,...emojis]); flipped=[]; matched=Array(pairs*2).fill(false); moves=0; lock=false; started=false;
+    clearInterval(timerId); timer=0; timerEl.textContent='0'; movesEl.textContent='0';
+    const b=localStorage.getItem('memBest'+pairs); bestEl.textContent=b?`${b}步`:'—';
+    gridEl.style.gridTemplateColumns=`repeat(${cols},minmax(60px,1fr))`;
+    gridEl.style.maxWidth=`${cols*80}px`;
+    render();
+  }
+
+  function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+
+  function render(){
+    gridEl.innerHTML=cards.map((emoji,i)=>{
+      const flipped_=flipped.includes(i), matched_=matched[i];
+      return `<div class="mem-card${flipped_||matched_?' flipped':''}${matched_?' matched':''}" data-idx="${i}">${flipped_||matched_?emoji:''}</div>`;
+    }).join('');
+  }
+
+  gridEl.addEventListener('click',e=>{
+    const card=e.target.closest('.mem-card'); if(!card||lock) return;
+    const idx=+card.dataset.idx; if(flipped.includes(idx)||matched[idx]) return;
+    if(!started){ started=true; timerId=setInterval(()=>{ timer++; timerEl.textContent=timer; },1000); }
+    flipped.push(idx);
+    if(flipped.length===2){
+      moves++; movesEl.textContent=moves; lock=true;
+      const [a,b]=flipped;
+      if(cards[a]===cards[b]){ matched[a]=matched[b]=true; flipped=[]; lock=false; render(); checkWin(); }
+      else{ render(); setTimeout(()=>{ flipped=[]; lock=false; render(); },600); }
+    }else render();
+  });
+
+  function checkWin(){
+    if(matched.every(v=>v)){
+      clearInterval(timerId);
+      const b=localStorage.getItem('memBest'+pairs);
+      if(!b||moves<+b){ localStorage.setItem('memBest'+pairs,moves); bestEl.textContent=`${moves}步`; }
+    }
+  }
+
+  document.getElementById('memRestart').onclick=init;
+  document.getElementById('memDiff').onchange=init;
+  init();
+})();
+</script>

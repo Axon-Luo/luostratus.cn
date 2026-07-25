@@ -1,0 +1,143 @@
+<style>
+.snake-wrap { max-width: 700px; margin: 0 auto; }
+.snake-controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+.snake-controls select, .snake-controls input[type="range"] { padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.85rem; }
+.snake-controls label { font-size: 0.85rem; color: var(--secondary); display: flex; align-items: center; gap: 4px; }
+.snake-info { display: flex; gap: 24px; margin-bottom: 16px; font-size: 0.95rem; }
+.snake-info span { color: var(--secondary); }
+.snake-info strong { color: var(--primary); }
+.snake-canvas-wrap { display: flex; justify-content: center; }
+#snakeCanvas { border: 2px solid var(--border); border-radius: 8px; background: var(--entry); display: block; max-width: 100%; }
+</style>
+
+<div class="snake-wrap">
+  <div class="snake-controls">
+    <label>难度：
+      <select id="snakeDiff">
+        <option value="easy">简单</option>
+        <option value="normal" selected>普通</option>
+        <option value="hard">困难</option>
+        <option value="custom">自定义</option>
+      </select>
+    </label>
+    <label id="snakeSizeLabel" hidden>网格：<input type="range" id="snakeSize" min="10" max="30" value="20"></label>
+    <label id="snakeSpeedLabel" hidden>速度(ms)：<input type="range" id="snakeSpeed" min="30" max="200" value="80"></label>
+    <label><input type="checkbox" id="snakeWrap"> 穿墙</label>
+    <button id="snakeStart" class="snake-btn">开始 / 重新开始</button>
+  </div>
+  <div class="snake-info">
+    <span>得分：<strong id="snakeScore">0</strong></span>
+    <span>最高分：<strong id="snakeBest">0</strong></span>
+    <span>长度：<strong id="snakeLen">1</strong></span>
+  </div>
+  <div class="snake-canvas-wrap">
+    <canvas id="snakeCanvas" width="400" height="400"></canvas>
+  </div>
+</div>
+
+<script>
+(()=>{
+  const canvas=document.getElementById('snakeCanvas'),ctx=canvas.getContext('2d');
+  const scoreEl=document.getElementById('snakeScore'),bestEl=document.getElementById('snakeBest'),lenEl=document.getElementById('snakeLen');
+  const diffSel=document.getElementById('snakeDiff'),sizeInp=document.getElementById('snakeSize'),speedInp=document.getElementById('snakeSpeed'),wrapChk=document.getElementById('snakeWrap'),startBtn=document.getElementById('snakeStart');
+  const sizeLbl=document.getElementById('snakeSizeLabel'),speedLbl=document.getElementById('snakeSpeedLabel');
+
+  let grid=20, speed=80, wrapMode=false;
+  let snake=[{x:10,y:10}], food={x:15,y:15}, dir={x:1,y:0}, nextDir={x:1,y:0};
+  let running=false, gameOver=false, score=0, timer=null;
+  const CELL=20;
+
+  const colors={bg:'#1e1e2e',snake:'#4ade80',head:'#22c55e',food:'#ef4444',grid:'#2a2a3a'};
+
+  function loadDiff(){
+    const v=diffSel.value;
+    if(v==='easy'){ grid=15; speed=120; }
+    else if(v==='normal'){ grid=20; speed=80; }
+    else if(v==='hard'){ grid=25; speed=50; }
+    sizeLbl.hidden=v!=='custom'; speedLbl.hidden=v!=='custom';
+    if(v==='custom'){ grid=+sizeInp.value; speed=+speedInp.value; }
+    canvas.width=canvas.height=grid*CELL;
+    resetGame();
+  }
+  sizeInp.oninput=()=>{ if(diffSel.value==='custom'){ grid=+sizeInp.value; canvas.width=canvas.height=grid*CELL; resetGame(); }};
+  speedInp.oninput=()=>{ if(diffSel.value==='custom'){ speed=+speedInp.value; if(running){ clearInterval(timer); tick(); }}};
+  diffSel.onchange=loadDiff;
+  wrapChk.onchange=()=>{ wrapMode=wrapChk.checked; };
+
+  function resetGame(){
+    clearInterval(timer); running=false; gameOver=false;
+    const mid=Math.floor(grid/2);
+    snake=[{x:mid,y:mid}]; dir={x:1,y:0}; nextDir={x:1,y:0}; score=0;
+    placeFood();
+    updateUI();
+    draw();
+  }
+
+  function placeFood(){
+    const occupied=new Set(snake.map(s=>`${s.x},${s.y}`));
+    const free=[]; for(let x=0;x<grid;x++) for(let y=0;y<grid;y++) if(!occupied.has(`${x},${y}`)) free.push({x,y});
+    if(free.length) food=free[Math.floor(Math.random()*free.length)];
+  }
+
+  function updateUI(){ scoreEl.textContent=score; lenEl.textContent=snake.length;
+    const b=localStorage.getItem('snakeBest')||0; if(score>b){ localStorage.setItem('snakeBest',score); bestEl.textContent=score; } else bestEl.textContent=b;
+  }
+  bestEl.textContent=localStorage.getItem('snakeBest')||0;
+
+  function draw(){
+    ctx.fillStyle=colors.bg; ctx.fillRect(0,0,canvas.width,canvas.height);
+    // grid lines
+    ctx.strokeStyle=colors.grid; ctx.lineWidth=0.5;
+    for(let i=0;i<=grid;i++){ ctx.beginPath(); ctx.moveTo(i*CELL,0); ctx.lineTo(i*CELL,canvas.height); ctx.stroke(); }
+    for(let i=0;i<=grid;i++){ ctx.beginPath(); ctx.moveTo(0,i*CELL); ctx.lineTo(canvas.width,i*CELL); ctx.stroke(); }
+    // snake
+    snake.forEach((s,i)=>{
+      ctx.fillStyle=i===0?colors.head:colors.snake;
+      ctx.fillRect(s.x*CELL+1,s.y*CELL+1,CELL-2,CELL-2);
+    });
+    // food
+    ctx.fillStyle=colors.food;
+    ctx.beginPath(); ctx.arc(food.x*CELL+CELL/2,food.y*CELL+CELL/2,CELL/2-2,0,Math.PI*2); ctx.fill();
+    if(gameOver){
+      ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle='#fff'; ctx.font='24px sans-serif'; ctx.textAlign='center'; ctx.fillText('游戏结束',canvas.width/2,canvas.height/2);
+      ctx.font='14px sans-serif'; ctx.fillText('点击"开始"重新挑战',canvas.width/2,canvas.height/2+30);
+    }
+  }
+
+  function tick(){
+    if(!running||gameOver) return;
+    dir={...nextDir};
+    const head=snake[0];
+    let nx=head.x+dir.x, ny=head.y+dir.y;
+    if(wrapMode){ nx=(nx+grid)%grid; ny=(ny+grid)%grid; }
+    const newHead={x:nx,y:ny};
+    // collision
+    if(!wrapMode&&(nx<0||nx>=grid||ny<0||ny>=grid)){ endGame(); return; }
+    if(snake.some(s=>s.x===nx&&s.y===ny)){ endGame(); return; }
+    snake.unshift(newHead);
+    if(nx===food.x&&ny===food.y){ score+=10; placeFood(); }
+    else snake.pop();
+    updateUI(); draw();
+    clearInterval(timer); timer=setInterval(tick,speed);
+  }
+
+  function endGame(){ gameOver=true; running=false; clearInterval(timer); updateUI(); draw(); }
+
+  startBtn.onclick=()=>{
+    if(diffSel.value==='custom'){ grid=+sizeInp.value; speed=+speedInp.value; canvas.width=canvas.height=grid*CELL; }
+    resetGame(); running=true; tick();
+  };
+
+  document.addEventListener('keydown',e=>{
+    if(!running||gameOver) return;
+    const k=e.key.toLowerCase();
+    if((k==='w'||k==='arrowup')&&dir.y!==1) nextDir={x:0,y:-1};
+    else if((k==='s'||k==='arrowdown')&&dir.y!==-1) nextDir={x:0,y:1};
+    else if((k==='a'||k==='arrowleft')&&dir.x!==1) nextDir={x:-1,y:0};
+    else if((k==='d'||k==='arrowright')&&dir.x!==-1) nextDir={x:1,y:0};
+  });
+
+  loadDiff(); draw();
+})();
+</script>

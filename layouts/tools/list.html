@@ -1,0 +1,84 @@
+{{ define "main" }}
+<header class="page-header">
+  <h1>{{ .Title }}</h1>
+  {{ with .Description }}<p class="page-description">{{ . }}</p>{{ end }}
+</header>
+
+{{ $games := slice
+  (dict "slug" "snake" "icon" "🐍" "name" "贪吃蛇" "desc" "经典街机游戏，控制蛇吃掉食物不断变长。多种难度和自定义选项。")
+  (dict "slug" "tetris" "icon" "🧱" "name" "俄罗斯方块" "desc" "消除下落方块获取高分。SRS旋转系统，速度随等级提升。")
+  (dict "slug" "breakout" "icon" "🎯" "name" "打砖块" "desc" "控制挡板反弹小球击碎砖块。生命系统 + 连击加分。")
+  (dict "slug" "2048" "icon" "🔢" "name" "2048" "desc" "滑动合并相同数字，冲击2048。支持3×3到6×6四种棋盘。")
+  (dict "slug" "minesweeper" "icon" "💣" "name" "扫雷" "desc" "逻辑推理经典。三种标准难度 + 自定义盘面。")
+  (dict "slug" "memory-match" "icon" "🃏" "name" "记忆翻牌" "desc" "翻开卡片找到所有配对。训练记忆力，Emoji图案。")
+  (dict "slug" "click-speed" "icon" "👆" "name" "点击速度测试" "desc" "测试你的手速。多种时长模式，实时CPS显示。")
+  (dict "slug" "color-recognition" "icon" "🎨" "name" "颜色识别测试" "desc" "辨别细微色差，从基础色到渐变微差。色盲友好模式。")
+  (dict "slug" "sudoku" "icon" "🧩" "name" "数独" "desc" "填数字谜题。四档难度，错误高亮和笔记模式。")
+  (dict "slug" "24-point" "icon" "🃏" "name" "24点" "desc" "四张牌用+-×÷()凑出24。计时挑战，自动求解。")
+}}
+
+{{ $utils := slice
+  (dict "slug" "unit-converter" "icon" "📏" "name" "单位换算" "desc" "速度、重量、时间、长度、面积、体积、温度全涵盖，公制英制双向即时转换。")
+  (dict "slug" "number-converter" "icon" "🔣" "name" "进制与数字转换" "desc" "二进制/八进制/十进制/十六进制互转，中文大写数字和罗马数字转换。")
+  (dict "slug" "bmi-calculator" "icon" "⚖️" "name" "BMI计算器" "desc" "身体质量指数计算，体重评级与健康建议，支持历史记录。")
+  (dict "slug" "morse-code" "icon" "📡" "name" "摩斯电码" "desc" "文字与摩斯电码双向转换，支持播放摩斯声音，可调WPM速度。")
+  (dict "slug" "random-generator" "icon" "🎲" "name" "随机数生成" "desc" "自定义范围、数量和精度生成随机数，支持不重复模式和一键复制。")
+}}
+
+<style>
+.tools-section { margin-top: 32px; }
+.tools-section h2 { margin-bottom: 16px; font-size: 1.3rem; }
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.tool-card {
+  display: block;
+  padding: 20px;
+  border-radius: 12px;
+  background: var(--entry);
+  border: 1px solid var(--border);
+  text-decoration: none !important;
+  background-image: none !important;
+  background-size: unset !important;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+.tool-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  border-color: var(--primary);
+}
+.tool-card .tool-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+.tool-card .tool-name { font-size: 1.05rem; font-weight: 600; color: var(--primary); margin-bottom: 4px; }
+.tool-card .tool-desc { font-size: 0.85rem; color: var(--secondary); line-height: 1.5; }
+.page-description { color: var(--secondary); font-size: 1.1rem; }
+</style>
+
+<section class="tools-section">
+  <h2>🎮 游戏</h2>
+  <div class="tools-grid">
+    {{ range $games }}
+    <a href="/tools/{{ .slug }}/" class="tool-card">
+      <span class="tool-icon">{{ .icon }}</span>
+      <div class="tool-name">{{ .name }}</div>
+      <div class="tool-desc">{{ .desc }}</div>
+    </a>
+    {{ end }}
+  </div>
+</section>
+
+<section class="tools-section">
+  <h2>🛠️ 实用工具</h2>
+  <div class="tools-grid">
+    {{ range $utils }}
+    <a href="/tools/{{ .slug }}/" class="tool-card">
+      <span class="tool-icon">{{ .icon }}</span>
+      <div class="tool-name">{{ .name }}</div>
+      <div class="tool-desc">{{ .desc }}</div>
+    </a>
+    {{ end }}
+  </div>
+</section>
+{{ end }}

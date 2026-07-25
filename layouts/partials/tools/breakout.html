@@ -1,0 +1,95 @@
+<style>
+.breakout-wrap { max-width: 600px; margin: 0 auto; }
+.breakout-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.breakout-bar select, .breakout-bar button { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.85rem; cursor: pointer; }
+.breakout-info { display: flex; gap: 20px; margin-bottom: 10px; font-size: 0.9rem; color: var(--secondary); }
+.breakout-info strong { color: var(--primary); }
+#breakoutCanvas { border: 2px solid var(--border); border-radius: 8px; background: #1a1a2e; display: block; max-width: 100%; margin: 0 auto; }
+</style>
+
+<div class="breakout-wrap">
+  <div class="breakout-bar">
+    <select id="brkDiff"><option value="easy">简单</option><option value="normal" selected>普通</option><option value="hard">困难</option></select>
+    <button id="brkStart">开始</button>
+  </div>
+  <div class="breakout-info">
+    <span>分数：<strong id="brkScore">0</strong></span>
+    <span>生命：<strong id="brkLives">3</strong></span>
+    <span>最高分：<strong id="brkBest">0</strong></span>
+  </div>
+  <canvas id="breakoutCanvas" width="480" height="400"></canvas>
+</div>
+
+<script>
+(()=>{
+  const canvas=document.getElementById('breakoutCanvas'),ctx=canvas.getContext('2d');
+  const scoreEl=document.getElementById('brkScore'),livesEl=document.getElementById('brkLives'),bestEl=document.getElementById('brkBest');
+
+  let bricks=[],ball={x:240,y:350,dx:3,dy:-3,r:7},paddle={x:200,y:380,w:80,h:12};
+  let score=0,lives=3,running=false,combo=0;
+  let rows=7,cols=8,brickW=50,brickH=18,ballSpeed=3,paddleW=80;
+
+  function loadDiff(){
+    const d=document.getElementById('brkDiff').value;
+    if(d==='easy'){ rows=5; cols=8; ballSpeed=2.5; paddleW=100; lives=5; }
+    else if(d==='normal'){ rows=7; cols=8; ballSpeed=3.5; paddleW=80; lives=3; }
+    else{ rows=10; cols=10; ballSpeed=5; paddleW=60; lives=3; }
+    brickW=(canvas.width-20)/cols; paddle.w=paddleW; ball.dy=-ballSpeed;
+    resetBricks(); resetBall(); score=0; combo=0; updateUI();
+  }
+
+  function resetBricks(){
+    bricks=[]; const colors=['#ef4444','#f97316','#eab308','#22c55e','#06b6d4','#3b82f6','#8b5cf6','#ec4899','#f43f5e','#14b8a6'];
+    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) bricks.push({x:c*brickW+10,y:r*brickH+40,w:brickW-2,h:brickH-2,color:colors[r%colors.length],alive:true});
+  }
+
+  function resetBall(){ ball.x=canvas.width/2; ball.y=paddle.y-20; ball.dx=(Math.random()*2-1)*ballSpeed; ball.dy=-ballSpeed; }
+  function updateUI(){ scoreEl.textContent=score; livesEl.textContent=lives; const b=localStorage.getItem('brkBest')||0; if(score>b){ localStorage.setItem('brkBest',score); bestEl.textContent=score; } else bestEl.textContent=b; }
+  bestEl.textContent=localStorage.getItem('brkBest')||0;
+
+  function draw(){
+    ctx.fillStyle='#1a1a2e'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    bricks.forEach(b=>{ if(b.alive){ ctx.fillStyle=b.color; ctx.fillRect(b.x,b.y,b.w,b.h); }});
+    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#60a5fa'; const px=Math.max(0,Math.min(canvas.width-paddle.w,paddle.x)); ctx.fillRect(px,paddle.y,paddle.w,paddle.h);
+  }
+
+  function update(){
+    ball.x+=ball.dx; ball.y+=ball.dy;
+    if(ball.x-ball.r<=0||ball.x+ball.r>=canvas.width) ball.dx*=-1;
+    if(ball.y-ball.r<=0) ball.dy*=-1;
+    if(ball.y+ball.r>=canvas.height){ lives--; if(lives<=0) endGame(); else{ resetBall(); combo=0; } updateUI(); }
+    // paddle collision
+    if(ball.y+ball.r>=paddle.y&&ball.y+ball.r<=paddle.y+paddle.h&&ball.x>=paddle.x&&ball.x<=paddle.x+paddle.w){
+      ball.dy=-Math.abs(ball.dy); const hit=(ball.x-paddle.x)/paddle.w-0.5; ball.dx=hit*ballSpeed*2;
+    }
+    // brick collision
+    let hit=false;
+    bricks.forEach(b=>{ if(!b.alive) return;
+      if(ball.x+ball.r>b.x&&ball.x-ball.r<b.x+b.w&&ball.y+ball.r>b.y&&ball.y-ball.r<b.y+b.h){
+        b.alive=false; score+=10+combo*5; combo++; hit=true;
+        const cx=ball.x,cy=ball.y; const bx=b.x+b.w/2,by=b.y+b.h/2;
+        if(Math.abs(cx-bx)/(b.w/2)>Math.abs(cy-by)/(b.h/2)) ball.dx*=-1; else ball.dy*=-1;
+      }
+    });
+    if(!hit) combo=0;
+    if(bricks.every(b=>!b.alive)){ score+=100; resetBricks(); resetBall(); }
+    updateUI(); draw();
+  }
+
+  function endGame(){ running=false; ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.fillStyle='#fff'; ctx.font='24px sans-serif'; ctx.textAlign='center'; ctx.fillText('游戏结束',canvas.width/2,canvas.height/2); }
+
+  let anim;
+  function loop(){ if(!running) return; update(); anim=requestAnimationFrame(loop); }
+
+  document.getElementById('brkStart').onclick=()=>{
+    loadDiff(); running=true; lives=+livesEl.textContent||3; if(anim) cancelAnimationFrame(anim); loop();
+  };
+
+  canvas.addEventListener('mousemove',e=>{ const rect=canvas.getBoundingClientRect(); paddle.x=(e.clientX-rect.left)*(canvas.width/rect.width)-paddle.w/2; });
+
+  document.addEventListener('keydown',e=>{ if(e.key==='ArrowLeft') paddle.x-=25; if(e.key==='ArrowRight') paddle.x+=25; });
+
+  loadDiff(); draw();
+})();
+</script>

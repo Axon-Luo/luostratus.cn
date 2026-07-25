@@ -1,0 +1,65 @@
+<style>
+.bmi-wrap { max-width: 450px; margin: 0 auto; }
+.bmi-card { padding: 24px; border-radius: 12px; background: var(--entry); border: 1px solid var(--border); margin-bottom: 16px; }
+.bmi-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+.bmi-row label { font-size: 0.9rem; color: var(--secondary); min-width: 50px; }
+.bmi-row input { padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 1rem; width: 120px; }
+.bmi-row select { padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); }
+.bmi-result { text-align: center; padding: 20px; }
+.bmi-value { font-size: 2.5rem; font-weight: 700; color: var(--primary); }
+.bmi-level { font-size: 1.1rem; margin-top: 4px; }
+.bmi-advice { font-size: 0.9rem; color: var(--secondary); margin-top: 8px; }
+.bmi-history { font-size: 0.85rem; color: var(--secondary); }
+.bmi-history div { padding: 4px 0; border-bottom: 1px solid var(--border); }
+</style>
+
+<div class="bmi-wrap">
+  <div class="bmi-card">
+    <div class="bmi-row">
+      <label>身高：</label><input type="number" id="bmiHt" value="170" step="0.1" min="50">
+      <select id="bmiHtU"><option value="cm">厘米(cm)</option><option value="m">米(m)</option></select>
+    </div>
+    <div class="bmi-row">
+      <label>体重：</label><input type="number" id="bmiWt" value="65" step="0.1" min="10">
+      <select id="bmiWtU"><option value="kg">千克(kg)</option><option value="lb">磅(lb)</option></select>
+    </div>
+    <button id="bmiCalc" style="width:100%;padding:10px;border-radius:8px;border:none;background:var(--primary);color:var(--theme);font-size:1rem;cursor:pointer;font-weight:600;">计算 BMI</button>
+    <div class="bmi-result" id="bmiResult"></div>
+  </div>
+  <div class="bmi-card">
+    <h4 style="margin-bottom:8px">📋 历史记录</h4>
+    <div class="bmi-history" id="bmiHistory"></div>
+  </div>
+</div>
+
+<script>
+(()=>{
+  function calc(){
+    let ht=+document.getElementById('bmiHt').value, wt=+document.getElementById('bmiWt').value;
+    if(document.getElementById('bmiHtU').value==='cm') ht/=100;
+    if(document.getElementById('bmiWtU').value==='lb') wt*=0.453592;
+    if(!ht||!wt) return;
+    const bmi=wt/(ht*ht);
+    let level,color;
+    if(bmi<18.5){ level='偏瘦'; color='#f59e0b'; }
+    else if(bmi<24){ level='正常'; color='#22c55e'; }
+    else if(bmi<28){ level='偏胖'; color='#f97316'; }
+    else{ level='肥胖'; color='#ef4444'; }
+    const advice=bmi<18.5?'适当增加营养摄入':bmi<24?'保持当前健康生活方式':bmi<28?'建议控制饮食、加强运动':'建议咨询医生，制定减重计划';
+    document.getElementById('bmiResult').innerHTML=`<div class="bmi-value" style="color:${color}">${bmi.toFixed(1)}</div><div class="bmi-level" style="color:${color}">${level}</div><div class="bmi-advice">${advice}</div>`;
+    // save history
+    const h=JSON.parse(localStorage.getItem('bmiHistory')||'[]');
+    const date=new Date().toLocaleDateString('zh-CN');
+    h.unshift({date,ht:ht*100,wt,bmi:bmi.toFixed(1),level});
+    if(h.length>10) h.length=10;
+    localStorage.setItem('bmiHistory',JSON.stringify(h));
+    renderHistory();
+  }
+  function renderHistory(){
+    const h=JSON.parse(localStorage.getItem('bmiHistory')||'[]');
+    document.getElementById('bmiHistory').innerHTML=h.map(e=>`<div>${e.date} · ${e.ht.toFixed(0)}cm ${e.wt}kg · BMI <strong>${e.bmi}</strong> <span>${e.level}</span></div>`).join('')||'暂无记录';
+  }
+  document.getElementById('bmiCalc').onclick=calc;
+  renderHistory();
+})();
+</script>

@@ -1,0 +1,4 @@
+{{ define "main" }}
+{{ $tool := .File.BaseFileName }}
+{{ partial (printf "tools/%s.html" $tool) . }}
+{{ end }}

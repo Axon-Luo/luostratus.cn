@@ -1,0 +1,75 @@
+<style>
+.morse-wrap { max-width: 550px; margin: 0 auto; }
+.morse-section { margin-bottom: 16px; }
+.morse-section textarea { width: 100%; height: 80px; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.95rem; resize: vertical; font-family: monospace; }
+.morse-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+.morse-bar select, .morse-bar button, .morse-bar input { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.85rem; cursor: pointer; }
+.morse-bar input[type="range"] { width: 100px; padding: 0; }
+</style>
+
+<div class="morse-wrap">
+  <div class="morse-section">
+    <label style="font-size:0.9rem;color:var(--secondary)">文字 → 摩斯电码</label>
+    <textarea id="morseText" placeholder="输入文字...">HELLO WORLD</textarea>
+    <div class="morse-bar">
+      <label style="font-size:0.8rem;color:var(--secondary)">WPM:<input type="range" id="morseWPM" min="5" max="40" value="20"></label>
+      <span id="morseWPMVal" style="font-size:0.8rem;color:var(--secondary)">20</span>
+      <button id="morsePlay">▶ 播放</button>
+      <button id="morseStop">■ 停止</button>
+      <button id="morseCopy">📋 复制</button>
+    </div>
+    <textarea id="morseCode" placeholder="摩斯电码..." readonly></textarea>
+  </div>
+  <div class="morse-section">
+    <label style="font-size:0.9rem;color:var(--secondary)">摩斯电码 → 文字</label>
+    <textarea id="morseDecodeInput" placeholder="输入摩斯电码（用空格分隔字母，用 / 分隔单词）..."></textarea>
+    <button id="morseDecodeBtn" style="margin-top:8px;padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--entry);color:var(--primary);cursor:pointer;">解码</button>
+    <textarea id="morseDecoded" placeholder="解码结果..." readonly></textarea>
+  </div>
+</div>
+
+<script>
+(()=>{
+  const MORSE={'A':'.-','B':'-...','C':'-.-.','D':'-..','E':'.','F':'..-.','G':'--.','H':'....','I':'..','J':'.---','K':'-.-','L':'.-..','M':'--','N':'-.','O':'---','P':'.--.','Q':'--.-','R':'.-.','S':'...','T':'-','U':'..-','V':'...-','W':'.--','X':'-..-','Y':'-.--','Z':'--..','0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.','.':'.-.-.-',',':'--..--','?':'..--..',"'":'.----.','!':'-.-.--','/':'-..-.','(':'-.--.',')':'-.--.-','&':'.-...',':':'---...',';':'-.-.-.','=':'-...-','+':'.-.-.','-':'-....-','_':'..--.-','"':'.-..-.','$':'...-..-','@':'.--.-.'};
+  const REV={}; for(const[k,v] of Object.entries(MORSE)) REV[v]=k;
+
+  const textEl=document.getElementById('morseText'),codeEl=document.getElementById('morseCode');
+  const wpmInp=document.getElementById('morseWPM'),wpmVal=document.getElementById('morseWPMVal');
+
+  function toMorse(txt){ return txt.toUpperCase().split('').map(c=>MORSE[c]||c).join(' '); }
+  function fromMorse(code){ return code.split(' / ').map(w=>w.split(' ').map(c=>REV[c]||c).join('')).join(' '); }
+
+  textEl.oninput=()=>{ codeEl.value=toMorse(textEl.value); };
+  wpmInp.oninput=()=>{ wpmVal.textContent=wpmInp.value; };
+  textEl.oninput(); // initial conversion
+
+  document.getElementById('morseDecodeBtn').onclick=()=>{
+    const input=document.getElementById('morseDecodeInput').value.trim();
+    document.getElementById('morseDecoded').value=fromMorse(input);
+  };
+
+  document.getElementById('morseCopy').onclick=()=>{ navigator.clipboard.writeText(codeEl.value); };
+
+  let audioCtx=null,playing=false;
+  document.getElementById('morsePlay').onclick=()=>{
+    if(playing) return; playing=true;
+    if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    const code=codeEl.value; const wpm=+wpmInp.value; const dotLen=1200/wpm/1000;
+    const events=[]; let t=0;
+    for(const ch of code){
+      if(ch==='.'){ events.push({t,on:true}); t+=dotLen; events.push({t,on:false}); t+=dotLen; }
+      else if(ch==='-'){ events.push({t,on:true}); t+=dotLen*3; events.push({t,on:false}); t+=dotLen; }
+      else if(ch===' '){ t+=dotLen*3; }
+      else if(ch==='/'){ t+=dotLen*7; }
+    }
+    const startTime=audioCtx.currentTime; let stopped=false;
+    const osc=audioCtx.createOscillator(); osc.type='sine'; osc.frequency.value=700;
+    const gain=audioCtx.createGain(); gain.gain.value=0;
+    osc.connect(gain); gain.connect(audioCtx.destination); osc.start();
+    for(const{on,t:evt} of events){ gain.gain.setValueAtTime(on?0.5:0,startTime+evt); }
+    setTimeout(()=>{ osc.stop(); playing=false; },(t+0.2)*1000);
+    document.getElementById('morseStop').onclick=()=>{ osc.stop(); playing=false; };
+  };
+  document.getElementById('morseStop').onclick=()=>{ playing=false; };
+})();
+</script>

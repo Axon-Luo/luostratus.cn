@@ -1,0 +1,75 @@
+<style>
+.uc-wrap { max-width: 650px; margin: 0 auto; }
+.uc-tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 16px; }
+.uc-tab { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--secondary); font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+.uc-tab.active { background: var(--primary); color: var(--theme); border-color: var(--primary); }
+.uc-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+.uc-row input { padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 1.1rem; width: 160px; text-align: center; }
+.uc-row select { padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.9rem; min-width: 120px; }
+.uc-row span { color: var(--secondary); font-weight: 600; }
+.uc-precision { margin-top: 16px; }
+.uc-precision label { font-size: 0.85rem; color: var(--secondary); }
+</style>
+
+<div class="uc-wrap">
+  <div class="uc-tabs" id="ucTabs"></div>
+  <div class="uc-row">
+    <input type="number" id="ucInput" value="1" step="any">
+    <select id="ucFrom"></select>
+    <span>→</span>
+    <input type="number" id="ucOutput" readonly>
+    <select id="ucTo"></select>
+  </div>
+  <div class="uc-precision"><label>小数位数：<input type="number" id="ucPrec" value="4" min="0" max="10" style="width:50px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--entry);color:var(--primary);"></label></div>
+</div>
+
+<script>
+(()=>{
+  const DATA={
+    speed:{name:'速度',units:{'m/s':1,'km/h':0.277778,'mph':0.44704,'节(kn)':0.514444,'ft/s':0.3048,'马赫':340.3}},
+    weight:{name:'重量',units:{'千克(kg)':1,'克(g)':0.001,'毫克(mg)':1e-6,'吨(t)':1000,'磅(lb)':0.453592,'盎司(oz)':0.0283495,'斤':0.5}},
+    time:{name:'时间',units:{'秒(s)':1,'分钟(min)':60,'小时(h)':3600,'天(d)':86400,'周':604800,'月(30天)':2592000,'年(365天)':31536000}},
+    length:{name:'长度',units:{'米(m)':1,'千米(km)':1000,'厘米(cm)':0.01,'毫米(mm)':0.001,'英里(mi)':1609.34,'英尺(ft)':0.3048,'英寸(in)':0.0254,'码(yd)':0.9144,'海里':1852}},
+    area:{name:'面积',units:{'平方米(m²)':1,'平方千米(km²)':1e6,'公顷(ha)':10000,'亩':666.667,'平方英尺(ft²)':0.092903,'英亩':4046.86}},
+    volume:{name:'体积',units:{'立方米(m³)':1,'升(L)':0.001,'毫升(mL)':1e-6,'加仑(gal)':0.00378541,'立方英尺(ft³)':0.0283168,'桶(石油)':0.158987}},
+    temperature:{name:'温度',units:{'摄氏度(°C)':'c','华氏度(°F)':'f','开尔文(K)':'k'},special:true}
+  };
+
+  let current='speed';
+  const tabsEl=document.getElementById('ucTabs'),fromSel=document.getElementById('ucFrom'),toSel=document.getElementById('ucTo'),inputEl=document.getElementById('ucInput'),outputEl=document.getElementById('ucOutput'),precEl=document.getElementById('ucPrec');
+
+  function renderTabs(){
+    tabsEl.innerHTML=Object.entries(DATA).map(([k,v])=>`<button class="uc-tab${k===current?' active':''}" data-key="${k}">${v.name}</button>`).join('');
+  }
+
+  function populateSelects(){
+    const units=DATA[current].units;
+    fromSel.innerHTML=toSel.innerHTML=Object.keys(units).map(u=>`<option>${u}</option>`).join('');
+    toSel.selectedIndex=Math.min(1,Object.keys(units).length-1);
+  }
+
+  function convert(){
+    const val=parseFloat(inputEl.value); if(isNaN(val)){ outputEl.value=''; return; }
+    const prec=+precEl.value;
+    if(DATA[current].special){
+      const f=DATA[current].units[fromSel.value],t=DATA[current].units[toSel.value];
+      let celsius;
+      if(f==='c') celsius=val;
+      else if(f==='f') celsius=(val-32)*5/9;
+      else celsius=val-273.15;
+      let result;
+      if(t==='c') result=celsius;
+      else if(t==='f') result=celsius*9/5+32;
+      else result=celsius+273.15;
+      outputEl.value=result.toFixed(prec);
+    }else{
+      const base=val*DATA[current].units[fromSel.value];
+      outputEl.value=(base/DATA[current].units[toSel.value]).toFixed(prec);
+    }
+  }
+
+  tabsEl.addEventListener('click',e=>{ const btn=e.target.closest('button'); if(!btn) return; current=btn.dataset.key; renderTabs(); populateSelects(); convert(); });
+  fromSel.onchange=convert; toSel.onchange=convert; inputEl.oninput=convert; precEl.onchange=convert;
+  renderTabs(); populateSelects(); convert();
+})();
+</script>
