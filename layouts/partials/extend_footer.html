@@ -1,6 +1,9 @@
 <!-- 返回顶部 -->
 <button id="back-to-top" aria-label="返回顶部" title="返回顶部">↑</button>
 
+<!-- 文章导航（仅文章页显示） -->
+<nav id="article-toc" aria-label="文章目录"></nav>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('back-to-top');
@@ -21,12 +24,85 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* 返回顶部 */
-  if (!btn) return;
-  const toggle = () => {
-    const show = window.scrollY > 400;
-    btn.classList.toggle('show', show);
-  };
-  window.addEventListener('scroll', toggle, { passive: true });
-  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  if (btn) {
+    const toggleBtn = () => {
+      btn.classList.toggle('show', window.scrollY > 400);
+    };
+    window.addEventListener('scroll', toggleBtn, { passive: true });
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  }
+
+  /* === 文章导航栏 === */
+  buildArticleTOC();
 });
+</script>
+
+<script>
+function buildArticleTOC() {
+  const content = document.querySelector('.post-content');
+  if (!content) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (headings.length < 2) return;
+
+  // 创建导航容器
+  const toc = document.getElementById('article-toc');
+  if (!toc) return;
+  toc.innerHTML = '<div class="toc-title">📑 目录</div>';
+
+  // 给每个标题添加 id
+  headings.forEach((h, i) => {
+    if (!h.id) h.id = 'section-' + i;
+  });
+
+  let activeLink = null;
+
+  // 构建链接
+  const links = [];
+  headings.forEach(h => {
+    const a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.textContent = h.textContent;
+    a.className = h.tagName === 'H3' ? 'toc-h3' : '';
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.getElementById(h.id);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        history.replaceState(null, '', '#' + h.id);
+      }
+    });
+    toc.appendChild(a);
+    links.push({ el: a, heading: h });
+  });
+
+  // IntersectionObserver 追踪当前章节
+  const observer = new IntersectionObserver(entries => {
+    // 找到第一个可见的标题
+    let firstVisible = null;
+    entries.forEach(e => {
+      if (e.isIntersecting && !firstVisible) {
+        firstVisible = e.target;
+      }
+    });
+
+    if (firstVisible) {
+      const id = firstVisible.id;
+      links.forEach(l => {
+        if (l.heading.id === id) {
+          if (activeLink) activeLink.classList.remove('active');
+          l.el.classList.add('active');
+          activeLink = l.el;
+          // 自动滚动 toc 使当前项可见
+          l.el.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+        }
+      });
+    }
+  }, { rootMargin: '-80px 0px -60% 0px', threshold: 0 });
+
+  headings.forEach(h => observer.observe(h));
+
+  // 显示导航
+  toc.classList.add('visible');
+}
 </script>
