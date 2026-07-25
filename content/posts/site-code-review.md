@@ -113,7 +113,7 @@ Hugo 的 Branch Bundle 允许 `_index.md` 通过 `.Resources.ByType "image"` 直
 
 ### 文件名日期解析
 
-34 张图片来源各异——截图、手机照片、无人机、微信——命名规范完全不同。模板中用 **两层正则** 逐级匹配：
+35+ 张图片来源各异——截图、手机照片、无人机、微信——命名规范完全不同。模板中用 **两层正则** 逐级匹配：
 
 ```go
 {{ $dateStr := "—" }}
@@ -141,7 +141,7 @@ Hugo 的 Branch Bundle 允许 `_index.md` 通过 `.Resources.ByType "image"` 直
 ### 排序算法
 
 ```text
-输入：34 张图片（含日期的 N 张 + 无日期的 M 张 + 1 张固定图）
+输入：35+ 张图片（含日期的 N 张 + 无日期的 M 张 + 1 张固定图）
 
 1. 分离
    ├── $pinned ← .Resources.GetMatch "00-校色卡*"
@@ -283,6 +283,157 @@ document.querySelectorAll('#menu a').forEach(link => {
 
 所有效果均为 **纯 CSS + 少量原生 JS**，零外部依赖，总计不到 200 行代码。
 
+## 后续新增功能
+
+在初始版本上线后，网站陆续增加了以下功能模块。
+
+### Bilibili 社交图标
+
+在首页 GitHub 图标旁添加了 Bilibili 跳转入口。PaperMod 的 `socialIcons` 配置不内置 Bilibili，但可以通过自定义 SVG 扩展：
+
+```yaml
+# hugo.yaml
+params:
+  socialIcons:
+    - name: github
+      url: "https://github.com/Axon-Luo"
+    - name: bilibili
+      url: "https://space.bilibili.com/438193192"
+```
+
+PaperMod 渲染社交图标时，如果找不到内置图标，会自动去 `assets/` 目录下查找同名 SVG 文件。只需要放置 `assets/bilibili.svg`，无需改动主题模板：
+
+```svg
+<!-- assets/bilibili.svg -->
+<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M18.5 4.5H5.5C4.12 4.5 3 5.62 3 7v8c0 1.38 1.12 2.5 2.5 2.5h13c1.38 0 ..." fill="currentColor"/>
+  <!-- 电视机机身 + 两根天线 + 播放按钮的组合造型 -->
+</svg>
+```
+
+### 网站图标（Favicon）
+
+在 `static/favicon.png` 放置图标文件，并在 `extend_head.html` 中添加显式引用：
+
+```html
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/favicon.png">
+```
+
+第二行确保 iOS 添加到主屏幕时也使用自定义图标。虽然浏览器会自动寻找 `/favicon.ico`，但显式声明能保证所有平台一致识别。
+
+### 文章悬浮目录栏
+
+这是为长篇文章设计的**左侧悬浮 TOC 导航**，纯 JS 动态生成，不依赖 Hugo 模板渲染。
+
+**实现原理：**
+
+```js
+function buildArticleTOC() {
+  // 1. 仅在文章页生效（检查 .post-content 存在）
+  const content = document.querySelector('.post-content');
+  if (!content) return;
+
+  // 2. 提取所有 h2、h3 标题
+  const headings = content.querySelectorAll('h2, h3');
+  if (headings.length < 2) return;
+
+  // 3. 为每个标题生成锚点 id 和导航链接
+  headings.forEach((h, i) => {
+    if (!h.id) h.id = 'section-' + i;
+    const a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.textContent = h.textContent;
+    a.className = h.tagName === 'H3' ? 'toc-h3' : '';
+    toc.appendChild(a);
+  });
+
+  // 4. IntersectionObserver 追踪当前阅读位置
+  const observer = new IntersectionObserver(entries => {
+    // 找到第一个进入视口的标题
+    // 高亮对应的导航项
+  }, { rootMargin: '-80px 0px -60% 0px', threshold: 0 });
+}
+```
+
+**CSS 定位策略：**
+
+```css
+#article-toc {
+  position: fixed;
+  /* 左侧定位：在内容区域之外，随视口宽度自动调整 */
+  left: max(16px, calc((100vw - 820px) / 2 - 220px));
+  top: 120px;
+  /* 默认隐藏，JS 构建完成后添加 .visible 类显示 */
+  opacity: 0;
+  transform: translateX(-12px);
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+}
+```
+
+悬浮栏默认隐藏（`opacity: 0; pointer-events: none`），在 JS 构建完链接后才显示，避免"先出现空壳再填充"的闪烁。
+
+**移动端适配：** 在小屏幕上（≤768px），TOC 从左侧悬浮改为底部弹出面板——因为手机屏幕宽度不足以在侧边再放置一个导航栏。
+
+**当前章节高亮：** 激活项通过 `border-right` 右侧指示条 + 加粗 + 背景色区分，hover 时有色块浮现。
+
+### 滚动触发的快捷导航
+
+这是顶部导航的"替身"——当用户向下滚动、页面顶部的导航栏移出屏幕后，右侧会出现一个**固定悬浮的快捷导航栏**：
+
+```js
+function buildSideNav() {
+  // 1. 从顶部导航复制所有菜单项
+  const menuLinks = document.querySelectorAll('#menu a');
+  menuLinks.forEach(link => {
+    const a = document.createElement('a');
+    a.href = link.href;
+    a.textContent = link.textContent.trim(); // 保留完整文字
+    sideNav.appendChild(a);
+  });
+
+  // 2. 监听滚动：header 底部滚出视口 → 显示侧边导航
+  const onScroll = () => {
+    const headerBottom = header.getBoundingClientRect().bottom;
+    const shouldShow = headerBottom < 0;
+    sideNav.classList.toggle('visible', shouldShow);
+  };
+}
+```
+
+**设计要点：**
+
+- 与顶部导航**互斥显示**：两者不可同时出现（通过 `header.getBoundingClientRect().bottom < 0` 判断）
+- 统一大小的圆角矩形按钮（`min-width: 56px; height: 36px; border-radius: 10px`）
+- 当前页面高亮（`aria-current="page"`）
+- hover 时向左微移（`translateX(-2px)`），暗示"点击跳转"的交互语义
+- 移动端缩小尺寸适配
+
+### 更新后的项目结构
+
+```text
+luostratus.cn/
+├── hugo.yaml
+├── assets/
+│   └── bilibili.svg             # 自定义社交图标
+├── static/
+│   └── favicon.png              # 网站图标
+├── content/
+│   ├── about.md
+│   ├── posts/                   # 博客文章
+│   └── gallery/
+│       ├── _index.md
+│       └── *.png / *.jpg        # 35+ 张图片
+└── layouts/
+    ├── gallery/
+    │   ├── list.html             # 画廊：排序 + 瀑布流
+    │   └── single.html
+    └── partials/
+        ├── extend_head.html      # 全站 CSS + 动效 + TOC样式 + 侧边导航样式
+        └── extend_footer.html    # 返回顶部 + 导航高亮 + TOC逻辑 + 侧边导航逻辑
+```
+
 ## 部署管线
 
 ```text
@@ -301,11 +452,13 @@ document.querySelectorAll('#menu a').forEach(link => {
 
 ## 可优化方向
 
-1. **图片压缩**：34 张原图约 40MB，可用 Hugo Image Processing 自动生成 WebP 缩略图
+1. **图片压缩**：35+ 张原图约 40MB+，可用 Hugo Image Processing 自动生成 WebP 缩略图
 2. **画廊分页**：图片增多后可加无限滚动
 3. **评论系统**：Giscus（基于 GitHub Discussions，免费无追踪）
 4. **CI 版本锁定**：在 Cloudflare 环境变量中设置 `HUGO_VERSION`
 5. **Open Graph 优化**：为画廊页添加社交分享预览图
+6. **TOC 持久化状态**：记录折叠/展开偏好到 localStorage
+7. **画廊搜索/筛选**：按日期范围或标签筛选图片
 
 ---
 
