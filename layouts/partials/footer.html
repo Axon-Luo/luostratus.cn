@@ -22,7 +22,7 @@
 
     <br>
     <span style="font-size: 0.78rem; color: var(--secondary);">
-        Last Updated: {{ now.Format "2006-01-02 15:04:05" }}
+        Last Updated: {{ (now.Add 28800000000000).Format "2006-01-02 15:04:05" }} (UTC+8)
     </span>
 </footer>
 {{- end }}
