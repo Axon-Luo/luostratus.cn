@@ -197,8 +197,9 @@ body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea
   transform: translateX(-12px);
   pointer-events: none;
   transition: opacity 0.3s ease, transform 0.3s ease;
-  scrollbar-width: thin;
+  scrollbar-width: none;
 }
+#article-toc::-webkit-scrollbar { display: none; }
 #article-toc.visible {
   opacity: 1;
   transform: translateX(0);
