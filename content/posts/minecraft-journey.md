@@ -1,12 +1,12 @@
 ---
 date: '2026-07-25T10:43:22+08:00'
 draft: false
-title: 我的 Minecraft 旅程：20 个版本的方块世界
+title: 我的 Minecraft 旅程：23 个版本的方块世界
 tags:
   - Minecraft
   - 游戏
   - 模组
-description: 盘点我目前在玩的 20 个 Minecraft 版本与整合包，深入介绍各版本安装的独特模组，记录我的方块世界探索轨迹。
+description: 盘点我目前在玩的 23 个 Minecraft 版本与整合包，深入介绍各版本安装的独特模组，记录我的方块世界探索轨迹。
 ---
 
 ## 前言
