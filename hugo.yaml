@@ -33,7 +33,8 @@ params:
   # 首页信息
   homeInfoParams:
     Title: 你好，我是洛云
-    Content: 欢迎来到我的个人站点。
+    Content: |
+      欢迎来到我的个人站点
 
       暂未适配移动端，请使用电脑浏览本站
 
