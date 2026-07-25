@@ -4,6 +4,9 @@
 <!-- 文章导航（仅文章页显示） -->
 <nav id="article-toc" aria-label="文章目录"></nav>
 
+<!-- 侧边快捷导航（滚动后出现，替代顶部导航） -->
+<nav id="side-nav" aria-label="快捷导航"></nav>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('back-to-top');
@@ -34,6 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* === 文章导航栏 === */
   buildArticleTOC();
+
+  /* === 侧边快捷导航 === */
+  buildSideNav();
 });
 </script>
 
@@ -104,5 +110,45 @@ function buildArticleTOC() {
 
   // 显示导航
   toc.classList.add('visible');
+}
+
+function buildSideNav() {
+  // 只在文章页构建
+  const header = document.querySelector('.header, header, #header');
+  if (!header) return;
+
+  const sideNav = document.getElementById('side-nav');
+  if (!sideNav) return;
+
+  // 从顶部导航复制菜单项
+  const menuLinks = document.querySelectorAll('#menu a, .nav a, .menu a');
+  if (menuLinks.length === 0) return;
+
+  // 菜单名缩写映射
+  const shortNames = { '文章': '文', '画廊': '画', '归档': '档', '标签': '签', '搜索': '搜', '关于': '我' };
+
+  menuLinks.forEach(link => {
+    const a = document.createElement('a');
+    a.href = link.href;
+    const text = link.textContent.trim();
+    a.textContent = shortNames[text] || text.charAt(0);
+    a.title = text;
+    if (link.getAttribute('aria-current') === 'page' || link.classList.contains('active')) {
+      a.setAttribute('aria-current', 'page');
+    }
+    sideNav.appendChild(a);
+  });
+
+  // 滚动时切换：顶部导航不可见 → 显示侧边导航
+  let sideVisible = false;
+  const onScroll = () => {
+    const headerBottom = header.getBoundingClientRect().bottom;
+    const shouldShow = headerBottom < 0;
+    if (shouldShow !== sideVisible) {
+      sideVisible = shouldShow;
+      sideNav.classList.toggle('visible', shouldShow);
+    }
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
 }
 </script>

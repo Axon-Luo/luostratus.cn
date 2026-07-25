@@ -253,6 +253,59 @@ body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea
   }
   #article-toc.visible { transform: translate(-50%, 0); }
 }
+
+/* === 侧边快捷导航（顶部导航不可见时出现） === */
+#side-nav {
+  position: fixed;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 89;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+#side-nav.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+#side-nav a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--entry);
+  border: 1px solid var(--border);
+  color: var(--secondary);
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-decoration: none !important;
+  background-image: none !important;
+  background-size: unset !important;
+  transition: color 0.2s, background 0.2s, transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+#side-nav a:hover {
+  color: var(--primary);
+  background: var(--entry);
+  transform: scale(1.1);
+  box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+}
+#side-nav a[aria-current="page"] {
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  border-color: var(--primary);
+  font-weight: 600;
+}
+@media (max-width: 768px) {
+  #side-nav { right: 8px; gap: 4px; }
+  #side-nav a { width: 34px; height: 34px; font-size: 0.68rem; }
+}
 </style>
 
 <script>
