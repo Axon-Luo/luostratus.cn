@@ -276,14 +276,16 @@ body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  min-width: 56px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
   background: var(--entry);
   border: 1px solid var(--border);
   color: var(--secondary);
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 500;
+  white-space: nowrap;
   text-decoration: none !important;
   background-image: none !important;
   background-size: unset !important;
@@ -293,7 +295,7 @@ body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea
 #side-nav a:hover {
   color: var(--primary);
   background: var(--entry);
-  transform: scale(1.1);
+  transform: translateX(-2px);
   box-shadow: 0 3px 12px rgba(0,0,0,0.12);
 }
 #side-nav a[aria-current="page"] {
@@ -304,7 +306,7 @@ body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea
 }
 @media (max-width: 768px) {
   #side-nav { right: 8px; gap: 4px; }
-  #side-nav a { width: 34px; height: 34px; font-size: 0.68rem; }
+  #side-nav a { min-width: 48px; height: 32px; padding: 0 10px; font-size: 0.75rem; }
 }
 </style>
 

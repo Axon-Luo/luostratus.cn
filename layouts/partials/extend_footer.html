@@ -124,15 +124,11 @@ function buildSideNav() {
   const menuLinks = document.querySelectorAll('#menu a, .nav a, .menu a');
   if (menuLinks.length === 0) return;
 
-  // 菜单名缩写映射
-  const shortNames = { '文章': '文', '画廊': '画', '归档': '档', '标签': '签', '搜索': '搜', '关于': '我' };
-
   menuLinks.forEach(link => {
     const a = document.createElement('a');
     a.href = link.href;
     const text = link.textContent.trim();
-    a.textContent = shortNames[text] || text.charAt(0);
-    a.title = text;
+    a.textContent = text;
     if (link.getAttribute('aria-current') === 'page' || link.classList.contains('active')) {
       a.setAttribute('aria-current', 'page');
     }
