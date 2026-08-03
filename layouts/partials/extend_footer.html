@@ -54,7 +54,7 @@ function buildArticleTOC() {
   // 创建导航容器
   const toc = document.getElementById('article-toc');
   if (!toc) return;
-  toc.innerHTML = '<div class="toc-title">📑 目录 <button type="button" class="toc-toggle" aria-label="收起目录">收起</button></div><div class="toc-links"></div>';
+  toc.innerHTML = '<div class="toc-title">目录 <button type="button" class="toc-toggle" aria-label="收起目录">收起</button></div><div class="toc-links"></div>';
   const tocLinks = toc.querySelector('.toc-links');
 
   // 给每个标题添加 id
