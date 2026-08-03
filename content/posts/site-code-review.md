@@ -6,46 +6,71 @@ tags:
   - 技术
   - Hugo
   - 前端
-description: 从零搭建 luostratus.cn 的完整技术复盘，涵盖项目架构、画廊自定义排序、CSS 瀑布流与全站交互效果。
+  - 部署
+  - 小功能
+description: 从零搭建 luostratus.cn 的完整技术复盘，涵盖项目架构、画廊压缩与排序、46 个小功能、搜索索引、自定义目录与 Cloudflare Workers 部署。
 ---
 
 ## 项目概览
 
-这个站点采用 **Hugo 静态生成 + PaperMod 主题 + Cloudflare Pages 免费部署** 的技术栈，从域名注册到上线只用了一个下午。本文逐层拆解架构设计和自定义魔改。
+这个站点采用 **Hugo 静态生成 + PaperMod 主题 + Cloudflare Workers 静态托管** 的技术栈。从最初一个下午完成上线，到现在已经演变成包含 **5 篇文章、35 张画廊照片、46 个小功能** 的个人站。本文逐层拆解架构设计和一路踩过的坑。
 
 ### 技术选型
 
 | 层级 | 技术 | 理由 |
 |------|------|------|
-| 静态生成 | Hugo v0.164 | Go 实现，构建 200ms，单二进制 |
+| 静态生成 | Hugo v0.164 | Go 实现，构建约 200ms，单二进制 |
 | 主题 | PaperMod | 响应式、内置搜索/暗色模式/SEO |
-| 托管 | Cloudflare Pages | 免费、全球 CDN、push 即部署 |
+| 托管 | Cloudflare Workers 静态托管 | 免费、全球 CDN、push 即部署 |
+| 部署配置 | wrangler.jsonc | `assets.directory` 指向 `public` 构建产物 |
 | 域名 | luostratus.cn | 腾讯云注册 → Cloudflare DNS 接管 |
 | 代码托管 | GitHub | 免备案最优解 |
 
-`.cn` 域名托管在境外服务器无需 ICP 备案，这是选择 Cloudflare Pages 的关键原因。
+`.cn` 域名托管在境外服务无需 ICP 备案，这是选择 Cloudflare 的关键原因。
+
+### 当前功能地图
+
+| 模块 | 内容 | 实现要点 |
+|------|------|---------|
+| 首页 | 最近 2 篇文章 | `layouts/index.html` + `where` + `first` |
+| 文章 | 5 篇博客 | Markdown + Hugo 渲染 |
+| 归档 | 只含文章 | `layouts/archives.html` 按 `Section "posts"` 过滤 |
+| 画廊 | 35 张压缩照片 | Branch Bundle + 文件名日期解析 + 瀑布流 |
+| 小功能 | 46 个工具/游戏 | 独立 partial，每页一个功能 |
+| 搜索 | 文章 + 小功能 | 自定义 `index.json` + Fuse.js |
+| 阅读辅助 | 悬浮目录、回到顶部 | 原生 JS + CSS 过渡 |
 
 ## 项目结构
 
 ```text
 luostratus.cn/
-├── hugo.yaml                  # 站点配置
-├── archetypes/
-│   ├── default.md              # 普通文章模板
-│   └── gallery.md              # 画廊模板
+├── hugo.yaml                  # 站点配置、菜单、输出格式
+├── wrangler.jsonc             # Workers 静态资源配置（输出 public）
 ├── content/
 │   ├── about.md
-│   ├── posts/                  # 博客文章
-│   └── gallery/
-│       ├── _index.md           # 画廊主页（branch bundle）
-│       └── *.png / *.jpg / *.webp  # 图片资源（bundle 成员）
-└── layouts/
-    ├── gallery/
-    │   ├── list.html            # ★ 画廊核心：排序 + 瀑布流
-    │   └── single.html          # 画廊详情
-    └── partials/
-        ├── extend_head.html     # 全站 CSS + 动效
-        └── extend_footer.html   # 返回顶部 + 导航 JS
+│   ├── search.md              # 搜索页
+│   ├── archives.md            # 归档页
+│   ├── posts/                 # 博客文章
+│   ├── gallery/
+│   │   ├── _index.md          # 画廊主页（branch bundle）
+│   │   └── 图片资源            # png / jpg / webp，均已压缩
+│   └── tools/                 # 46 个小功能页
+├── layouts/
+│   ├── index.html             # 首页：展示最近 2 篇文章
+│   ├── archives.html          # 归档：只展示 posts
+│   ├── index.json             # 搜索索引（文章 + 小功能）
+│   ├── rss.xml                # RSS（过滤小功能）
+│   ├── gallery/               # 画廊排序 + 瀑布流
+│   ├── tools/                 # 小功能列表与详情
+│   └── partials/
+│       ├── extend_head.html   # 全站 CSS + 动效 + 目录样式
+│       ├── extend_footer.html # TOC、侧边导航、脚本
+│       ├── footer.html        # 底部 + 回到顶部（主题版）
+│       └── tools/             # 46 个工具的 HTML/CSS/JS
+├── assets/
+│   └── bilibili.svg           # 自定义社交图标
+└── static/
+    └── favicon.png            # 网站图标
 ```
 
 PaperMod 提供 `extend_head` 和 `extend_footer` 扩展点，覆盖这两个 partial 即可注入自定义样式与脚本，**不修改主题一行代码**，升级主题零冲突。
@@ -57,11 +82,9 @@ baseURL: https://luostratus.cn/
 locale: zh-cn
 theme: PaperMod
 
-# 分页 —— 注意版本兼容性
 pagination:
   pagerSize: 10
 
-# 代码高亮
 markup:
   highlight:
     style: catppuccin-macchiato
@@ -81,191 +104,322 @@ params:
   ShowCodeCopyButtons: true
   ShowPostNavLinks: true
   dateFormat: "2006-01-02"     # Go 诞生日 = YYYY-MM-DD
+
+menu:
+  main:
+    - name: 文章
+      url: /posts/
+      weight: 1
+    - name: 画廊
+      url: /gallery/
+      weight: 2
+    - name: 归档
+      url: /archives/
+      weight: 3
+    - name: 标签
+      url: /tags/
+      weight: 4
+    - name: 小功能
+      url: /tools/
+      weight: 5
+    - name: 搜索
+      url: /search/
+      weight: 6
+    - name: 关于
+      url: /about/
+      weight: 7
 ```
 
-### 部署踩坑
+## 部署管线与踩坑
 
-Cloudflare Pages 的 Hugo 版本（`v0.147.7`）比本地（`v0.164.0`）更旧。起初 `paginate: 10` 直接导致构建报错：
+```text
+本地编写 → git push → GitHub
+                         ↓
+      Cloudflare Workers Builds 自动触发
+                         ↓
+      Hugo build（输出到 public）
+                         ↓
+      wrangler.jsonc assets.directory = public
+                         ↓
+      luostratus.cn 可访问
+```
+
+全链路零成本：Hugo 开源、GitHub 免费、Cloudflare 免费额度足够个人站使用。
+
+### 踩坑 1：分页配置改名
+
+Cloudflare 构建环境的 Hugo 版本（`v0.147.7`）比本地（`v0.164.0`）更旧。起初 `paginate: 10` 直接导致构建报错：
 
 ```
 ERROR deprecated: site config key paginate was deprecated in Hugo v0.128.0
   and subsequently removed. Use pagination.pagerSize instead.
 ```
 
-改为 `pagination.pagerSize` 后解决。**CI 环境与本地版本不一致** 是静态站点部署中最常见的坑，后续可在 Cloudflare 环境变量中锁定 `HUGO_VERSION`。
+改为 `pagination.pagerSize` 后解决。**CI 环境与本地版本不一致** 是静态站点部署中最常见的坑。
+
+### 踩坑 2：cond 模板函数
+
+Cloudflare 的 Hugo `v0.147.7` 不支持 `cond` 模板函数，之前首页“只显示两篇文章”的尝试就因此崩溃。最终改用 `where` + `first`：
+
+```go
+{{- $pages := where site.RegularPages "Section" "posts" }}
+{{- $recentPosts := first 2 $pages }}
+```
+
+**兼容性结论：旧版 Hugo 用 `where`/`first`/`if` 代替 `cond`。**
+
+### 踩坑 3：静态资源目录配错
+
+仓库接入 Workers 后，自动生成过一份 `assets.directory: "layouts"` 的配置，导致线上把 Hugo 模板当网页直接返回，页面全是 `{{- define "main" }}` 这类乱码。修复方式是把 `wrangler.jsonc` 改为指向构建产物：
+
+```json
+{
+  "assets": {
+    "directory": "public"
+  }
+}
+```
+
+这个坑的教训是：**部署配置必须指向构建输出目录，而不是源码目录。**
+
+## 首页与归档
+
+### 首页：最近两篇文章
+
+默认 PaperMod 首页依赖 `mainSections`，但本站没有设置该参数，因此直接用一个自定义首页模板控制内容：
+
+```go
+{{- $pages := where site.RegularPages "Section" "posts" }}
+{{- $pages = where $pages "Params.hiddenInHomeList" "!=" "true" }}
+{{- $recentPosts := first 2 $pages }}
+
+{{- range $recentPosts }}
+<article class="post-entry">
+  ...
+</article>
+{{- end }}
+```
+
+这样首页始终显示按发布日期排序的最近 2 篇文章，画廊和小功能不会混进来。
+
+### 归档：只保留文章
+
+归档页同样不依赖主题默认的 `mainSections`，而是显式过滤：
+
+```go
+{{- $pages := where site.RegularPages "Section" "posts" }}
+```
+
+之前归档曾因为把照片和小功能也列进来而反复调整，最终用这一行过滤彻底解决。
 
 ## 画廊：核心自定义模块
-
-画廊是这个站点最复杂的定制部分——单页展示、零子页面、CSS 瀑布流、智能排序。
 
 ### Branch Bundle 设计
 
 ```text
 content/gallery/
 ├── _index.md          ← Branch Bundle，可通过 .Resources 访问所有文件
-├── 00-校色卡.png       ← 固定首位
+├── 00-校色卡.png       ← 固定首位，不参与压缩
 ├── 2026-07-01_15.23.21.webp
 ├── IMG_20250712_212757.jpg
 └── ...
 ```
 
-Hugo 的 Branch Bundle 允许 `_index.md` 通过 `.Resources.ByType "image"` 直接获取同目录下所有图片。不需要子文件夹、不要二级页面，用户进入即见所有图片。
+Hugo 的 Branch Bundle 允许 `_index.md` 通过 `.Resources.ByType "image"` 直接获取同目录下所有图片，不需要子文件夹，用户进入即见所有照片。
 
 ### 文件名日期解析
 
-35+ 张图片来源各异——截图、手机照片、无人机、微信——命名规范完全不同。模板中用 **两层正则** 逐级匹配：
+35 张图片来源各异——截图、手机照片、无人机、微信——命名规范完全不同。模板中用 **两层正则** 逐级匹配：
 
 ```go
-{{ $dateStr := "—" }}
-
-// 第一层：匹配 YYYY-MM-DD 格式（截图类文件）
 {{ $m1 := findRE `^(\d{4}-\d{2}-\d{2})` $filename 1 }}
-
-// 第二层：匹配 20xxMMDD 格式
-//        关键是用 "20" 开头限定，避开 Unix 时间戳
 {{ $m2 := findRE `(20\d{6})` $filename 1 }}
 ```
 
-**各文件名处理结果：**
+第二层用 `20\d{6}` 而非 `\d{8}` 是关键：`mmexport1682250305721_20230511_...` 中第一个 8 位数字是时间戳前缀，只有用 `20` 限定才能命中真正的日期。
 
-| 文件名 | 匹配层 | 提取日期 |
-|--------|--------|---------|
-| `2026-07-01_15.23.21.webp` | 第一层 `^\d{4}-\d{2}-\d{2}` | `2026-07-01` |
-| `IMG_20250712_212757.jpg` | 第二层 `20\d{6}` | `2025-07-12` |
-| `DJI_20241111063817...jpg` | 第二层 `20\d{6}` | `2024-11-11` |
-| `mmexport..._20230511_*.jpg` | 第二层 `20\d{6}` | `2023-05-11` |
-| `1684758526619.webp` | 无匹配 | `—` |
+### 排序与瀑布流
 
-第二层用 `20\d{6}` 而非 `\d{8}` 是关键：`mmexport1682250305721_20230511_...` 中第一个 8 位数字是时间戳的前缀 `16822503`，只有用 `20` 限定前缀才能命中真正的日期 `20230511`。
+有日期图片按日期倒序，无日期图片随机穿插，固定校色卡永远在最前。排序状态用 `.Scratch` 维护，因为 **Hugo 模板无法在 range 循环内修改外部变量**。
 
-### 排序算法
-
-```text
-输入：35+ 张图片（含日期的 N 张 + 无日期的 M 张 + 1 张固定图）
-
-1. 分离
-   ├── $pinned ← .Resources.GetMatch "00-校色卡*"
-   ├── $dated  ← 有日期的图片（格式化为 {r: resource, d: "2026-07-01"}）
-   └── $undated ← 无日期的图片
-
-2. 排序
-   ├── $dated = sort $dated "d" "desc"     // 新 → 旧
-   └── $undated = shuffle $undated          // 随机
-
-3. 穿插间隔
-   ├── $gap = len($dated) / (len($undated) + 1)
-   └── 每隔 $gap 张已排序图片，插入 1 张无日期图片
-
-4. 渲染
-   ├── 首先渲染 $pinned（固定首位，不参与排序）
-   └── 循环渲染排序后的穿插序列
-```
-
-Hugo 模板的一个硬限制是 **无法在 range 循环内修改外部变量**。为此使用了 `.Scratch` 来维护计数状态：
-
-```go
-{{ $.Scratch.Set "di" 0 }}           // 初始化排序计数
-{{ $.Scratch.Set "ui" 0 }}           // 初始化无日期计数
-{{ $.Scratch.Set "slot" $gap }}      // 下一次插入槽位
-
-{{ range $idx := seq (add $dt $ut) }}
-  {{ $di := $.Scratch.Get "di" }}    // 读取当前状态
-  {{ $ui := $.Scratch.Get "ui" }}
-  ...
-  {{ $.Scratch.Set "di" (add $di 1) }} // 更新状态（仅在 Scratch 作用域内）
-{{ end }}
-```
-
-`.Scratch` 是 Hugo 模板中实现可变状态的唯一标准模式——虽然写法不够优雅，但能在不引入自定义 shortcode 或 data file 的前提下完成复杂逻辑。
-
-### CSS 瀑布流
+瀑布流使用 CSS 多列布局：
 
 ```css
 .gallery-masonry {
-  column-count: 2;           /* CSS3 多列布局，天然瀑布流 */
+  column-count: 2;
   column-gap: 20px;
 }
 .gallery-item {
-  break-inside: avoid;       /* 防止图片在列间断裂 */
-}
-.gallery-item img {
-  width: 100%;
-  height: auto;              /* 保持原始宽高比，不裁切 */
-  border-radius: 8px;
-  cursor: zoom-in;
+  break-inside: avoid;
 }
 ```
 
-选择 `column-count` 而非 Grid/Flexbox 的原因：
+选择 `column-count` 而非 Grid/Flexbox：天然错位、零依赖、移动端一行改成 1 列。
 
-- **天然错位**：不需要计算每张图的高度，浏览器自动排列
-- **零依赖**：无需 Masonry.js（~9KB gzipped）
-- **移动端自适应**：`column-count: 1` 一行搞定
+### 图片压缩
 
-### 点击放大：零 DOM 方案
+画廊最初有大量 1MB-11MB 的照片，加载很慢。后来做了一轮批量压缩：
+
+| 处理 | 规则 |
+|------|------|
+| PNG → WebP | 透明通道保留，最长边 2560px，质量 82 |
+| 大 JPEG | 重压缩，最长边 2560px，质量 85 |
+| 已达标图片 | 保持原样，不做无谓降质 |
+| 校色卡 | 完全不动 |
+
+现在除校色卡外所有照片都 ≤1MB，最大约 858KB，画廊加载速度明显提升。
+
+## 小功能：46 个游戏与工具
+
+小功能是网站内容最丰富的模块，现有 **25 款游戏 + 21 个实用工具**。
+
+### 架构
+
+每个工具都由三部分组成：
+
+```text
+content/tools/<slug>.md              # 页面 frontmatter（title + description）
+layouts/partials/tools/<slug>.html   # 完整 HTML + CSS + JS
+layouts/tools/list.html              # 卡片入口（games / utils 数组）
+```
+
+工具页详情模板只做一件事——按文件名加载对应 partial：
+
+```go
+{{ $tool := .File.BaseFileName }}
+{{ partial (printf "tools/%s.html" $tool) . }}
+```
+
+所以新增一个工具 = 加一个 Markdown + 加一个 partial + 在列表里加一张卡片，互不干扰。
+
+### 转盘抽奖：从“假随机”到真随机
+
+转盘抽奖曾有个经典 bug：每次只随机“转多少整圈”，停止角度的余数没变，所以永远回到同一块。参考了 GitHub 上几个开源转盘实现后，改成 **先按权重选中结果，再反推停止角度**：
 
 ```js
-// 直接 toggle class，不需要额外的 overlay 元素
-onclick="this.classList.toggle('zoomed')"
-```
-
-```css
-/* 放大状态：fixed 定位 + 超大阴影模拟遮罩 */
-.gallery-item img.zoomed {
-  position: fixed;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  max-width: 92vw; max-height: 92vh;
-  box-shadow: 0 0 0 2000px rgba(0,0,0,0.8);  /* 遮罩 */
-  z-index: 1000;
-  cursor: zoom-out;
-}
-```
-
-这个方案的妙处在于：不需要创建 overlay div、不需要管理 body 滚动锁定、不需要 addEventListener，**纯粹的声明式交互**。一个 class 切换完成全部效果。
-
-## 全站交互效果
-
-### 导航菜单
-
-导航是交互设计最密集的区域：
-
-```css
-/* 类按钮化的链接 */
-#menu a {
-  padding: 6px 14px;
-  border-radius: 8px;
-  transition: background 0.25s, color 0.25s, transform 0.2s;
-}
-
-/* hover：半透明底色浮现 */
-#menu a:hover {
-  background: color-mix(in srgb, var(--primary) 8%, transparent);
-  transform: translateY(-1px);
-}
-
-/* 当前页：底部指示横条 */
-#menu a[aria-current="page"]::after {
-  content: '';
-  width: 18px; height: 3px;
-  border-radius: 2px;
-  background: var(--primary);
-  transition: width 0.3s;       /* hover 时向外伸展 */
-}
-```
-
-当前页标记通过 JS 动态注入：
-
-```js
-// 对比 URL 路径，标记匹配的导航项
-const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
-document.querySelectorAll('#menu a').forEach(link => {
-  const linkPath = new URL(link.href).pathname.replace(/\/$/, '') || '/';
-  if (linkPath === currentPath) {
-    link.setAttribute('aria-current', 'page');
+function pickIndex() {
+  const r = Math.random() * totalWeight;
+  let acc = 0;
+  for (let i = 0; i < options.length; i++) {
+    acc += options[i].weight;
+    if (r < acc) return i;
   }
-});
+  return options.length - 1;
+}
 ```
+
+选项编辑器也做成了可视化：每行有颜色标识、名称输入、权重输入、权重条、百分比和排序/删除按钮，权重越大扇形越大、越容易抽中。
+
+### 其他代表工具
+
+| 类型 | 工具 | 技术点 |
+|------|------|--------|
+| 游戏 | 五子棋、井字棋 | 棋盘状态 + AI 评分/极小化极大 |
+| 游戏 | 华容道、推箱子 | Canvas 拖拽 / 网格状态机 |
+| 游戏 | 连连看、三消 | 折线寻路 / 匹配消除算法 |
+| 工具 | 密码生成器 | `crypto.getRandomValues` + 强度评分 |
+| 工具 | JSON 格式化 | 格式化/压缩/校验一体 |
+| 工具 | 节拍器、白噪音 | Web Audio 合成 |
+| 工具 | 番茄钟、秒表 | `setInterval` + 声音提醒 |
+
+## 搜索：文章 + 小功能
+
+### 索引问题
+
+PaperMod 默认的 `index.json` 只遍历 `site.RegularPages`，而小功能页此前被 `build.list: never` 排除，所以一个都搜不到。
+
+### 自定义搜索索引
+
+本站覆盖了 `layouts/index.json`，把小功能也并入索引，并把每个工具的描述写进 `content` 和 `summary`：
+
+```go
+{{- $tools := where site.AllPages "Section" "tools" }}
+{{- $pages := union site.RegularPages $tools }}
+{{- range $pages }}
+  {{- if and (eq .Kind "page") (not .Params.searchHidden) }}
+  {{- $content := .Plain }}
+  {{- if .Description }}{{ $content = printf "%s %s" .Description $content }}{{ end }}
+  {{- $.Scratch.Add "index" (dict "title" .Title "content" $content "permalink" .Permalink "summary" (.Summary | default .Description)) }}
+  {{- end }}
+{{- end }}
+```
+
+同时给全部 46 个工具页补充了 `description`，现在搜索“贪吃蛇”“扫雷”“密码”都能直接命中对应工具。
+
+前端搜索使用 PaperMod 内置的 **Fuse.js**，匹配字段为 `title / permalink / summary / content`：
+
+```js
+const defaultFuseOptions = {
+  distance: 100,
+  threshold: 0.4,
+  keys: ['title', 'permalink', 'summary', 'content']
+};
+```
+
+### 保持 RSS 纯净
+
+小功能进入搜索索引后，RSS 也会跟着收录。为了避免 46 个工具页灌进订阅源，覆盖了 `layouts/rss.xml`：
+
+```go
+{{- $pages = where $pages "Section" "ne" "tools" -}}
+```
+
+现在搜索能搜到小功能，但 RSS 仍然只包含文章和关于。
+
+## 阅读体验
+
+### 文章悬浮目录
+
+长文章左侧有一个纯 JS 动态生成的悬浮目录，包含：
+
+- `IntersectionObserver` 追踪当前章节并高亮
+- 点击链接平滑滚动到对应标题
+- “收起 / 展开”按钮，带高度 + 透明度过渡
+- 收起状态写入 `localStorage`，下次打开仍保持
+- 标题在目录滚动时始终 sticky 在顶部
+
+```css
+#article-toc .toc-title {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--entry);
+  border-bottom: 1px solid var(--border);
+}
+```
+
+移动端上，目录会从左侧悬浮改为底部弹出面板。
+
+### 侧边快捷导航
+
+当顶部导航滚出视口后，右侧会出现一组悬浮快捷导航按钮，与顶部导航互斥显示：
+
+```js
+const shouldShow = header.getBoundingClientRect().bottom < 0;
+sideNav.classList.toggle('visible', shouldShow);
+```
+
+### 回到顶部
+
+站点早期因为同一功能写了两份，出现两个回到顶部图标。后来删除了自定义的 `#back-to-top`，保留 PaperMod 主题的 `#top-link`，并给它补上了淡入 + 上滑/下滑过渡：
+
+```css
+#top-link {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(14px);
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s;
+  pointer-events: none;
+}
+#top-link:not(.hidden) {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+```
+
+这里有个 CSS 优先级陷阱：全局链接下划线动画的 `transition` 会把 `#top-link` 的过渡覆盖掉，必须用 ID 选择器才压得住。
 
 ### 交互效果一览
 
@@ -275,24 +429,18 @@ document.querySelectorAll('#menu a').forEach(link => {
 | 图片懒加载淡入 | `opacity: 0→1`，`onload` 触发 |
 | 链接下划线滑入 | `background-size: 0%→100%` |
 | 文章卡片抬起 | `translateY(-3px)` + 阴影 |
-| 返回顶部按钮 | `IntersectionObserver` + `scrollTo({behavior:'smooth'})` |
-| 暗色模式过渡 | 全元素 `transition: background-color/color/border-color 0.3s` |
+| 目录收起过渡 | `max-height` + `opacity` + `transform` |
+| 回到顶部过渡 | `opacity` + `translateY` + 延迟 visibility |
+| 暗色模式过渡 | 全元素 `transition` 0.3s |
 | 按钮点击反馈 | `:active { transform: scale(0.96) }` |
-| 代码块 hover | 阴影浮现 |
-| 选中文字 | `::selection` 自定义配色 |
 
-所有效果均为 **纯 CSS + 少量原生 JS**，零外部依赖，总计不到 200 行代码。
-
-## 后续新增功能
-
-在初始版本上线后，网站陆续增加了以下功能模块。
+## 其他小配置
 
 ### Bilibili 社交图标
 
-在首页 GitHub 图标旁添加了 Bilibili 跳转入口。PaperMod 的 `socialIcons` 配置不内置 Bilibili，但可以通过自定义 SVG 扩展：
+PaperMod 的 `socialIcons` 不内置 Bilibili，但会去 `assets/` 目录查找同名 SVG，所以放置 `assets/bilibili.svg` 即可：
 
 ```yaml
-# hugo.yaml
 params:
   socialIcons:
     - name: github
@@ -301,164 +449,25 @@ params:
       url: "https://space.bilibili.com/438193192"
 ```
 
-PaperMod 渲染社交图标时，如果找不到内置图标，会自动去 `assets/` 目录下查找同名 SVG 文件。只需要放置 `assets/bilibili.svg`，无需改动主题模板：
+### Favicon
 
-```svg
-<!-- assets/bilibili.svg -->
-<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M18.5 4.5H5.5C4.12 4.5 3 5.62 3 7v8c0 1.38 1.12 2.5 2.5 2.5h13c1.38 0 ..." fill="currentColor"/>
-  <!-- 电视机机身 + 两根天线 + 播放按钮的组合造型 -->
-</svg>
-```
-
-### 网站图标（Favicon）
-
-在 `static/favicon.png` 放置图标文件，并在 `extend_head.html` 中添加显式引用：
+在 `static/favicon.png` 放置图标，并在 `extend_head.html` 显式声明：
 
 ```html
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/favicon.png">
 ```
 
-第二行确保 iOS 添加到主屏幕时也使用自定义图标。虽然浏览器会自动寻找 `/favicon.ico`，但显式声明能保证所有平台一致识别。
-
-### 文章悬浮目录栏
-
-这是为长篇文章设计的**左侧悬浮 TOC 导航**，纯 JS 动态生成，不依赖 Hugo 模板渲染。
-
-**实现原理：**
-
-```js
-function buildArticleTOC() {
-  // 1. 仅在文章页生效（检查 .post-content 存在）
-  const content = document.querySelector('.post-content');
-  if (!content) return;
-
-  // 2. 提取所有 h2、h3 标题
-  const headings = content.querySelectorAll('h2, h3');
-  if (headings.length < 2) return;
-
-  // 3. 为每个标题生成锚点 id 和导航链接
-  headings.forEach((h, i) => {
-    if (!h.id) h.id = 'section-' + i;
-    const a = document.createElement('a');
-    a.href = '#' + h.id;
-    a.textContent = h.textContent;
-    a.className = h.tagName === 'H3' ? 'toc-h3' : '';
-    toc.appendChild(a);
-  });
-
-  // 4. IntersectionObserver 追踪当前阅读位置
-  const observer = new IntersectionObserver(entries => {
-    // 找到第一个进入视口的标题
-    // 高亮对应的导航项
-  }, { rootMargin: '-80px 0px -60% 0px', threshold: 0 });
-}
-```
-
-**CSS 定位策略：**
-
-```css
-#article-toc {
-  position: fixed;
-  /* 左侧定位：在内容区域之外，随视口宽度自动调整 */
-  left: max(16px, calc((100vw - 820px) / 2 - 220px));
-  top: 120px;
-  /* 默认隐藏，JS 构建完成后添加 .visible 类显示 */
-  opacity: 0;
-  transform: translateX(-12px);
-  pointer-events: none;
-  transition: opacity 0.3s, transform 0.3s;
-}
-```
-
-悬浮栏默认隐藏（`opacity: 0; pointer-events: none`），在 JS 构建完链接后才显示，避免"先出现空壳再填充"的闪烁。
-
-**移动端适配：** 在小屏幕上（≤768px），TOC 从左侧悬浮改为底部弹出面板——因为手机屏幕宽度不足以在侧边再放置一个导航栏。
-
-**当前章节高亮：** 激活项通过 `border-right` 右侧指示条 + 加粗 + 背景色区分，hover 时有色块浮现。
-
-### 滚动触发的快捷导航
-
-这是顶部导航的"替身"——当用户向下滚动、页面顶部的导航栏移出屏幕后，右侧会出现一个**固定悬浮的快捷导航栏**：
-
-```js
-function buildSideNav() {
-  // 1. 从顶部导航复制所有菜单项
-  const menuLinks = document.querySelectorAll('#menu a');
-  menuLinks.forEach(link => {
-    const a = document.createElement('a');
-    a.href = link.href;
-    a.textContent = link.textContent.trim(); // 保留完整文字
-    sideNav.appendChild(a);
-  });
-
-  // 2. 监听滚动：header 底部滚出视口 → 显示侧边导航
-  const onScroll = () => {
-    const headerBottom = header.getBoundingClientRect().bottom;
-    const shouldShow = headerBottom < 0;
-    sideNav.classList.toggle('visible', shouldShow);
-  };
-}
-```
-
-**设计要点：**
-
-- 与顶部导航**互斥显示**：两者不可同时出现（通过 `header.getBoundingClientRect().bottom < 0` 判断）
-- 统一大小的圆角矩形按钮（`min-width: 56px; height: 36px; border-radius: 10px`）
-- 当前页面高亮（`aria-current="page"`）
-- hover 时向左微移（`translateX(-2px)`），暗示"点击跳转"的交互语义
-- 移动端缩小尺寸适配
-
-### 更新后的项目结构
-
-```text
-luostratus.cn/
-├── hugo.yaml
-├── assets/
-│   └── bilibili.svg             # 自定义社交图标
-├── static/
-│   └── favicon.png              # 网站图标
-├── content/
-│   ├── about.md
-│   ├── posts/                   # 博客文章
-│   └── gallery/
-│       ├── _index.md
-│       └── *.png / *.jpg / *.webp  # 35+ 张图片
-└── layouts/
-    ├── gallery/
-    │   ├── list.html             # 画廊：排序 + 瀑布流
-    │   └── single.html
-    └── partials/
-        ├── extend_head.html      # 全站 CSS + 动效 + TOC样式 + 侧边导航样式
-        └── extend_footer.html    # 返回顶部 + 导航高亮 + TOC逻辑 + 侧边导航逻辑
-```
-
-## 部署管线
-
-```text
-本地编写 → git push → GitHub
-                         ↓
-              Cloudflare Pages 自动触发
-                         ↓
-              Hugo build（~1min）
-                         ↓
-              全球 330+ 节点分发
-                         ↓
-              luostratus.cn 可访问
-```
-
-全链路零成本：Hugo 开源、GitHub 免费、Cloudflare Pages 免费（无限带宽 + 无限请求）。
+第二行确保 iOS 添加到主屏幕时也使用自定义图标。
 
 ## 可优化方向
 
-1. **图片压缩**：35+ 张原图约 40MB+，可用 Hugo Image Processing 自动生成 WebP 缩略图
-2. **画廊分页**：图片增多后可加无限滚动
-3. **评论系统**：Giscus（基于 GitHub Discussions，免费无追踪）
-4. **CI 版本锁定**：在 Cloudflare 环境变量中设置 `HUGO_VERSION`
-5. **Open Graph 优化**：为画廊页添加社交分享预览图
-6. **TOC 持久化状态**：记录折叠/展开偏好到 localStorage
-7. **画廊搜索/筛选**：按日期范围或标签筛选图片
+1. **评论系统**：接入 Giscus（基于 GitHub Discussions，免费无追踪）
+2. **画廊筛选**：按日期范围或标签筛选照片
+3. **小功能本地存档**：为游戏/工具增加 localStorage 高分榜
+4. **CI 版本锁定**：在 Cloudflare 环境变量中固定 `HUGO_VERSION`
+5. **Open Graph 优化**：为画廊、工具页添加社交分享预览图
+6. **搜索排序优化**：自定义 Fuse.js 权重，让标题命中优先于正文
 
 ---
 
