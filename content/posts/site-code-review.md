@@ -38,7 +38,7 @@ luostratus.cn/
 │   ├── posts/                  # 博客文章
 │   └── gallery/
 │       ├── _index.md           # 画廊主页（branch bundle）
-│       └── *.png / *.jpg       # 图片资源（bundle 成员）
+│       └── *.png / *.jpg / *.webp  # 图片资源（bundle 成员）
 └── layouts/
     ├── gallery/
     │   ├── list.html            # ★ 画廊核心：排序 + 瀑布流
@@ -104,7 +104,7 @@ ERROR deprecated: site config key paginate was deprecated in Hugo v0.128.0
 content/gallery/
 ├── _index.md          ← Branch Bundle，可通过 .Resources 访问所有文件
 ├── 00-校色卡.png       ← 固定首位
-├── 2026-07-01_15.23.21.png
+├── 2026-07-01_15.23.21.webp
 ├── IMG_20250712_212757.jpg
 └── ...
 ```
@@ -130,11 +130,11 @@ Hugo 的 Branch Bundle 允许 `_index.md` 通过 `.Resources.ByType "image"` 直
 
 | 文件名 | 匹配层 | 提取日期 |
 |--------|--------|---------|
-| `2026-07-01_15.23.21.png` | 第一层 `^\d{4}-\d{2}-\d{2}` | `2026-07-01` |
+| `2026-07-01_15.23.21.webp` | 第一层 `^\d{4}-\d{2}-\d{2}` | `2026-07-01` |
 | `IMG_20250712_212757.jpg` | 第二层 `20\d{6}` | `2025-07-12` |
 | `DJI_20241111063817...jpg` | 第二层 `20\d{6}` | `2024-11-11` |
 | `mmexport..._20230511_*.jpg` | 第二层 `20\d{6}` | `2023-05-11` |
-| `1684758526619.png` | 无匹配 | `—` |
+| `1684758526619.webp` | 无匹配 | `—` |
 
 第二层用 `20\d{6}` 而非 `\d{8}` 是关键：`mmexport1682250305721_20230511_...` 中第一个 8 位数字是时间戳的前缀 `16822503`，只有用 `20` 限定前缀才能命中真正的日期 `20230511`。
 
@@ -424,7 +424,7 @@ luostratus.cn/
 │   ├── posts/                   # 博客文章
 │   └── gallery/
 │       ├── _index.md
-│       └── *.png / *.jpg        # 35+ 张图片
+│       └── *.png / *.jpg / *.webp  # 35+ 张图片
 └── layouts/
     ├── gallery/
     │   ├── list.html             # 画廊：排序 + 瀑布流
