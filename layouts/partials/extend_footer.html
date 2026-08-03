@@ -54,7 +54,8 @@ function buildArticleTOC() {
   // 创建导航容器
   const toc = document.getElementById('article-toc');
   if (!toc) return;
-  toc.innerHTML = '<div class="toc-title">📑 目录</div>';
+  toc.innerHTML = '<div class="toc-title">📑 目录 <button type="button" class="toc-toggle" aria-label="收起目录">收起</button></div><div class="toc-links"></div>';
+  const tocLinks = toc.querySelector('.toc-links');
 
   // 给每个标题添加 id
   headings.forEach((h, i) => {
@@ -78,9 +79,26 @@ function buildArticleTOC() {
         history.replaceState(null, '', '#' + h.id);
       }
     });
-    toc.appendChild(a);
+    tocLinks.appendChild(a);
     links.push({ el: a, heading: h });
   });
+
+  // 收起/展开目录
+  const toggle = toc.querySelector('.toc-toggle');
+  try {
+    if (localStorage.getItem('articleTocCollapsed') === '1') toc.classList.add('collapsed');
+  } catch(e) {}
+  const syncToggle = () => {
+    const collapsed = toc.classList.contains('collapsed');
+    toggle.textContent = collapsed ? '展开' : '收起';
+    toggle.setAttribute('aria-label', collapsed ? '展开目录' : '收起目录');
+    try { localStorage.setItem('articleTocCollapsed', collapsed ? '1' : '0'); } catch(e) {}
+  };
+  toggle.addEventListener('click', () => {
+    toc.classList.toggle('collapsed');
+    syncToggle();
+  });
+  syncToggle();
 
   // IntersectionObserver 追踪当前章节
   const observer = new IntersectionObserver(entries => {

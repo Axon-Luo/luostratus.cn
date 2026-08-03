@@ -211,6 +211,34 @@ body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea
   margin-bottom: 10px;
   color: var(--primary);
 }
+#article-toc .toc-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.toc-toggle {
+  border: 1px solid var(--border);
+  background: var(--entry);
+  color: var(--secondary);
+  font-size: 0.72rem;
+  line-height: 1;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none !important;
+  background-image: none !important;
+  background-size: unset !important;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.toc-toggle:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+}
+.toc-links { display: block; }
+#article-toc.collapsed .toc-links { display: none; }
+#article-toc.collapsed { padding-bottom: 10px; }
 #article-toc a {
   display: block;
   padding: 3px 8px;
