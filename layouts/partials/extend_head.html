@@ -245,8 +245,19 @@ body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea
   border-color: var(--primary);
   background: color-mix(in srgb, var(--primary) 6%, transparent);
 }
-.toc-links { display: block; }
-#article-toc.collapsed .toc-links { display: none; }
+.toc-links {
+  display: block;
+  overflow: hidden;
+  max-height: 1200px;
+  opacity: 1;
+  transform: translateY(0);
+  transition: max-height 0.35s ease, opacity 0.25s ease, transform 0.3s ease;
+}
+#article-toc.collapsed .toc-links {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-6px);
+}
 #article-toc.collapsed { padding-bottom: 10px; }
 #article-toc a {
   display: block;
