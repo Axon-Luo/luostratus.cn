@@ -1,16 +1,47 @@
 <style>
-.sp-wrap { max-width: 560px; margin: 0 auto; text-align: center; }
-.sp-text { width: 100%; min-height: 110px; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.9rem; resize: vertical; margin-bottom: 6px; }
-.sp-hint { color: var(--secondary); font-size: 0.8rem; margin: 0 0 10px; text-align: left; }
+.sp-wrap { max-width: 640px; margin: 0 auto; }
+.sp-editor { background: var(--entry); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+.sp-editor-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 10px; }
+.sp-editor-head h4 { margin: 0; color: var(--primary); font-size: 0.95rem; }
+.sp-editor-head button { padding: 7px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; font-size: 0.85rem; }
+.sp-rows { display: flex; flex-direction: column; gap: 8px; }
+.sp-row { display: grid; grid-template-columns: 16px minmax(0,1fr) 64px 84px 46px 28px 28px 28px; gap: 8px; align-items: center; background: var(--code-bg); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; }
+.sp-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--primary); justify-self: center; }
+.sp-row input[type="text"] { width: 100%; padding: 7px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.9rem; }
+.sp-row input[type="number"] { width: 100%; padding: 7px 8px; border-radius: 7px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.9rem; }
+.sp-bar { height: 7px; border-radius: 4px; background: var(--entry); overflow: hidden; }
+.sp-bar i { display: block; height: 100%; width: 0; background: var(--primary); border-radius: 4px; transition: width 0.2s; }
+.sp-pct { font-size: 0.78rem; color: var(--secondary); text-align: right; }
+.sp-row button { border: none; background: transparent; color: var(--secondary); cursor: pointer; font-size: 1rem; padding: 2px; }
+.sp-row button:hover { color: var(--primary); }
+.sp-tools { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.sp-tools button { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; font-size: 0.85rem; }
+.sp-total { color: var(--secondary); font-size: 0.8rem; margin-top: 9px; }
 .sp-area { display: flex; gap: 16px; align-items: center; justify-content: center; flex-wrap: wrap; }
 #spCanvas { max-width: 100%; }
-.sp-result { font-size: 1.2rem; color: var(--primary); margin: 10px 0; min-height: 28px; }
+.sp-result { font-size: 1.2rem; color: var(--primary); margin: 10px 0; min-height: 28px; text-align: center; }
+.sp-btns { text-align: center; }
 .sp-btns button { padding: 9px 20px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; font-weight: 600; margin: 4px; }
+@media (max-width: 560px) {
+  .sp-row { grid-template-columns: 16px 1fr 64px; }
+  .sp-bar, .sp-pct { grid-column: 2 / 4; }
+  .sp-row button { grid-column: auto; }
+}
 </style>
 
 <div class="sp-wrap">
-  <textarea class="sp-text" id="spOpts" placeholder="每行一个选项，可写 名称:权重，例如：&#10;吃饭:5&#10;睡觉:3&#10;写代码:2"></textarea>
-  <p class="sp-hint">格式：选项 或 选项:权重；权重越大，越容易被抽中。</p>
+  <div class="sp-editor">
+    <div class="sp-editor-head">
+      <h4>🎯 选项设置</h4>
+      <button id="spAdd">➕ 添加选项</button>
+    </div>
+    <div class="sp-rows" id="spRows"></div>
+    <div class="sp-tools">
+      <button id="spSample">✨ 示例</button>
+      <button id="spClear">🗑 清空</button>
+    </div>
+    <div class="sp-total" id="spTotal"></div>
+  </div>
   <div class="sp-area">
     <canvas id="spCanvas" width="360" height="360"></canvas>
     <div>
@@ -24,19 +55,64 @@
 (()=>{
   const canvas=document.getElementById('spCanvas');
   const ctx=canvas.getContext('2d');
+  const rowsEl=document.getElementById('spRows');
+  const totalEl=document.getElementById('spTotal');
   const resultEl=document.getElementById('spResult');
   const COLORS=['#e74c3c','#3498db','#27ae60','#f1c40f','#8e44ad','#e67e22','#16a085','#c0392b','#2980b9','#2ecc71'];
   const TWO_PI=Math.PI*2;
+  let rows=[
+    {label:'吃饭',weight:5},
+    {label:'睡觉',weight:3},
+    {label:'写代码',weight:2}
+  ];
   let rotation=0, spinning=false, options=[], totalWeight=0;
 
   function getOptions(){
-    const lines=document.getElementById('spOpts').value.split('\n').map(s=>s.trim()).filter(Boolean);
-    const parsed=lines.map(line=>{
-      const m=line.match(/^(.+?)\s*[:：]\s*(\d+(?:\.\d+)?)\s*$/);
-      if(m) return {label:m[1].trim(), weight:Math.max(0.01,parseFloat(m[2])||1)};
-      return {label:line, weight:1};
-    }).filter(o=>o.label);
+    const parsed=rows.map(r=>({label:String(r.label||'').trim(),weight:Math.max(0.01,parseFloat(r.weight)||1)})).filter(o=>o.label);
     return parsed.length>=2?parsed:[{label:'选项A',weight:1},{label:'选项B',weight:1}];
+  }
+
+  function renderEditor(){
+    rowsEl.innerHTML='';
+    rows.forEach((row,i)=>{
+      const div=document.createElement('div');
+      div.className='sp-row';
+      div.innerHTML='<span class="sp-dot"></span>'+
+        '<input type="text" class="sp-name" placeholder="选项名称">'+
+        '<input type="number" class="sp-weight" min="0.1" step="0.5">'+
+        '<span class="sp-bar"><i></i></span>'+
+        '<span class="sp-pct">0%</span>'+
+        '<button class="sp-up" title="上移">↑</button>'+
+        '<button class="sp-down" title="下移">↓</button>'+
+        '<button class="sp-del" title="删除">✕</button>';
+      const name=div.querySelector('.sp-name');
+      const weight=div.querySelector('.sp-weight');
+      name.value=row.label;
+      weight.value=row.weight;
+      name.oninput=()=>{ rows[i].label=name.value; refresh(); };
+      weight.oninput=()=>{ rows[i].weight=Math.max(0.1,parseFloat(weight.value)||1); refresh(); };
+      div.querySelector('.sp-up').onclick=()=>{ if(i>0){ [rows[i-1],rows[i]]=[rows[i],rows[i-1]]; renderEditor(); } };
+      div.querySelector('.sp-down').onclick=()=>{ if(i<rows.length-1){ [rows[i+1],rows[i]]=[rows[i],rows[i+1]]; renderEditor(); } };
+      div.querySelector('.sp-del').onclick=()=>{
+        rows.splice(i,1);
+        if(rows.length<1) rows=[{label:'',weight:1},{label:'',weight:1}];
+        renderEditor();
+      };
+      rowsEl.appendChild(div);
+    });
+    refresh();
+  }
+
+  function refresh(){
+    const rawTotal=rows.reduce((s,r)=>s+Math.max(0.01,parseFloat(r.weight)||1),0);
+    totalEl.textContent='总权重：'+rawTotal.toFixed(1)+' · 输入名称和权重，转盘实时更新';
+    [...rowsEl.children].forEach((div,i)=>{
+      const weight=Math.max(0.01,parseFloat(rows[i].weight)||1);
+      div.querySelector('.sp-dot').style.background=COLORS[i%COLORS.length];
+      div.querySelector('.sp-bar i').style.width=(weight/rawTotal*100)+'%';
+      div.querySelector('.sp-pct').textContent=Math.round(weight/rawTotal*100)+'%';
+    });
+    draw();
   }
 
   function computeSlices(){
@@ -110,8 +186,16 @@
     requestAnimationFrame(frame);
   }
 
+  document.getElementById('spAdd').onclick=()=>{ rows.push({label:'',weight:1}); renderEditor(); };
+  document.getElementById('spSample').onclick=()=>{
+    rows=[{label:'吃饭',weight:5},{label:'睡觉',weight:3},{label:'写代码',weight:2},{label:'旅行',weight:1}];
+    renderEditor();
+  };
+  document.getElementById('spClear').onclick=()=>{
+    rows=[{label:'',weight:1},{label:'',weight:1}];
+    renderEditor();
+  };
   document.getElementById('spSpin').onclick=spin;
-  document.getElementById('spOpts').addEventListener('input',()=>{ if(!spinning) draw(); });
-  draw();
+  renderEditor();
 })();
 </script>
