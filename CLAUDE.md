@@ -25,10 +25,12 @@ https://github.com/Axon-Luo/luostratus.cn
 ```
 ├── hugo.yaml              # 站点配置、菜单、分页
 ├── content/
-│   ├── posts/             # 6 篇博客（Markdown）
+│   ├── posts/             # 5 篇博客（Markdown）
 │   ├── gallery/           # 画廊（Branch Bundle，图片在目录内）
 │   └── tools/             # 小功能板块（15 个游戏/工具）
 ├── layouts/
+│   ├── index.html         # 首页模板（展示最近两篇文章）
+│   ├── archives.html      # 归档模板（只展示 posts）
 │   ├── gallery/list.html  # 画廊核心：CSS 瀑布流 + 文件名日期排序
 │   ├── tools/             # 小功能板块模板
 │   │   ├── list.html      # 工具卡片网格主页
@@ -67,10 +69,10 @@ hugo --source C:\Users\LuoYun\luostratus.cn --config C:\Users\LuoYun\luostratus.
 ## 当前菜单结构
 
 ```
-文章(weight:1) → 画廊(2) → 标签(3) → 小功能(4) → 搜索(5) → 关于(6)
+文章(weight:1) → 画廊(2) → 归档(3) → 标签(4) → 小功能(5) → 搜索(6) → 关于(7)
 ```
 
-归档已删除。目前首页未做"仅显示2篇"的改动（两次尝试均因 Cloudflare Hugo 兼容性问题导致崩溃）。
+归档已恢复，只展示 posts 文章。首页已改为展示最近两篇文章（`layouts/index.html` 使用 `where` + `first`，避免 `cond`）。
 
 ---
 
