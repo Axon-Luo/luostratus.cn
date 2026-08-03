@@ -7,7 +7,7 @@ git@github.com:Axon-Luo/luostratus.cn.git
 https://github.com/Axon-Luo/luostratus.cn
 ```
 
-直接 clone 即可获取完整项目代码。所有修改提交到 `master` 分支，push 后 Cloudflare Pages 自动部署。
+直接 clone 即可获取完整项目代码。所有修改提交到 `master` 分支，push 后 Cloudflare Workers Builds 自动构建部署。
 
 ---
 
@@ -15,7 +15,7 @@ https://github.com/Axon-Luo/luostratus.cn
 
 - **Hugo** 静态站点生成器（本地 v0.164，**Cloudflare 构建环境 v0.147.7**）
 - **PaperMod** 主题（通过 `layouts/partials/extend_head.html` 和 `extend_footer.html` 注入自定义代码）
-- **Cloudflare Pages** 免费托管，git push 即部署
+- **Cloudflare Workers** 静态托管，Hugo 构建输出 `public`（见 `wrangler.jsonc`），git push 即部署
 - 域名 `luostratus.cn`，腾讯云注册，Cloudflare DNS 管理，**无需备案**
 
 ---
@@ -24,6 +24,7 @@ https://github.com/Axon-Luo/luostratus.cn
 
 ```
 ├── hugo.yaml              # 站点配置、菜单、分页
+├── wrangler.jsonc         # Workers 静态资源配置（assets 目录为 public）
 ├── content/
 │   ├── posts/             # 5 篇博客（Markdown）
 │   ├── gallery/           # 画廊（Branch Bundle，图片在目录内）
