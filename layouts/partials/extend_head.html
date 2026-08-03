@@ -124,6 +124,27 @@ pre:hover {
   transform: translateY(0);
 }
 
+/* === 回到顶部过渡 === */
+#top-link {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(14px);
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s;
+  pointer-events: none;
+}
+#top-link:not(.hidden) {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s;
+  pointer-events: auto;
+}
+@media (max-width: 900px) {
+  .list #top-link:not(.hidden) {
+    transform: translateY(-5rem);
+  }
+}
+
 /* === 按钮/标签点击反馈 === */
 button, .button, .post-tag {
   transition: transform 0.15s ease, opacity 0.2s ease;
