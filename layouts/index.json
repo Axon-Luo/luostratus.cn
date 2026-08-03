@@ -1,0 +1,11 @@
+{{- $tools := where site.AllPages "Section" "tools" -}}
+{{- $pages := union site.RegularPages $tools -}}
+{{- $.Scratch.Add "index" slice -}}
+{{- range $pages -}}
+    {{- if and (eq .Kind "page") (not .Params.searchHidden) (ne .Layout "archives") (ne .Layout "search") -}}
+    {{- $content := .Plain -}}
+    {{- if .Description }}{{ $content = printf "%s %s" .Description $content }}{{ end -}}
+    {{- $.Scratch.Add "index" (dict "title" .Title "content" $content "permalink" .Permalink "summary" (.Summary | default .Description)) -}}
+    {{- end -}}
+{{- end -}}
+{{- $.Scratch.Get "index" | jsonify -}}
