@@ -1,0 +1,71 @@
+<style>
+.sc-wrap { max-width: 460px; margin: 0 auto; }
+.sc-display { background: var(--code-bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 12px; text-align: right; }
+.sc-expr { color: var(--secondary); font-size: 0.9rem; min-height: 20px; word-break: break-all; }
+.sc-result { color: var(--primary); font-size: 1.8rem; font-weight: 700; word-break: break-all; }
+.sc-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; }
+.sc-grid button { padding: 12px 0; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 1rem; cursor: pointer; }
+.sc-grid button.op { color: var(--secondary); }
+.sc-grid button.eq { background: var(--primary); color: var(--theme); border-color: var(--primary); }
+.sc-history { margin-top: 12px; font-size: 0.85rem; color: var(--secondary); }
+.sc-history div { padding: 3px 0; border-bottom: 1px dashed var(--border); }
+</style>
+
+<div class="sc-wrap">
+  <div class="sc-display">
+    <div class="sc-expr" id="scExpr"></div>
+    <div class="sc-result" id="scResult">0</div>
+  </div>
+  <div class="sc-grid">
+    <button data-k="sin(">sin</button><button data-k="cos(">cos</button><button data-k="tan(">tan</button><button data-k="sqrt(">√</button><button data-k="^">^</button>
+    <button data-k="ln(">ln</button><button data-k="log(">log</button><button data-k="π">π</button><button data-k="(">(</button><button data-k=")">)</button>
+    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="÷" class="op">÷</button><button data-k="AC" class="op">AC</button>
+    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="×" class="op">×</button><button data-k="DEL" class="op">⌫</button>
+    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="-" class="op">−</button><button data-k="+">+</button>
+    <button data-k="0">0</button><button data-k=".">.</button><button data-k="=" class="eq">=</button><button data-k="%">%</button><button data-k="!">!</button>
+  </div>
+  <div class="sc-history" id="scHistory"></div>
+</div>
+
+<script>
+(()=>{
+  const exprEl=document.getElementById('scExpr');
+  const resultEl=document.getElementById('scResult');
+  const historyEl=document.getElementById('scHistory');
+  let expr='';
+
+  function render(){ exprEl.textContent=expr; }
+
+  function evaluate(){
+    if(!expr) return;
+    let s=expr.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-').replace(/\^/g,'**');
+    s=s.replace(/π/g,'(Math.PI)');
+    s=s.replace(/sin\(/g,'Math.sin(').replace(/cos\(/g,'Math.cos(').replace(/tan\(/g,'Math.tan(');
+    s=s.replace(/ln\(/g,'Math.log(').replace(/log\(/g,'Math.log10(').replace(/sqrt\(/g,'Math.sqrt(');
+    try{
+      let val=Function('"use strict";return ('+s+')')();
+      if(typeof val!=='number'||!isFinite(val)) throw new Error('NaN');
+      val=Math.round(val*1e10)/1e10;
+      resultEl.textContent=val;
+      const row=document.createElement('div');
+      row.textContent=expr+' = '+val;
+      historyEl.prepend(row);
+      while(historyEl.children.length>8) historyEl.removeChild(historyEl.lastChild);
+    }catch(e){
+      resultEl.textContent='错误';
+    }
+  }
+
+  document.querySelectorAll('.sc-grid button').forEach(b=>b.onclick=()=>{
+    const k=b.dataset.k;
+    if(k==='AC'){ expr=''; resultEl.textContent='0'; }
+    else if(k==='DEL'){ expr=expr.slice(0,-1); }
+    else if(k==='='){ evaluate(); }
+    else if(k==='%'){ expr+='/100'; }
+    else if(k==='!'){ try{ const v=eval(expr); let f=1; for(let i=2;i<=Math.round(v);i++) f*=i; expr=String(f); }catch(e){ resultEl.textContent='错误'; } }
+    else { expr+=k; }
+    render();
+  });
+  render();
+})();
+</script>

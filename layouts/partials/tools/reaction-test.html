@@ -1,0 +1,76 @@
+<style>
+.rt-wrap { max-width: 520px; margin: 0 auto; text-align: center; }
+.rt-box { height: 260px; border-radius: 12px; border: 2px solid var(--border); background: #c0392b; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.1rem; cursor: pointer; user-select: none; margin-bottom: 14px; transition: background 0.15s; }
+.rt-box.waiting { background: #c0392b; }
+.rt-box.ready { background: #27ae60; }
+.rt-box.soon { background: #f39c12; }
+.rt-info { display: flex; justify-content: center; gap: 20px; color: var(--secondary); font-size: 0.9rem; }
+.rt-info button { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
+</style>
+
+<div class="rt-wrap">
+  <div class="rt-box" id="rtBox">点击开始，等变绿后立即点击</div>
+  <div class="rt-info">
+    <span>第 <strong id="rtRound">0</strong>/5 次</span>
+    <span>最快 <strong id="rtBest">-</strong> ms</span>
+    <button id="rtStart">▶ 开始测试</button>
+  </div>
+</div>
+
+<script>
+(()=>{
+  const box=document.getElementById('rtBox');
+  const roundEl=document.getElementById('rtRound');
+  const bestEl=document.getElementById('rtBest');
+  let state='idle', timer=null, readyAt=0, round=0, best=null;
+
+  function setState(s){
+    state=s;
+    box.className='rt-box '+s;
+    if(s==='idle') box.textContent='点击开始，等变绿后立即点击';
+    else if(s==='soon') box.textContent='等待变绿…';
+    else if(s==='ready') box.textContent='快点击！';
+  }
+
+  function start(){
+    clearTimeout(timer);
+    round=0; best=null;
+    roundEl.textContent=0; bestEl.textContent='-';
+    nextRound();
+  }
+
+  function nextRound(){
+    round++;
+    roundEl.textContent=round;
+    setState('soon');
+    timer=setTimeout(()=>{
+      readyAt=performance.now();
+      setState('ready');
+    },1000+Math.random()*2500);
+  }
+
+  box.addEventListener('click',()=>{
+    if(state==='idle'){ start(); return; }
+    if(state==='soon'){
+      setState('idle');
+      box.textContent='太早了！再点一次重新开始本轮';
+      roundEl.textContent=Math.max(0,round-1);
+      return;
+    }
+    if(state==='ready'){
+      const ms=Math.round(performance.now()-readyAt);
+      if(best===null||ms<best) best=ms;
+      bestEl.textContent=best;
+      clearTimeout(timer);
+      if(round>=5){
+        setState('idle');
+        box.textContent='测试完成！最快 '+best+' ms';
+      } else {
+        nextRound();
+      }
+    }
+  });
+
+  document.getElementById('rtStart').onclick=start;
+})();
+</script>

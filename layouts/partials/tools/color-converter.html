@@ -1,0 +1,102 @@
+<style>
+.cc-wrap { max-width: 560px; margin: 0 auto; }
+.cc-swatch { height: 120px; border-radius: 12px; border: 2px solid var(--border); margin-bottom: 14px; background: #3498db; transition: background 0.2s; }
+.cc-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; font-size: 0.9rem; color: var(--secondary); }
+.cc-row input[type="color"] { width: 60px; height: 40px; border: none; background: none; cursor: pointer; }
+.cc-row input[type="text"] { flex: 1; min-width: 220px; padding: 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-family: monospace; }
+.cc-btns { display: flex; gap: 8px; }
+.cc-btns button { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
+</style>
+
+<div class="cc-wrap">
+  <div class="cc-swatch" id="ccSwatch"></div>
+  <div class="cc-row"><input type="color" id="ccPicker" value="#3498db"><span>取色器</span></div>
+  <div class="cc-row"><span>HEX</span><input type="text" id="ccHex" value="#3498db"></div>
+  <div class="cc-row"><span>RGB</span><input type="text" id="ccRgb" value="rgb(52, 152, 219)"></div>
+  <div class="cc-row"><span>HSL</span><input type="text" id="ccHsl" value="hsl(204, 70%, 53%)"></div>
+  <div class="cc-btns"><button id="ccCopy">📋 复制 HEX</button><button id="ccRandom">🎲 随机颜色</button></div>
+</div>
+
+<script>
+(()=>{
+  const picker=document.getElementById('ccPicker');
+  const hexEl=document.getElementById('ccHex');
+  const rgbEl=document.getElementById('ccRgb');
+  const hslEl=document.getElementById('ccHsl');
+  const swatch=document.getElementById('ccSwatch');
+  let editing=false;
+
+  function rgbToHex(r,g,b){
+    return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+  }
+  function hexToRgb(h){
+    h=h.replace('#','');
+    if(h.length===3) h=h.split('').map(c=>c+c).join('');
+    return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
+  }
+  function rgbToHsl(r,g,b){
+    r/=255; g/=255; b/=255;
+    const max=Math.max(r,g,b), min=Math.min(r,g,b);
+    let h=0,s=0; const l=(max+min)/2;
+    if(max!==min){
+      const d=max-min;
+      s=l>0.5?d/(2-max-min):d/(max+min);
+      if(max===r) h=((g-b)/d+(g<b?6:0));
+      else if(max===g) h=(b-r)/d+2;
+      else h=(r-g)/d+4;
+      h*=60;
+    }
+    return [Math.round(h),Math.round(s*100),Math.round(l*100)];
+  }
+  function hslToRgb(h,s,l){
+    s/=100; l/=100;
+    const c=(1-Math.abs(2*l-1))*s, x=c*(1-Math.abs((h/60)%2-1)), m=l-c/2;
+    let r=0,g=0,b=0;
+    if(h<60){r=c;g=x;} else if(h<120){r=x;g=c;} else if(h<180){g=c;b=x;}
+    else if(h<240){g=x;b=c;} else if(h<300){r=x;b=c;} else {r=c;b=x;}
+    return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
+  }
+
+  function fromHex(h){
+    if(!/^#?[0-9a-fA-F]{6}$/.test(h)) return;
+    const [r,g,b]=hexToRgb(h);
+    apply(r,g,b);
+  }
+  function fromRgb(t){
+    const m=t.match(/\d+(\.\d+)?/g);
+    if(!m||m.length<3) return;
+    apply(+m[0],+m[1],+m[2]);
+  }
+  function fromHsl(t){
+    const m=t.match(/[\d.]+/g);
+    if(!m||m.length<3) return;
+    const [r,g,b]=hslToRgb(+m[0]%360,+m[1],+m[2]);
+    apply(r,g,b);
+  }
+  function apply(r,g,b){
+    r=Math.max(0,Math.min(255,Math.round(r)));
+    g=Math.max(0,Math.min(255,Math.round(g)));
+    b=Math.max(0,Math.min(255,Math.round(b)));
+    editing=true;
+    const hex=rgbToHex(r,g,b);
+    hexEl.value=hex; picker.value=hex;
+    rgbEl.value='rgb('+r+', '+g+', '+b+')';
+    const [h,s,l]=rgbToHsl(r,g,b);
+    hslEl.value='hsl('+h+', '+s+'%, '+l+'%)';
+    swatch.style.background=hex;
+    editing=false;
+  }
+
+  picker.oninput=()=>fromHex(picker.value);
+  hexEl.onchange=()=>fromHex(hexEl.value);
+  rgbEl.onchange=()=>fromRgb(rgbEl.value);
+  hslEl.onchange=()=>fromHsl(hslEl.value);
+  document.getElementById('ccCopy').onclick=()=>navigator.clipboard.writeText(hexEl.value);
+  document.getElementById('ccRandom').onclick=()=>{
+    const h=Math.floor(Math.random()*360), s=50+Math.floor(Math.random()*40), l=40+Math.floor(Math.random()*30);
+    const [r,g,b]=hslToRgb(h,s,l);
+    apply(r,g,b);
+  };
+  fromHex('#3498db');
+})();
+</script>

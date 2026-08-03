@@ -1,0 +1,37 @@
+<style>
+.ts-wrap { max-width: 680px; margin: 0 auto; }
+.ts-input { width: 100%; min-height: 200px; padding: 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 1rem; resize: vertical; }
+.ts-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap: 10px; margin-top: 14px; }
+.ts-item { background: var(--entry); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+.ts-item strong { display: block; font-size: 1.6rem; color: var(--primary); }
+.ts-item span { font-size: 0.82rem; color: var(--secondary); }
+</style>
+
+<div class="ts-wrap">
+  <textarea class="ts-input" id="tsText" placeholder="在此粘贴或输入文本…"></textarea>
+  <div class="ts-grid">
+    <div class="ts-item"><strong id="tsChars">0</strong><span>总字符</span></div>
+    <div class="ts-item"><strong id="tsNoSpace">0</strong><span>不含空格</span></div>
+    <div class="ts-item"><strong id="tsHan">0</strong><span>汉字</span></div>
+    <div class="ts-item"><strong id="tsWords">0</strong><span>单词</span></div>
+    <div class="ts-item"><strong id="tsLines">0</strong><span>行数</span></div>
+    <div class="ts-item"><strong id="tsSent">0</strong><span>句子</span></div>
+  </div>
+</div>
+
+<script>
+(()=>{
+  const input=document.getElementById('tsText');
+  function update(){
+    const t=input.value;
+    document.getElementById('tsChars').textContent=t.length;
+    document.getElementById('tsNoSpace').textContent=t.replace(/\s/g,'').length;
+    document.getElementById('tsHan').textContent=(t.match(/[\u4e00-\u9fa5]/g)||[]).length;
+    document.getElementById('tsWords').textContent=(t.match(/[A-Za-z0-9]+/g)||[]).length;
+    document.getElementById('tsLines').textContent=t?t.split(/\r?\n/).length:0;
+    document.getElementById('tsSent').textContent=(t.match(/[^。！？!?]+[。！？!?]/g)||[]).length;
+  }
+  input.addEventListener('input',update);
+  update();
+})();
+</script>

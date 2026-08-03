@@ -1,0 +1,36 @@
+<style>
+.ue-wrap { max-width: 680px; margin: 0 auto; }
+.ue-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.95rem; }
+.ue-btns { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+.ue-btns button { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
+.ue-out { background: var(--code-bg); border-radius: 10px; padding: 14px; min-height: 80px; color: var(--primary); word-break: break-all; }
+.ue-msg { color: #e74c3c; font-size: 0.85rem; margin-top: 8px; min-height: 18px; }
+</style>
+
+<div class="ue-wrap">
+  <input class="ue-input" id="ueInput" placeholder="输入 URL 或文本…">
+  <div class="ue-btns">
+    <button id="ueComp">🔗 encodeURIComponent</button>
+    <button id="ueUri">🌐 encodeURI</button>
+    <button id="ueDec">🔓 decodeURIComponent</button>
+    <button id="ueCopy">📋 复制</button>
+  </div>
+  <div class="ue-out" id="ueOut">结果</div>
+  <div class="ue-msg" id="ueMsg"></div>
+</div>
+
+<script>
+(()=>{
+  const input=document.getElementById('ueInput');
+  const out=document.getElementById('ueOut');
+  const msg=document.getElementById('ueMsg');
+  function run(fn){
+    try{ out.textContent=fn(input.value); msg.textContent=''; }
+    catch(e){ msg.textContent='处理失败：'+e.message; }
+  }
+  document.getElementById('ueComp').onclick=()=>run(v=>encodeURIComponent(v));
+  document.getElementById('ueUri').onclick=()=>run(v=>encodeURI(v));
+  document.getElementById('ueDec').onclick=()=>run(v=>decodeURIComponent(v));
+  document.getElementById('ueCopy').onclick=()=>navigator.clipboard.writeText(out.textContent);
+})();
+</script>

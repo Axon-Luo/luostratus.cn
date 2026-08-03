@@ -1,0 +1,125 @@
+<style>
+.hr-wrap { max-width: 560px; margin: 0 auto; text-align: center; }
+.hr-info { color: var(--secondary); font-size: 0.9rem; margin-bottom: 12px; }
+.hr-btns { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; }
+.hr-btns button { padding: 8px 18px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
+#hrCanvas { border: 2px solid var(--border); border-radius: 8px; background: #f8f4e8; max-width: 100%; touch-action: none; }
+</style>
+
+<div class="hr-wrap">
+  <div class="hr-info">拖拽棋子移动，让曹操到达底部出口</div>
+  <div class="hr-btns"><button id="hrReset">🔄 重置</button></div>
+  <canvas id="hrCanvas"></canvas>
+  <p id="hrStatus" style="margin-top:10px;color:var(--secondary)">曹操：左上角 2×2 红块</p>
+</div>
+
+<script>
+(()=>{
+  const COLS=4, ROWS=5, CELL=104;
+  const canvas=document.getElementById('hrCanvas');
+  const ctx=canvas.getContext('2d');
+  canvas.width=COLS*CELL; canvas.height=ROWS*CELL;
+  const status=document.getElementById('hrStatus');
+  let pieces=[], dragging=null, dragStart=null, startPos=null, moves=0, win=false;
+
+  function reset(){
+    pieces=[
+      {name:'曹操',x:1,y:0,w:2,h:2,color:'#d64541',win:true},
+      {name:'关羽',x:1,y:2,w:2,h:1,color:'#27ae60'},
+      {name:'张飞',x:0,y:0,w:1,h:2,color:'#2980b9'},
+      {name:'赵云',x:3,y:0,w:1,h:2,color:'#8e44ad'},
+      {name:'马超',x:0,y:2,w:1,h:2,color:'#d35400'},
+      {name:'黄忠',x:3,y:2,w:1,h:2,color:'#16a085'},
+      {name:'兵',x:0,y:3,w:1,h:1,color:'#7f8c8d'},
+      {name:'兵',x:1,y:3,w:1,h:1,color:'#7f8c8d'},
+      {name:'兵',x:2,y:3,w:1,h:1,color:'#7f8c8d'},
+      {name:'兵',x:3,y:3,w:1,h:1,color:'#7f8c8d'}
+    ];
+    dragging=null; moves=0; win=false;
+    status.textContent='曹操：左上角 2×2 红块';
+    draw();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.strokeStyle='#c9b98a'; ctx.lineWidth=1;
+    for(let c=0;c<=COLS;c++){ ctx.beginPath(); ctx.moveTo(c*CELL,0); ctx.lineTo(c*CELL,canvas.height); ctx.stroke(); }
+    for(let r=0;r<=ROWS;r++){ ctx.beginPath(); ctx.moveTo(0,r*CELL); ctx.lineTo(canvas.width,r*CELL); ctx.stroke(); }
+    ctx.fillStyle='#e74c3c';
+    ctx.fillRect(CELL,ROWS*CELL-8,CELL*2,8);
+    for(const p of pieces){
+      ctx.fillStyle=p.color;
+      roundRect(p.x*CELL+2,p.y*CELL+2,p.w*CELL-4,p.h*CELL-4,8);
+      ctx.fill();
+      ctx.fillStyle='#fff';
+      ctx.font='bold 18px sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(p.name,p.x*CELL+p.w*CELL/2,p.y*CELL+p.h*CELL/2);
+    }
+  }
+
+  function roundRect(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+  }
+
+  function hit(p,x,y){
+    return x>=p.x*CELL&&x<=p.x*CELL+p.w*CELL&&y>=p.y*CELL&&y<=p.y*CELL+p.h*CELL;
+  }
+
+  function collide(p){
+    for(const q of pieces){
+      if(q===p) continue;
+      if(p.x<q.x+q.w&&p.x+p.w>q.x&&p.y<q.y+q.h&&p.y+p.h>q.y) return true;
+    }
+    return false;
+  }
+
+  function finishDrag(){
+    const p=dragging;
+    p.x=Math.round(p.x); p.y=Math.round(p.y);
+    p.x=Math.max(0,Math.min(COLS-p.w,p.x));
+    p.y=Math.max(0,Math.min(ROWS-p.h,p.y));
+    if(collide(p)){ p.x=startPos.x; p.y=startPos.y; }
+    else if(p.x!==startPos.x||p.y!==startPos.y){ moves++; }
+    if(p.win&&p.x===1&&p.y===3&&!win){
+      win=true; status.textContent='恭喜通关！共移动 '+moves+' 步 🎉';
+    }
+    dragging=null;
+    draw();
+  }
+
+  canvas.addEventListener('pointerdown',e=>{
+    if(win) return;
+    const rect=canvas.getBoundingClientRect();
+    const x=(e.clientX-rect.left)*(canvas.width/rect.width);
+    const y=(e.clientY-rect.top)*(canvas.height/rect.height);
+    for(const p of pieces){
+      if(hit(p,x,y)){
+        dragging=p; startPos={x:p.x,y:p.y};
+        canvas.setPointerCapture(e.pointerId);
+        break;
+      }
+    }
+  });
+
+  canvas.addEventListener('pointermove',e=>{
+    if(!dragging) return;
+    const rect=canvas.getBoundingClientRect();
+    const x=(e.clientX-rect.left)*(canvas.width/rect.width);
+    const y=(e.clientY-rect.top)*(canvas.height/rect.height);
+    const dx=Math.round((x-startPos.x*CELL)/CELL);
+    const dy=Math.round((y-startPos.y*CELL)/CELL);
+    const p=dragging;
+    p.x=Math.max(0,Math.min(COLS-p.w,startPos.x+dx));
+    p.y=Math.max(0,Math.min(ROWS-p.h,startPos.y+dy));
+    if(!collide(p)) draw(); else { p.x=startPos.x; p.y=startPos.y; }
+  });
+
+  canvas.addEventListener('pointerup',finishDrag);
+  canvas.addEventListener('pointercancel',()=>{ if(dragging){ dragging.x=startPos.x; dragging.y=startPos.y; dragging=null; draw(); } });
+  document.getElementById('hrReset').onclick=reset;
+  reset();
+})();
+</script>

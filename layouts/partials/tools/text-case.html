@@ -1,0 +1,54 @@
+<style>
+.tc-wrap { max-width: 680px; margin: 0 auto; }
+.tc-input { width: 100%; min-height: 140px; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 1rem; resize: vertical; }
+.tc-btns { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.tc-btns button { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; font-size: 0.9rem; }
+.tc-btns button:hover { border-color: var(--primary); }
+.tc-out { background: var(--code-bg); border-radius: 10px; padding: 14px; min-height: 80px; color: var(--primary); word-break: break-word; }
+.tc-copy { margin-top: 8px; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
+</style>
+
+<div class="tc-wrap">
+  <textarea class="tc-input" id="tcInput" placeholder="输入要转换的文本…"></textarea>
+  <div class="tc-btns">
+    <button data-act="upper">大写</button>
+    <button data-act="lower">小写</button>
+    <button data-act="title">首字母大写</button>
+    <button data-act="camel">camelCase</button>
+    <button data-act="pascal">PascalCase</button>
+    <button data-act="snake">snake_case</button>
+    <button data-act="kebab">kebab-case</button>
+    <button data-act="reverse">反转</button>
+  </div>
+  <div class="tc-out" id="tcOut">结果会显示在这里</div>
+  <button class="tc-copy" id="tcCopy">📋 复制结果</button>
+</div>
+
+<script>
+(()=>{
+  const input=document.getElementById('tcInput');
+  const out=document.getElementById('tcOut');
+
+  function words(t){ return t.trim().split(/[^A-Za-z0-9\u4e00-\u9fa5]+/).filter(Boolean); }
+
+  function convert(act){
+    const t=input.value;
+    let r=t;
+    if(act==='upper') r=t.toUpperCase();
+    else if(act==='lower') r=t.toLowerCase();
+    else if(act==='title') r=words(t).map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join(' ');
+    else if(act==='camel'){
+      const ws=words(t);
+      r=ws.map((w,i)=>i===0?w.toLowerCase():w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join('');
+    }
+    else if(act==='pascal') r=words(t).map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join('');
+    else if(act==='snake') r=words(t).map(w=>w.toLowerCase()).join('_');
+    else if(act==='kebab') r=words(t).map(w=>w.toLowerCase()).join('-');
+    else if(act==='reverse') r=[...t].reverse().join('');
+    out.textContent=r;
+  }
+
+  document.querySelectorAll('.tc-btns button').forEach(b=>b.onclick=()=>convert(b.dataset.act));
+  document.getElementById('tcCopy').onclick=()=>navigator.clipboard.writeText(out.textContent);
+})();
+</script>

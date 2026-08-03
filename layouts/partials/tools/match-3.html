@@ -1,0 +1,118 @@
+<style>
+.m3-wrap { max-width: 520px; margin: 0 auto; text-align: center; }
+.m3-bar { display: flex; justify-content: center; gap: 18px; margin-bottom: 12px; color: var(--secondary); font-size: 0.9rem; }
+.m3-bar button { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
+.m3-grid { display: grid; grid-template-columns: repeat(8,1fr); gap: 4px; max-width: 440px; margin: 0 auto; }
+.m3-cell { aspect-ratio: 1; font-size: 1.3rem; border-radius: 6px; border: 1px solid var(--border); background: var(--entry); cursor: pointer; }
+.m3-cell.selected { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary); }
+</style>
+
+<div class="m3-wrap">
+  <div class="m3-bar"><span>得分 <strong id="m3Score">0</strong></span><button id="m3New">🔄 重新开始</button></div>
+  <div class="m3-grid" id="m3Grid"></div>
+  <p id="m3Status" style="color:var(--secondary);font-size:0.85rem">点击相邻两个图案交换，凑成三个以上即可消除</p>
+</div>
+
+<script>
+(()=>{
+  const SIZE=8, TYPES=['🍎','🍇','🍊','🍋','🍉','🫐'];
+  const gridEl=document.getElementById('m3Grid');
+  const statusEl=document.getElementById('m3Status');
+  let grid=[], selected=null, score=0, locked=false;
+
+  function randomType(){ return TYPES[Math.floor(Math.random()*TYPES.length)]; }
+
+  function init(){
+    grid=[];
+    for(let r=0;r<SIZE;r++){
+      const row=[];
+      for(let c=0;c<SIZE;c++){
+        let t;
+        do { t=randomType(); } while((c>1&&row[c-1]===t&&row[c-2]===t)||(r>1&&grid[r-1][c]===t&&grid[r-2][c]===t));
+        row.push(t);
+      }
+      grid.push(row);
+    }
+    selected=null; score=0; locked=false;
+    document.getElementById('m3Score').textContent=0;
+    render();
+  }
+
+  function scan(){
+    const hit=new Set();
+    for(let r=0;r<SIZE;r++){
+      let run=1;
+      for(let c=1;c<=SIZE;c++){
+        if(c<SIZE&&grid[r][c]===grid[r][c-1]) run++;
+        else { if(run>=3) for(let k=c-run;k<c;k++) hit.add(r+','+k); run=1; }
+      }
+    }
+    for(let c=0;c<SIZE;c++){
+      let run=1;
+      for(let r=1;r<=SIZE;r++){
+        if(r<SIZE&&grid[r][c]===grid[r-1][c]) run++;
+        else { if(run>=3) for(let k=r-run;k<r;k++) hit.add(k+','+c); run=1; }
+      }
+    }
+    return [...hit].map(s=>{ const [r,c]=s.split(',').map(Number); return {r,c}; });
+  }
+
+  function collapse(hit){
+    const cells={};
+    hit.forEach(p=>cells[p.r+','+p.c]=true);
+    score+=hit.length*10;
+    document.getElementById('m3Score').textContent=score;
+    for(let c=0;c<SIZE;c++){
+      const keep=[];
+      for(let r=SIZE-1;r>=0;r--) if(!cells[r+','+c]) keep.push(grid[r][c]);
+      let idx=0;
+      for(let r=SIZE-1;r>=0;r--) grid[r][c]=idx<keep.length?keep[idx++]:randomType();
+    }
+  }
+
+  function swap(a,b){
+    [grid[a.r][a.c],grid[b.r][b.c]]=[grid[b.r][b.c],grid[a.r][a.c]];
+  }
+
+  function adjacent(a,b){ return Math.abs(a.r-b.r)+Math.abs(a.c-b.c)===1; }
+
+  function clickCell(r,c){
+    if(locked) return;
+    const p={r,c};
+    if(!selected){ selected=p; render(); return; }
+    if(selected.r===r&&selected.c===c){ selected=null; render(); return; }
+    if(!adjacent(selected,p)){ selected=p; render(); return; }
+    locked=true;
+    swap(selected,p);
+    render();
+    setTimeout(()=>{
+      let hit=scan();
+      if(!hit.length){ swap(selected,p); selected=null; locked=false; render(); return; }
+      selected=null;
+      let guard=0;
+      const step=()=>{
+        if(!hit.length||guard++>20){ locked=false; render(); return; }
+        collapse(hit);
+        render();
+        hit=scan();
+        setTimeout(step,180);
+      };
+      step();
+    },160);
+  }
+
+  function render(){
+    gridEl.innerHTML='';
+    for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++){
+      const b=document.createElement('button');
+      b.className='m3-cell'; b.textContent=grid[r][c];
+      if(selected&&selected.r===r&&selected.c===c) b.classList.add('selected');
+      b.onclick=()=>clickCell(r,c);
+      gridEl.appendChild(b);
+    }
+  }
+
+  document.getElementById('m3New').onclick=init;
+  init();
+})();
+</script>

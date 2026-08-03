@@ -1,0 +1,140 @@
+<style>
+.gm-wrap { max-width: 640px; margin: 0 auto; text-align: center; }
+.gm-info { display: flex; gap: 16px; justify-content: center; margin-bottom: 12px; font-size: 0.95rem; color: var(--secondary); flex-wrap: wrap; }
+.gm-btns { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
+.gm-btns button { padding: 8px 18px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; font-size: 0.9rem; }
+.gm-btns button:hover { border-color: var(--primary); }
+#gmCanvas { border: 2px solid var(--border); border-radius: 8px; background: var(--entry); max-width: 100%; touch-action: none; }
+</style>
+
+<div class="gm-wrap">
+  <div class="gm-info"><span>你：<strong style="color:var(--primary)">黑子</strong></span><span>电脑：<strong style="color:var(--secondary)">白子</strong></span></div>
+  <div class="gm-btns">
+    <button id="gmNew">🔄 新开局</button>
+    <button id="gmUndo">↩️ 悔棋</button>
+  </div>
+  <canvas id="gmCanvas"></canvas>
+  <p id="gmStatus" style="margin-top:10px;color:var(--secondary)">点击棋盘落子</p>
+</div>
+
+<script>
+(()=>{
+  const N=15, CELL=36, PAD=22;
+  const canvas=document.getElementById('gmCanvas');
+  const ctx=canvas.getContext('2d');
+  canvas.width=CELL*N+PAD*2; canvas.height=CELL*N+PAD*2;
+  const status=document.getElementById('gmStatus');
+  let board=Array.from({length:N},()=>Array(N).fill(0));
+  let over=false, history=[];
+
+  const DIRS=[[1,0],[0,1],[1,1],[1,-1]];
+
+  function reset(){
+    board=Array.from({length:N},()=>Array(N).fill(0));
+    history=[]; over=false;
+    status.textContent='点击棋盘落子';
+    draw();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--border')||'#888';
+    ctx.lineWidth=1;
+    for(let i=0;i<N;i++){
+      ctx.beginPath(); ctx.moveTo(PAD+i*CELL,PAD); ctx.lineTo(PAD+i*CELL,PAD+(N-1)*CELL); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(PAD,PAD+i*CELL); ctx.lineTo(PAD+(N-1)*CELL,PAD+i*CELL); ctx.stroke();
+    }
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(board[r][c]){
+      const x=PAD+c*CELL, y=PAD+r*CELL;
+      ctx.beginPath(); ctx.arc(x,y,CELL*0.42,0,Math.PI*2);
+      ctx.fillStyle=board[r][c]===1?'#1c1c1c':'#f5f5f5';
+      ctx.fill(); ctx.strokeStyle='#999'; ctx.stroke();
+    }
+  }
+
+  function countLine(r,c,dr,dc,color){
+    let count=1, open=0;
+    for(const sign of [1,-1]){
+      let rr=r+dr*sign, cc=c+dc*sign, blocked=false;
+      while(rr>=0&&rr<N&&cc>=0&&cc<N&&board[rr][cc]===color){ count++; rr+=dr*sign; cc+=dc*sign; }
+      if(rr>=0&&rr<N&&cc>=0&&cc<N&&board[rr][cc]===0) open++;
+    }
+    return {count,open};
+  }
+
+  function winAt(r,c,color){
+    for(const [dr,dc] of DIRS){
+      let count=1;
+      for(const sign of [1,-1]){
+        let rr=r+dr*sign, cc=c+dc*sign;
+        while(rr>=0&&rr<N&&cc>=0&&cc<N&&board[rr][cc]===color){ count++; rr+=dr*sign; cc+=dc*sign; }
+      }
+      if(count>=5) return true;
+    }
+    return false;
+  }
+
+  function scoreCell(r,c,color){
+    if(board[r][c]) return -1;
+    let total=0;
+    for(const [dr,dc] of DIRS){
+      const {count,open}=countLine(r,c,dr,dc,color);
+      if(count>=5) return 1000000;
+      if(open===0) continue;
+      if(count===4) total+=100000*open;
+      else if(count===3) total+=8000*open;
+      else if(count===2) total+=400*open;
+      else total+=20*open;
+    }
+    return total;
+  }
+
+  function aiMove(){
+    let best=null, bestScore=-1;
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+      const s=scoreCell(r,c,2)*1.0+scoreCell(r,c,1)*0.92;
+      if(s>bestScore){ bestScore=s; best={r,c}; }
+    }
+    return best;
+  }
+
+  function isFull(){ return board.every(row=>row.every(v=>v)); }
+
+  function aiTurn(){
+    if(over) return;
+    const m=aiMove();
+    if(!m){ status.textContent='平局'; over=true; return; }
+    board[m.r][m.c]=2; history.push([m.r,m.c]);
+    if(winAt(m.r,m.c,2)){ status.textContent='电脑获胜'; over=true; }
+    else if(isFull()){ status.textContent='平局'; over=true; }
+    draw();
+  }
+
+  canvas.addEventListener('click',e=>{
+    if(over) return;
+    const rect=canvas.getBoundingClientRect();
+    const x=(e.clientX-rect.left)*(canvas.width/rect.width);
+    const y=(e.clientY-rect.top)*(canvas.height/rect.height);
+    const c=Math.round((x-PAD)/CELL), r=Math.round((y-PAD)/CELL);
+    if(r<0||r>=N||c<0||c>=N||board[r][c]) return;
+    board[r][c]=1; history.push([r,c]);
+    if(winAt(r,c,1)){ status.textContent='你赢了 🎉'; over=true; draw(); return; }
+    if(isFull()){ status.textContent='平局'; over=true; draw(); return; }
+    draw();
+    setTimeout(aiTurn,80);
+  });
+
+  document.getElementById('gmNew').onclick=reset;
+  document.getElementById('gmUndo').onclick=()=>{
+    if(over) return;
+    if(history.length&&board[history[history.length-1][0]][history[history.length-1][1]]===2){
+      const [r,c]=history.pop(); board[r][c]=0;
+    }
+    if(history.length){ const [r,c]=history.pop(); board[r][c]=0; }
+    status.textContent='已悔棋，继续落子';
+    draw();
+  };
+
+  reset();
+})();
+</script>

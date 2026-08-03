@@ -1,0 +1,80 @@
+<style>
+.rx-wrap { max-width: 760px; margin: 0 auto; }
+.rx-row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+.rx-row input[type="text"] { flex: 1; min-width: 200px; padding: 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-family: monospace; }
+.rx-row label { font-size: 0.85rem; color: var(--secondary); }
+.rx-text { width: 100%; min-height: 180px; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.95rem; resize: vertical; }
+.rx-out { background: var(--code-bg); border-radius: 10px; padding: 14px; margin-top: 12px; min-height: 90px; color: var(--primary); white-space: pre-wrap; word-break: break-word; }
+.rx-out mark { background: var(--primary); color: var(--theme); border-radius: 3px; }
+.rx-replace { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
+.rx-replace input { flex: 1; padding: 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); }
+.rx-replace button, .rx-row button { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
+.rx-msg { color: #e74c3c; font-size: 0.85rem; margin-top: 8px; min-height: 18px; }
+</style>
+
+<div class="rx-wrap">
+  <div class="rx-row">
+    <input type="text" id="rxPattern" placeholder="正则表达式，例如 \d+">
+    <label><input type="checkbox" id="rxG" checked> g</label>
+    <label><input type="checkbox" id="rxI"> i</label>
+    <label><input type="checkbox" id="rxM"> m</label>
+    <label><input type="checkbox" id="rxS"> s</label>
+  </div>
+  <textarea class="rx-text" id="rxText" placeholder="输入要匹配的文本…"></textarea>
+  <div class="rx-out" id="rxOut"></div>
+  <div class="rx-replace">
+    <input type="text" id="rxRepl" placeholder="替换为…">
+    <button id="rxDo">替换</button>
+    <button id="rxCopy">📋 复制</button>
+  </div>
+  <div class="rx-msg" id="rxMsg"></div>
+</div>
+
+<script>
+(()=>{
+  const pattern=document.getElementById('rxPattern');
+  const text=document.getElementById('rxText');
+  const out=document.getElementById('rxOut');
+  const msg=document.getElementById('rxMsg');
+
+  function escape(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function buildRegex(){
+    let flags='g';
+    if(document.getElementById('rxI').checked) flags+='i';
+    if(document.getElementById('rxM').checked) flags+='m';
+    if(document.getElementById('rxS').checked) flags+='s';
+    return new RegExp(pattern.value,flags);
+  }
+
+  function render(){
+    if(!pattern.value){ out.textContent=escape(text.value)||'输入正则和文本后实时匹配'; msg.textContent=''; return; }
+    try{
+      const re=buildRegex();
+      let count=0;
+      const html=escape(text.value).replace(re,m=>{ count++; return '<mark>'+m+'</mark>'; });
+      out.innerHTML=html;
+      msg.textContent='匹配 '+count+' 处';
+    }catch(e){
+      out.textContent=escape(text.value);
+      msg.textContent='正则错误：'+e.message;
+    }
+  }
+
+  function replaceAll(){
+    if(!pattern.value) return;
+    try{
+      const re=buildRegex();
+      out.innerHTML=escape(text.value.replace(re,document.getElementById('rxRepl').value));
+      msg.textContent='替换完成';
+    }catch(e){ msg.textContent='正则错误：'+e.message; }
+  }
+
+  pattern.addEventListener('input',render);
+  text.addEventListener('input',render);
+  document.querySelectorAll('.rx-row input[type="checkbox"]').forEach(b=>b.onchange=render);
+  document.getElementById('rxDo').onclick=replaceAll;
+  document.getElementById('rxCopy').onclick=()=>navigator.clipboard.writeText(out.textContent.replace(/<[^>]+>/g,''));
+  render();
+})();
+</script>

@@ -1,0 +1,51 @@
+<style>
+.b64-wrap { max-width: 680px; margin: 0 auto; }
+.b64-input { width: 100%; min-height: 150px; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.95rem; resize: vertical; }
+.b64-btns { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+.b64-btns button { padding: 9px 18px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; font-weight: 600; }
+.b64-btns .main { background: var(--primary); color: var(--theme); border-color: var(--primary); }
+.b64-out { background: var(--code-bg); border-radius: 10px; padding: 14px; min-height: 90px; color: var(--primary); word-break: break-all; }
+.b64-msg { color: #e74c3c; font-size: 0.85rem; margin-top: 8px; min-height: 18px; }
+</style>
+
+<div class="b64-wrap">
+  <textarea class="b64-input" id="b64Input" placeholder="输入文本或 Base64 内容…"></textarea>
+  <div class="b64-btns">
+    <button class="main" id="b64Enc">🔒 编码</button>
+    <button id="b64Dec">🔓 解码</button>
+    <button id="b64Copy">📋 复制结果</button>
+  </div>
+  <div class="b64-out" id="b64Out">结果</div>
+  <div class="b64-msg" id="b64Msg"></div>
+</div>
+
+<script>
+(()=>{
+  const input=document.getElementById('b64Input');
+  const out=document.getElementById('b64Out');
+  const msg=document.getElementById('b64Msg');
+
+  function encode(){
+    try{
+      const bytes=new TextEncoder().encode(input.value);
+      let bin='';
+      bytes.forEach(b=>bin+=String.fromCharCode(b));
+      out.textContent=btoa(bin);
+      msg.textContent='';
+    }catch(e){ msg.textContent='编码失败：'+e.message; }
+  }
+
+  function decode(){
+    try{
+      const bin=atob(input.value.trim());
+      const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
+      out.textContent=new TextDecoder().decode(bytes);
+      msg.textContent='';
+    }catch(e){ msg.textContent='解码失败：不是有效的 Base64'; }
+  }
+
+  document.getElementById('b64Enc').onclick=encode;
+  document.getElementById('b64Dec').onclick=decode;
+  document.getElementById('b64Copy').onclick=()=>navigator.clipboard.writeText(out.textContent);
+})();
+</script>

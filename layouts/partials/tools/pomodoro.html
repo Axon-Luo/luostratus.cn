@@ -1,0 +1,88 @@
+<style>
+.pd-wrap { max-width: 480px; margin: 0 auto; text-align: center; }
+.pd-mode { display: flex; justify-content: center; gap: 8px; margin-bottom: 14px; }
+.pd-mode button { padding: 7px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--secondary); cursor: pointer; }
+.pd-mode button.active { background: var(--primary); color: var(--theme); border-color: var(--primary); }
+.pd-time { font-size: 4rem; font-weight: 700; color: var(--primary); margin: 10px 0 18px; font-variant-numeric: tabular-nums; }
+.pd-btns { display: flex; justify-content: center; gap: 10px; margin-bottom: 12px; }
+.pd-btns button { padding: 10px 22px; border-radius: 10px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; font-weight: 600; }
+.pd-btns .main { background: var(--primary); color: var(--theme); border-color: var(--primary); }
+.pd-set { display: flex; justify-content: center; gap: 14px; color: var(--secondary); font-size: 0.9rem; }
+.pd-set input { width: 60px; padding: 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); }
+</style>
+
+<div class="pd-wrap">
+  <div class="pd-mode">
+    <button data-mode="work" class="active">🍅 专注</button>
+    <button data-mode="break">☕ 休息</button>
+  </div>
+  <div class="pd-time" id="pdTime">25:00</div>
+  <div class="pd-btns">
+    <button class="main" id="pdStart">▶ 开始</button>
+    <button id="pdReset">🔄 重置</button>
+  </div>
+  <div class="pd-set">
+    <label>专注 <input type="number" id="pdWork" min="1" max="120" value="25"> 分钟</label>
+    <label>休息 <input type="number" id="pdBreak" min="1" max="60" value="5"> 分钟</label>
+  </div>
+  <p id="pdStatus" style="color:var(--secondary);font-size:0.85rem;margin-top:10px">已专注 0 轮</p>
+</div>
+
+<script>
+(()=>{
+  const timeEl=document.getElementById('pdTime');
+  const statusEl=document.getElementById('pdStatus');
+  let mode='work', total=25*60, left=total, timer=null, cycles=0, running=false;
+
+  function fmt(s){
+    const m=Math.floor(s/60), sec=s%60;
+    return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');
+  }
+
+  function render(){ timeEl.textContent=fmt(left); }
+
+  function beep(){
+    try{
+      const ctx=new (window.AudioContext||window.webkitAudioContext)();
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.frequency.value=880; g.gain.value=0.2;
+      o.connect(g); g.connect(ctx.destination);
+      o.start(); o.stop(ctx.currentTime+0.4);
+    }catch(e){}
+  }
+
+  function switchMode(m){
+    mode=m;
+    document.querySelectorAll('.pd-mode button').forEach(b=>b.classList.toggle('active',b.dataset.mode===m));
+    total=(m==='work'?+document.getElementById('pdWork').value:+document.getElementById('pdBreak').value)*60;
+    left=total; render();
+  }
+
+  function tick(){
+    left--;
+    render();
+    if(left<=0){
+      clearInterval(timer); running=false;
+      document.getElementById('pdStart').textContent='▶ 开始';
+      beep();
+      if(mode==='work'){ cycles++; statusEl.textContent='专注完成！休息一下吧（已专注 '+cycles+' 轮）'; switchMode('break'); }
+      else { statusEl.textContent='休息结束，开始下一轮专注'; switchMode('work'); }
+    }
+  }
+
+  document.getElementById('pdStart').onclick=()=>{
+    if(running){ clearInterval(timer); running=false; document.getElementById('pdStart').textContent='▶ 继续'; return; }
+    if(left<=0){ left=total; }
+    running=true;
+    document.getElementById('pdStart').textContent='⏸ 暂停';
+    timer=setInterval(tick,1000);
+  };
+  document.getElementById('pdReset').onclick=()=>{
+    clearInterval(timer); running=false;
+    document.getElementById('pdStart').textContent='▶ 开始';
+    switchMode(mode);
+  };
+  document.querySelectorAll('.pd-mode button').forEach(b=>b.onclick=()=>{ clearInterval(timer); running=false; document.getElementById('pdStart').textContent='▶ 开始'; switchMode(b.dataset.mode); });
+  render();
+})();
+</script>

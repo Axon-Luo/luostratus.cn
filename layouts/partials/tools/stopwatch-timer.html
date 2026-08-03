@@ -1,0 +1,112 @@
+<style>
+.sw-wrap { max-width: 520px; margin: 0 auto; text-align: center; }
+.sw-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 14px; }
+.sw-tabs button { padding: 7px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--secondary); cursor: pointer; }
+.sw-tabs button.active { background: var(--primary); color: var(--theme); border-color: var(--primary); }
+.sw-time { font-size: 3.4rem; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; margin: 8px 0 16px; }
+.sw-btns { display: flex; justify-content: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.sw-btns button { padding: 9px 18px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
+.sw-btns .main { background: var(--primary); color: var(--theme); border-color: var(--primary); }
+.sw-set { display: flex; justify-content: center; gap: 10px; color: var(--secondary); font-size: 0.9rem; margin-bottom: 12px; }
+.sw-set input { width: 70px; padding: 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); }
+.sw-laps { max-width: 360px; margin: 0 auto; text-align: left; font-size: 0.9rem; color: var(--secondary); }
+.sw-laps div { padding: 4px 10px; border-bottom: 1px dashed var(--border); }
+</style>
+
+<div class="sw-wrap">
+  <div class="sw-tabs">
+    <button data-tab="watch" class="active">⏱ 秒表</button>
+    <button data-tab="count">⏳ 倒计时</button>
+  </div>
+  <div class="sw-time" id="swTime">00:00.0</div>
+  <div class="sw-set" id="swSet" hidden>
+    <label>分钟 <input type="number" id="swMin" min="0" max="999" value="5"></label>
+    <label>秒 <input type="number" id="swSec" min="0" max="59" value="0"></label>
+  </div>
+  <div class="sw-btns">
+    <button class="main" id="swStart">▶ 开始</button>
+    <button id="swLap">⏱ 计次</button>
+    <button id="swReset">🔄 重置</button>
+  </div>
+  <div class="sw-laps" id="swLaps"></div>
+</div>
+
+<script>
+(()=>{
+  const timeEl=document.getElementById('swTime');
+  const lapsEl=document.getElementById('swLaps');
+  let tab='watch', timer=null, running=false, ms=0, last=0, countTarget=0, countLeft=0;
+
+  function fmtWatch(t){
+    const m=Math.floor(t/60000), s=Math.floor(t%60000/1000), d=Math.floor(t%1000/100);
+    return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+d;
+  }
+  function fmtCount(t){
+    const m=Math.floor(t/60), s=t%60;
+    return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  }
+
+  function render(){ timeEl.textContent=tab==='watch'?fmtWatch(ms):fmtCount(Math.max(0,countLeft)); }
+
+  function beep(){
+    try{
+      const ctx=new (window.AudioContext||window.webkitAudioContext)();
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.frequency.value=880; g.gain.value=0.2; o.connect(g); g.connect(ctx.destination);
+      o.start(); o.stop(ctx.currentTime+0.4);
+    }catch(e){}
+  }
+
+  function start(){
+    if(running) return;
+    running=true;
+    document.getElementById('swStart').textContent='⏸ 暂停';
+    if(tab==='watch'){ last=Date.now()-ms; timer=setInterval(()=>{ ms=Date.now()-last; render(); },80); }
+    else {
+      if(countLeft<=0){ countLeft=countTarget; }
+      const endAt=Date.now()+countLeft*1000;
+      timer=setInterval(()=>{
+        countLeft=Math.max(0,Math.round((endAt-Date.now())/1000));
+        render();
+        if(countLeft<=0){ stop(); beep(); }
+      },200);
+    }
+  }
+
+  function stop(){
+    clearInterval(timer); running=false;
+    document.getElementById('swStart').textContent='▶ 继续';
+  }
+
+  function reset(){
+    clearInterval(timer); running=false;
+    document.getElementById('swStart').textContent='▶ 开始';
+    if(tab==='watch'){ ms=0; lapsEl.innerHTML=''; }
+    else { countLeft=countTarget; }
+    render();
+  }
+
+  function setTab(t){
+    clearInterval(timer); running=false;
+    document.getElementById('swStart').textContent='▶ 开始';
+    tab=t;
+    document.querySelectorAll('.sw-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+    document.getElementById('swSet').hidden=t!=='count';
+    document.getElementById('swLap').disabled=t!=='watch';
+    if(t==='watch'){ ms=0; lapsEl.innerHTML=''; }
+    else { countTarget=(+document.getElementById('swMin').value)*60+(+document.getElementById('swSec').value); countLeft=countTarget; }
+    render();
+  }
+
+  document.getElementById('swStart').onclick=()=>running?stop():start();
+  document.getElementById('swLap').onclick=()=>{
+    if(tab!=='watch'||!running) return;
+    const d=document.createElement('div');
+    d.textContent='第 '+lapsEl.children.length+1+' 圈：'+fmtWatch(ms);
+    lapsEl.prepend(d);
+  };
+  document.getElementById('swReset').onclick=reset;
+  document.querySelectorAll('.sw-tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+  setTab('watch');
+})();
+</script>

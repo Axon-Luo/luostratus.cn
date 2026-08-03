@@ -1,0 +1,73 @@
+<style>
+.wn-wrap { max-width: 480px; margin: 0 auto; text-align: center; }
+.wn-btns { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 14px; }
+.wn-btns button { padding: 18px 10px; border-radius: 12px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 1.1rem; cursor: pointer; }
+.wn-btns button.active { background: var(--primary); color: var(--theme); border-color: var(--primary); }
+.wn-vol { color: var(--secondary); font-size: 0.9rem; }
+.wn-vol input { width: 240px; }
+</style>
+
+<div class="wn-wrap">
+  <div class="wn-btns">
+    <button data-type="white">⚪ 白噪音</button>
+    <button data-type="rain">🌧 雨声</button>
+    <button data-type="waves">🌊 海浪</button>
+    <button data-type="fan">🌀 风扇</button>
+  </div>
+  <div class="wn-vol">音量 <input type="range" id="wnVol" min="0" max="100" value="40"></div>
+  <p id="wnStatus" style="color:var(--secondary);font-size:0.85rem;margin-top:10px">点击按钮播放，再次点击停止</p>
+</div>
+
+<script>
+(()=>{
+  const buttons=document.querySelectorAll('.wn-btns button');
+  const status=document.getElementById('wnStatus');
+  let ctx=null, active=null, activeType='', gain=null, lfo=null;
+
+  function noiseBuffer(seconds){
+    const buffer=ctx.createBuffer(1,ctx.sampleRate*seconds,ctx.sampleRate);
+    const data=buffer.getChannelData(0);
+    for(let i=0;i<data.length;i++) data[i]=Math.random()*2-1;
+    return buffer;
+  }
+
+  function start(type){
+    stop();
+    if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const src=ctx.createBufferSource();
+    src.buffer=noiseBuffer(2);
+    src.loop=true;
+    const filter=ctx.createBiquadFilter();
+    gain=ctx.createGain();
+    gain.gain.value=+document.getElementById('wnVol').value/100;
+    filter.type='lowpass';
+    if(type==='rain'){ filter.frequency.value=1400; filter.Q.value=0.6; }
+    else if(type==='waves'){ filter.frequency.value=420; filter.Q.value=1.2; }
+    else if(type==='fan'){ filter.type='bandpass'; filter.frequency.value=900; filter.Q.value=2; }
+    else { filter.type='lowpass'; filter.frequency.value=8000; }
+    src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+    src.start();
+    active=src; activeType=type;
+    if(type==='waves'){
+      lfo=ctx.createOscillator(); lfo.frequency.value=0.08;
+      const g=ctx.createGain(); g.gain.value=0.25;
+      lfo.connect(g); g.connect(gain.gain); lfo.start();
+    }
+    buttons.forEach(b=>b.classList.toggle('active',b.dataset.type===type));
+    status.textContent='正在播放：'+type;
+  }
+
+  function stop(){
+    if(active){ try{ active.stop(); }catch(e){} active=null; }
+    if(lfo){ try{ lfo.stop(); }catch(e){} lfo=null; }
+    buttons.forEach(b=>b.classList.remove('active'));
+    status.textContent='已停止';
+  }
+
+  buttons.forEach(b=>b.onclick=()=>{
+    if(activeType===b.dataset.type) stop();
+    else start(b.dataset.type);
+  });
+  document.getElementById('wnVol').oninput=()=>{ if(gain) gain.gain.value=+document.getElementById('wnVol').value/100; };
+})();
+</script>

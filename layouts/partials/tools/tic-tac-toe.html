@@ -1,0 +1,99 @@
+<style>
+.ttt-wrap { max-width: 480px; margin: 0 auto; text-align: center; }
+.ttt-bar { display: flex; gap: 12px; justify-content: center; align-items: center; margin-bottom: 14px; flex-wrap: wrap; font-size: 0.9rem; color: var(--secondary); }
+.ttt-bar select, .ttt-bar button { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
+.ttt-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 320px; margin: 0 auto; }
+.ttt-cell { aspect-ratio: 1; font-size: 2.2rem; border-radius: 10px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
+.ttt-cell:hover:not(.disabled) { border-color: var(--primary); }
+.ttt-score { display: flex; justify-content: center; gap: 24px; margin-top: 14px; color: var(--secondary); font-size: 0.9rem; }
+</style>
+
+<div class="ttt-wrap">
+  <div class="ttt-bar">
+    <label>难度 <select id="tttDiff"><option value="easy">简单</option><option value="medium">中等</option><option value="hard">困难</option></select></label>
+    <button id="tttNew">🔄 重新开始</button>
+  </div>
+  <div class="ttt-board" id="tttBoard"></div>
+  <p id="tttStatus" style="margin-top:12px;color:var(--secondary)">你先手（X）</p>
+  <div class="ttt-score"><span>你 <strong id="tttYou">0</strong></span><span>电脑 <strong id="tttAi">0</strong></span><span>平局 <strong id="tttDraw">0</strong></span></div>
+</div>
+
+<script>
+(()=>{
+  const boardEl=document.getElementById('tttBoard');
+  const status=document.getElementById('tttStatus');
+  let board=Array(9).fill(''), humanTurn=true, over=false, scores={you:0,ai:0,draw:0};
+
+  function render(){
+    boardEl.innerHTML='';
+    for(let i=0;i<9;i++){
+      const b=document.createElement('button');
+      b.className='ttt-cell'; b.textContent=board[i];
+      if(over||board[i]) b.classList.add('disabled');
+      b.onclick=()=>humanMove(i);
+      boardEl.appendChild(b);
+    }
+  }
+
+  function winner(b){
+    const lines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    for(const [a,c,d] of lines) if(b[a]&&b[a]===b[c]&&b[a]===b[d]) return b[a];
+    return b.every(v=>v)?'draw':'';
+  }
+
+  function minimax(b,isMax){
+    const w=winner(b);
+    if(w==='O') return 10;
+    if(w==='X') return -10;
+    if(w==='draw') return 0;
+    const moves=[];
+    for(let i=0;i<9;i++) if(!b[i]){
+      b[i]=isMax?'O':'X';
+      moves.push(minimax(b,!isMax));
+      b[i]='';
+    }
+    return isMax?Math.max(...moves):Math.min(...moves);
+  }
+
+  function aiMove(){
+    const diff=document.getElementById('tttDiff').value;
+    const empty=board.map((v,i)=>v?'':i).filter(v=>v!=='');
+    if(!empty.length) return;
+    if(diff==='easy'||(diff==='medium'&&Math.random()<0.5)){
+      return empty[Math.floor(Math.random()*empty.length)];
+    }
+    let best=-Infinity, pick=empty[0];
+    for(const i of empty){
+      board[i]='O';
+      const v=minimax(board,false);
+      board[i]='';
+      if(v>best){ best=v; pick=i; }
+    }
+    return pick;
+  }
+
+  function checkEnd(){
+    const w=winner(board);
+    if(w==='X'){ scores.you++; status.textContent='你赢了 🎉'; over=true; }
+    else if(w==='O'){ scores.ai++; status.textContent='电脑获胜'; over=true; }
+    else if(w==='draw'){ scores.draw++; status.textContent='平局'; over=true; }
+    document.getElementById('tttYou').textContent=scores.you;
+    document.getElementById('tttAi').textContent=scores.ai;
+    document.getElementById('tttDraw').textContent=scores.draw;
+    render();
+  }
+
+  function humanMove(i){
+    if(over||board[i]) return;
+    board[i]='X'; humanTurn=false;
+    checkEnd();
+    if(!over) setTimeout(()=>{
+      const m=aiMove();
+      if(m!==undefined){ board[m]='O'; checkEnd(); }
+    },120);
+  }
+
+  document.getElementById('tttNew').onclick=()=>{ board=Array(9).fill(''); over=false; status.textContent='你先手（X）'; render(); };
+  render();
+})();
+</script>

@@ -1,0 +1,76 @@
+<style>
+.wm-wrap { max-width: 480px; margin: 0 auto; text-align: center; }
+.wm-bar { display: flex; justify-content: center; gap: 16px; align-items: center; margin-bottom: 12px; color: var(--secondary); font-size: 0.9rem; flex-wrap: wrap; }
+.wm-bar select, .wm-bar button { padding: 7px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
+.wm-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; max-width: 360px; margin: 0 auto; }
+.wm-hole { aspect-ratio: 1; border-radius: 50%; border: 2px solid var(--border); background: var(--code-bg); font-size: 3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.wm-hole.active { background: var(--entry); border-color: var(--primary); }
+</style>
+
+<div class="wm-wrap">
+  <div class="wm-bar">
+    <label>难度 <select id="wmDiff"><option value="900">普通</option><option value="650">困难</option><option value="450">地狱</option></select></label>
+    <span>得分 <strong id="wmScore">0</strong></span>
+    <span>时间 <strong id="wmTime">30</strong></span>
+    <button id="wmStart">▶ 开始</button>
+  </div>
+  <div class="wm-grid" id="wmGrid"></div>
+  <p id="wmStatus" style="color:var(--secondary);font-size:0.85rem">在地鼠出现时点击它</p>
+</div>
+
+<script>
+(()=>{
+  const gridEl=document.getElementById('wmGrid');
+  const statusEl=document.getElementById('wmStatus');
+  let score=0, timeLeft=30, mole=-1, running=false, countTimer=null, moleTimer=null;
+
+  function render(){
+    gridEl.innerHTML='';
+    for(let i=0;i<9;i++){
+      const b=document.createElement('button');
+      b.className='wm-hole'+(i===mole?' active':'');
+      b.textContent=i===mole?'🐹':'';
+      b.onclick=()=>hit(i);
+      gridEl.appendChild(b);
+    }
+  }
+
+  function hit(i){
+    if(!running||i!==mole) return;
+    score++; mole=-1;
+    document.getElementById('wmScore').textContent=score;
+    render();
+  }
+
+  function spawn(){
+    if(!running) return;
+    mole=Math.floor(Math.random()*9);
+    render();
+    moleTimer=setTimeout(()=>{ mole=-1; render(); },Math.min(1400,+document.getElementById('wmDiff').value));
+  }
+
+  function start(){
+    if(running) return;
+    running=true; score=0; timeLeft=30;
+    document.getElementById('wmScore').textContent=0;
+    document.getElementById('wmTime').textContent=30;
+    document.getElementById('wmStart').textContent='⏸ 进行中';
+    statusEl.textContent='快打地鼠！';
+    spawn();
+    countTimer=setInterval(()=>{
+      timeLeft--;
+      document.getElementById('wmTime').textContent=timeLeft;
+      if(timeLeft<=0){
+        clearInterval(countTimer); clearTimeout(moleTimer);
+        running=false; mole=-1;
+        document.getElementById('wmStart').textContent='▶ 再来一局';
+        statusEl.textContent='时间到！得分 '+score;
+        render();
+      }
+    },1000);
+  }
+
+  document.getElementById('wmStart').onclick=start;
+  render();
+})();
+</script>

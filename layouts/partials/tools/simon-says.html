@@ -1,0 +1,92 @@
+<style>
+.sm-wrap { max-width: 460px; margin: 0 auto; text-align: center; }
+.sm-bar { display: flex; justify-content: center; gap: 18px; margin-bottom: 12px; color: var(--secondary); font-size: 0.9rem; }
+.sm-bar button { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
+.sm-pads { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; max-width: 320px; margin: 0 auto; }
+.sm-pad { aspect-ratio: 1; border-radius: 14px; border: none; font-size: 2rem; cursor: pointer; opacity: 0.75; transition: opacity 0.1s, transform 0.1s; }
+.sm-pad.lit { opacity: 1; transform: scale(1.04); }
+</style>
+
+<div class="sm-wrap">
+  <div class="sm-bar"><span>轮次 <strong id="smRound">0</strong></span><span id="smStatus">点击开始</span><button id="smStart">▶ 开始</button></div>
+  <div class="sm-pads" id="smPads"></div>
+</div>
+
+<script>
+(()=>{
+  const COLORS=[{id:0,color:'#e74c3c',freq:523,emoji:'🔴'},{id:1,color:'#2980b9',freq:587,emoji:'🔵'},{id:2,color:'#27ae60',freq:659,emoji:'🟢'},{id:3,color:'#f1c40f',freq:698,emoji:'🟡'}];
+  const padsEl=document.getElementById('smPads');
+  const statusEl=document.getElementById('smStatus');
+  const roundEl=document.getElementById('smRound');
+  let seq=[], playerIdx=0, playing=false, started=false, audioCtx=null;
+
+  function beep(freq){
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.frequency.value=freq; o.type='square'; g.gain.value=0.15;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime+0.18);
+  }
+
+  function build(){
+    padsEl.innerHTML='';
+    COLORS.forEach(c=>{
+      const b=document.createElement('button');
+      b.className='sm-pad'; b.style.background=c.color; b.textContent=c.emoji;
+      b.onclick=()=>playerClick(c.id,b);
+      padsEl.appendChild(b);
+    });
+  }
+
+  function lit(id,ms){
+    const b=padsEl.children[id];
+    b.classList.add('lit'); beep(COLORS[id].freq);
+    setTimeout(()=>b.classList.remove('lit'),ms);
+  }
+
+  function playSeq(){
+    playing=true;
+    let i=0;
+    const step=()=>{
+      if(i>=seq.length){ playing=false; return; }
+      lit(seq[i],420);
+      i++;
+      setTimeout(step,560);
+    };
+    setTimeout(step,500);
+  }
+
+  function nextRound(){
+    seq.push(Math.floor(Math.random()*4));
+    roundEl.textContent=seq.length;
+    statusEl.textContent='记住顺序';
+    setTimeout(playSeq,400);
+  }
+
+  function start(){
+    seq=[]; playerIdx=0; started=true;
+    document.getElementById('smStart').textContent='🔄 重新开始';
+    nextRound();
+  }
+
+  function playerClick(id,b){
+    if(!started||playing) return;
+    lit(id,180);
+    if(id===seq[playerIdx]){
+      playerIdx++;
+      if(playerIdx===seq.length){
+        playerIdx=0;
+        statusEl.textContent='正确，下一轮';
+        setTimeout(nextRound,700);
+      }
+    } else {
+      started=false;
+      statusEl.textContent='记错了，本轮 '+seq.length+' 关';
+      document.getElementById('smStart').textContent='▶ 再来一次';
+    }
+  }
+
+  document.getElementById('smStart').onclick=start;
+  build();
+})();
+</script>

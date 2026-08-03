@@ -1,0 +1,50 @@
+<style>
+.jf-wrap { max-width: 760px; margin: 0 auto; }
+.jf-input { width: 100%; min-height: 200px; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-family: monospace; font-size: 0.9rem; resize: vertical; }
+.jf-btns { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+.jf-btns button { padding: 9px 18px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; font-weight: 600; }
+.jf-out { background: var(--code-bg); border-radius: 10px; padding: 14px; min-height: 120px; color: var(--primary); font-family: monospace; font-size: 0.85rem; white-space: pre-wrap; word-break: break-word; }
+.jf-msg { color: #e74c3c; font-size: 0.85rem; margin-top: 8px; min-height: 18px; }
+</style>
+
+<div class="jf-wrap">
+  <textarea class="jf-input" id="jfInput" placeholder='{"name": "洛云", "site": "luostratus.cn"}'></textarea>
+  <div class="jf-btns">
+    <button id="jfFmt">✨ 格式化</button>
+    <button id="jfMin">🗜 压缩</button>
+    <button id="jfVal">✔ 校验</button>
+    <button id="jfCopy">📋 复制</button>
+  </div>
+  <div class="jf-out" id="jfOut">结果</div>
+  <div class="jf-msg" id="jfMsg"></div>
+</div>
+
+<script>
+(()=>{
+  const input=document.getElementById('jfInput');
+  const out=document.getElementById('jfOut');
+  const msg=document.getElementById('jfMsg');
+
+  function parse(){
+    try{ return {ok:true,val:JSON.parse(input.value)}; }
+    catch(e){ msg.textContent='JSON 错误：'+e.message; return {ok:false}; }
+  }
+
+  document.getElementById('jfFmt').onclick=()=>{
+    const p=parse(); if(!p.ok) return;
+    out.textContent=JSON.stringify(p.val,null,2);
+    msg.textContent='格式化成功';
+  };
+  document.getElementById('jfMin').onclick=()=>{
+    const p=parse(); if(!p.ok) return;
+    out.textContent=JSON.stringify(p.val);
+    msg.textContent='压缩成功';
+  };
+  document.getElementById('jfVal').onclick=()=>{
+    const p=parse(); if(!p.ok) return;
+    out.textContent=JSON.stringify(p.val,null,2);
+    msg.textContent='✔ 合法 JSON';
+  };
+  document.getElementById('jfCopy').onclick=()=>navigator.clipboard.writeText(out.textContent);
+})();
+</script>

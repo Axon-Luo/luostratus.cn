@@ -1,0 +1,79 @@
+<style>
+.md-wrap { max-width: 860px; margin: 0 auto; }
+.md-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.md-cols textarea { width: 100%; min-height: 420px; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-family: monospace; font-size: 0.9rem; resize: vertical; }
+.md-preview { border: 1px solid var(--border); border-radius: 10px; padding: 16px; background: var(--entry); overflow-wrap: break-word; line-height: 1.7; }
+.md-preview h1,.md-preview h2,.md-preview h3 { color: var(--primary); }
+.md-preview code { background: var(--code-bg); padding: 2px 5px; border-radius: 4px; }
+.md-preview pre { background: var(--code-bg); padding: 12px; border-radius: 8px; overflow-x: auto; }
+.md-preview blockquote { border-left: 3px solid var(--primary); margin: 0; padding-left: 12px; color: var(--secondary); }
+.md-preview a { color: var(--primary); }
+.md-bar { display: flex; gap: 8px; margin-bottom: 10px; }
+.md-bar button { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
+@media (max-width: 700px) { .md-cols { grid-template-columns: 1fr; } }
+</style>
+
+<div class="md-wrap">
+  <div class="md-bar"><button id="mdSample">📄 载入示例</button><button id="mdClear">🗑 清空</button></div>
+  <div class="md-cols">
+    <textarea id="mdInput" placeholder="输入 Markdown…"></textarea>
+    <div class="md-preview" id="mdPreview"></div>
+  </div>
+</div>
+
+<script>
+(()=>{
+  const input=document.getElementById('mdInput');
+  const preview=document.getElementById('mdPreview');
+
+  function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function render(){
+    let lines=input.value.replace(/\r/g,'').split('\n');
+    const out=[];
+    let inCode=false, codeBuf=[], inList=false, inQuote=false;
+    const flushList=()=>{ if(inList){ out.push('</ul>'); inList=false; } };
+    const flushQuote=()=>{ if(inQuote){ out.push('</blockquote>'); inQuote=false; } };
+
+    for(let i=0;i<lines.length;i++){
+      let line=lines[i];
+      const codeMatch=line.match(/^```/);
+      if(codeMatch){
+        if(inCode){ out.push('<pre><code>'+esc(codeBuf.join('\n'))+'</code></pre>'); codeBuf=[]; inCode=false; }
+        else { flushList(); flushQuote(); inCode=true; }
+        continue;
+      }
+      if(inCode){ codeBuf.push(line); continue; }
+      flushList();
+      if(line.trim()===''){ flushQuote(); out.push(''); continue; }
+      let html=esc(line);
+      html=html.replace(/`([^`]+)`/g,'<code>$1</code>');
+      html=html.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+      html=html.replace(/(^|[^*])\*([^*]+)\*/g,'$1<em>$2</em>');
+      html=html.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+      const h=line.match(/^(#{1,6})\s+(.*)/);
+      if(h){ const lv=h[1].length; out.push('<h'+lv+'>'+inline(h[2])+'</h'+lv+'>'); continue; }
+      const q=line.match(/^>\s?(.*)/);
+      if(q){ if(!inQuote){ out.push('<blockquote>'); inQuote=true; } out.push('<p>'+inline(q[1])+'</p>'); continue; }
+      const li=line.match(/^[-*+]\s+(.*)/);
+      if(li){ if(!inList){ out.push('<ul>'); inList=true; } out.push('<li>'+inline(li[1])+'</li>'); continue; }
+      const ol=line.match(/^\d+\.\s+(.*)/);
+      if(ol){ if(!inList){ out.push('<ol>'); inList=true; } out.push('<li>'+inline(ol[1])+'</li>'); continue; }
+      out.push('<p>'+inline(html)+'</p>');
+    }
+    if(inCode) out.push('<pre><code>'+esc(codeBuf.join('\n'))+'</code></pre>');
+    flushList(); flushQuote();
+    preview.innerHTML=out.join('\n');
+
+    function inline(h){ return h; }
+  }
+
+  input.addEventListener('input',render);
+  document.getElementById('mdSample').onclick=()=>{
+    input.value='# 欢迎使用 Markdown\n\n**加粗**、*斜体* 和 `行内代码`。\n\n> 这是一段引用。\n\n- 列表项一\n- 列表项二\n\n```js\nconsole.log("hello")\n```\n\n[访问洛云](https://luostratus.cn)';
+    render();
+  };
+  document.getElementById('mdClear').onclick=()=>{ input.value=''; render(); };
+  render();
+})();
+</script>

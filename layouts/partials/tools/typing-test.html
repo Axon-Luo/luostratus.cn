@@ -1,0 +1,72 @@
+<style>
+.tp-wrap { max-width: 680px; margin: 0 auto; }
+.tp-sample { background: var(--code-bg); border: 1px solid var(--border); border-radius: 10px; padding: 16px; line-height: 1.8; font-size: 1rem; margin-bottom: 12px; color: var(--primary); }
+.tp-sample .done { color: var(--primary); }
+.tp-sample .error { color: #e74c3c; text-decoration: underline; }
+.tp-input { width: 100%; min-height: 120px; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 1rem; resize: vertical; }
+.tp-bar { display: flex; justify-content: center; gap: 22px; margin-top: 12px; color: var(--secondary); font-size: 0.9rem; flex-wrap: wrap; }
+.tp-bar button { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
+</style>
+
+<div class="tp-wrap">
+  <div class="tp-sample" id="tpSample"></div>
+  <textarea class="tp-input" id="tpInput" placeholder="在这里开始打字…" spellcheck="false"></textarea>
+  <div class="tp-bar">
+    <span>用时 <strong id="tpTime">0</strong>s</span>
+    <span>速度 <strong id="tpSpeed">0</strong> 字/分</span>
+    <span>正确率 <strong id="tpAcc">100</strong>%</span>
+    <button id="tpRestart">🔄 重新开始</button>
+  </div>
+</div>
+
+<script>
+(()=>{
+  const SAMPLE='欢迎来到洛云的博客，这里记录代码、游戏与生活。保持好奇，持续学习，认真生活，慢慢成长。';
+  const sampleEl=document.getElementById('tpSample');
+  const input=document.getElementById('tpInput');
+  const timeEl=document.getElementById('tpTime');
+  const speedEl=document.getElementById('tpSpeed');
+  const accEl=document.getElementById('tpAcc');
+  let startTime=null, finished=false;
+
+  function render(){
+    const typed=input.value;
+    let html='';
+    for(let i=0;i<SAMPLE.length;i++){
+      if(i<typed.length){
+        html+=typed[i]===SAMPLE[i]?'<span class="done">'+SAMPLE[i]+'</span>':'<span class="error">'+SAMPLE[i]+'</span>';
+      } else {
+        html+=SAMPLE[i];
+      }
+    }
+    sampleEl.innerHTML=html;
+    if(startTime!==null&&!finished){
+      const sec=(Date.now()-startTime)/1000;
+      const typedLen=Math.min(typed.length,SAMPLE.length);
+      let correct=0;
+      for(let i=0;i<typedLen;i++) if(typed[i]===SAMPLE[i]) correct++;
+      timeEl.textContent=sec.toFixed(1);
+      speedEl.textContent=Math.round(correct/sec*60);
+      accEl.textContent=typedLen?Math.round(correct/typedLen*100):100;
+      if(typedLen>=SAMPLE.length){
+        finished=true;
+        input.blur();
+      }
+    }
+  }
+
+  input.addEventListener('input',()=>{
+    if(startTime===null&&input.value){ startTime=Date.now(); }
+    render();
+  });
+
+  document.getElementById('tpRestart').onclick=()=>{
+    input.value=''; startTime=null; finished=false;
+    timeEl.textContent=0; speedEl.textContent=0; accEl.textContent=100;
+    render();
+    input.focus();
+  };
+
+  render();
+})();
+</script>
