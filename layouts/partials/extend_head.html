@@ -124,38 +124,6 @@ pre:hover {
   transform: translateY(0);
 }
 
-/* === 返回顶部按钮 === */
-#back-to-top {
-  position: fixed;
-  bottom: 32px;
-  right: 32px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--entry);
-  border: 1px solid var(--border);
-  color: var(--primary);
-  font-size: 1.2rem;
-  cursor: pointer;
-  opacity: 0;
-  transform: translateY(12px);
-  pointer-events: none;
-  transition: opacity 0.3s ease, transform 0.3s ease, background 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 99;
-}
-#back-to-top.show {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-#back-to-top:hover {
-  background: var(--primary);
-  color: var(--theme);
-}
-
 /* === 按钮/标签点击反馈 === */
 button, .button, .post-tag {
   transition: transform 0.15s ease, opacity 0.2s ease;
