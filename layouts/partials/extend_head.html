@@ -145,6 +145,26 @@ pre:hover {
   }
 }
 
+/* === 小功能页面布局统一 === */
+.main > [class$="-wrap"] {
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.main [class$="-wrap"] canvas {
+  max-width: 100%;
+}
+.main [class$="-wrap"] button,
+.main [class$="-wrap"] select,
+.main [class$="-wrap"] input[type="text"],
+.main [class$="-wrap"] input[type="number"],
+.main [class$="-wrap"] input[type="date"],
+.main [class$="-wrap"] input[type="search"],
+.main [class$="-wrap"] textarea {
+  min-height: 36px;
+  font-size: 0.95rem;
+}
+
 /* === 按钮/标签点击反馈 === */
 button, .button, .post-tag {
   transition: transform 0.15s ease, opacity 0.2s ease;

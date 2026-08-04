@@ -18,9 +18,9 @@
     <button id="tetrisPause">暂停</button>
   </div>
   <div class="tetris-main">
-    <canvas id="tetrisCanvas" width="200" height="400"></canvas>
+    <canvas id="tetrisCanvas" width="240" height="480"></canvas>
     <div class="tetris-side">
-      <canvas id="tetrisNext" width="100" height="80"></canvas>
+      <canvas id="tetrisNext" width="120" height="96"></canvas>
       <div class="tetris-info">
         <div>分数：<strong id="tetrisScore">0</strong></div>
         <div>行数：<strong id="tetrisLines">0</strong></div>
@@ -34,7 +34,7 @@
 
 <script>
 (()=>{
-  const COLS=10,ROWS=20,CELL=20;
+  const COLS=10,ROWS=20,CELL=24;
   const canvas=document.getElementById('tetrisCanvas'),ctx=canvas.getContext('2d');
   const nextCanvas=document.getElementById('tetrisNext'),nctx=nextCanvas.getContext('2d');
   const scoreEl=document.getElementById('tetrisScore'),linesEl=document.getElementById('tetrisLines'),levelEl=document.getElementById('tetrisLevel'),bestEl=document.getElementById('tetrisBest');
@@ -118,7 +118,7 @@
     nctx.fillStyle='#1a1a2e'; nctx.fillRect(0,0,nextCanvas.width,nextCanvas.height);
     const np=PIECES[nextType]; nctx.fillStyle=COLORS[nextType];
     for(let y=0;y<np.length;y++) for(let x=0;x<np[y].length;x++)
-      if(np[y][x]) nctx.fillRect(x*CELL+10,y*CELL+10,CELL-1,CELL-1);
+      if(np[y][x]) nctx.fillRect(x*CELL+12,y*CELL+12,CELL-1,CELL-1);
   }
 
   function drawGameOver(){

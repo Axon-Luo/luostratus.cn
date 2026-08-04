@@ -6,6 +6,7 @@
 .mine-info { display: flex; gap: 20px; margin-bottom: 8px; font-size: 0.9rem; color: var(--secondary); }
 .mine-info strong { color: var(--primary); }
 .mine-grid { display: inline-grid; gap: 1px; background: var(--border); border-radius: 4px; padding: 2px; user-select: none; }
+.mine-grid { max-width: 100%; overflow-x: auto; }
 .mine-cell { width: 28px; height: 28px; border-radius: 3px; background: var(--entry); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: background 0.1s; }
 .mine-cell.revealed { background: transparent; cursor: default; }
 .mine-cell:hover:not(.revealed) { background: color-mix(in srgb, var(--primary) 20%, transparent); }
