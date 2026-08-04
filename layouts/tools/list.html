@@ -81,18 +81,16 @@
   box-shadow: 0 8px 24px rgba(0,0,0,0.08);
   border-color: var(--primary);
 }
-.tool-card .tool-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
-.tool-card .tool-name { font-size: 1.05rem; font-weight: 600; color: var(--primary); margin-bottom: 4px; }
+.tool-card .tool-name { font-size: 1.3rem; font-weight: 700; color: var(--primary); margin-bottom: 6px; line-height: 1.35; }
 .tool-card .tool-desc { font-size: 0.85rem; color: var(--secondary); line-height: 1.5; }
 .page-description { color: var(--secondary); font-size: 1.1rem; }
 </style>
 
 <section class="tools-section">
-  <h2>🎮 游戏</h2>
+  <h2>游戏</h2>
   <div class="tools-grid">
     {{ range $games }}
     <a href="/tools/{{ .slug }}/" class="tool-card">
-      <span class="tool-icon">{{ .icon }}</span>
       <div class="tool-name">{{ .name }}</div>
       <div class="tool-desc">{{ .desc }}</div>
     </a>
@@ -101,11 +99,10 @@
 </section>
 
 <section class="tools-section">
-  <h2>🛠️ 实用工具</h2>
+  <h2>实用工具</h2>
   <div class="tools-grid">
     {{ range $utils }}
     <a href="/tools/{{ .slug }}/" class="tool-card">
-      <span class="tool-icon">{{ .icon }}</span>
       <div class="tool-name">{{ .name }}</div>
       <div class="tool-desc">{{ .desc }}</div>
     </a>
