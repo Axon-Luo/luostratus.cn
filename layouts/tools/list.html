@@ -87,9 +87,9 @@
 </style>
 
 <section class="tools-section">
-  <h2>游戏</h2>
+  <h2>实用工具</h2>
   <div class="tools-grid">
-    {{ range $games }}
+    {{ range $utils }}
     <a href="/tools/{{ .slug }}/" class="tool-card">
       <div class="tool-name">{{ .name }}</div>
       <div class="tool-desc">{{ .desc }}</div>
@@ -99,9 +99,9 @@
 </section>
 
 <section class="tools-section">
-  <h2>实用工具</h2>
+  <h2>游戏</h2>
   <div class="tools-grid">
-    {{ range $utils }}
+    {{ range $games }}
     <a href="/tools/{{ .slug }}/" class="tool-card">
       <div class="tool-name">{{ .name }}</div>
       <div class="tool-desc">{{ .desc }}</div>
