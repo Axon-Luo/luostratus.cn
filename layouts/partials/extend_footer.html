@@ -118,6 +118,9 @@ function buildArticleTOC() {
 
 function buildSideNav() {
   // 只在文章页构建
+  const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
+  if (currentPath === '/about') return;
+
   const header = document.querySelector('.header, header, #header');
   if (!header) return;
 
