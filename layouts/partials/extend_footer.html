@@ -31,6 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <script>
 function buildArticleTOC() {
+  const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
+  if (currentPath === '/about') return;
+
   const content = document.querySelector('.post-content');
   if (!content) return;
 
