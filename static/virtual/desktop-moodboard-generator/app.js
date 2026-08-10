@@ -494,7 +494,7 @@
 
   function characterAvatarMarkup() {
     const source = imageStore.resolve(state.character.avatar);
-    return source ? `<img src="${escapeHtml(source)}" alt="">` : escapeHtml(state.character.name.slice(0,1) || "OC");
+    return source ? `<img src="${escapeHtml(source)}" alt="">` : escapeHtml(state.character.name.slice(0,1) || "我");
   }
 
   function startMenuMarkup() {

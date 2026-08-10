@@ -416,7 +416,7 @@
         <div class="signature-block"><small>REVIEWER</small><b>${esc(state.document.reviewer)}</b></div>
         <div class="signature-block"><small>ISSUE DATE</small><b>${esc(state.document.issueDate)}</b></div>
       </section>
-      <footer class="doc-footer"><span>OC APPRAISAL / PERSONAL ARCHIVE</span><span>${state.showFiction?"FICTIONAL DOCUMENT":""}</span><span>${state.showPageNumber?"PAGE 01":""}</span></footer>
+      <footer class="doc-footer"><span>APPRAISAL / PERSONAL ARCHIVE</span><span>${state.showFiction?"FICTIONAL DOCUMENT":""}</span><span>${state.showPageNumber?"PAGE 01":""}</span></footer>
       ${state.showFiction?'<div class="fiction-mark">FICTIONAL DOCUMENT · PERSONAL CREATION</div>':""}
       <div class="sticker-layer">${state.stickers.map(stickerMarkup).join("")}</div>`;
     if(state.paper==="landscape"){

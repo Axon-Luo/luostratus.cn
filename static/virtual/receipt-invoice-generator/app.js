@@ -116,7 +116,7 @@ __||______||____
         logo: "",
         name: "雾紫商店", subtitle: "OBJECTS · PAPER · DAILY GOODS",
         address: "南港区旧码头路 24 号\nNo. 24, Old Pier Road", phone: "+86 021 5820 0617",
-        email: "hello@mistviolet.example", taxId: "CN-OC-2048-0716"
+        email: "hello@mistviolet.example", taxId: "CN-2048-0716"
       },
       receipt: {
         orderNo: "R-20260728-0048", date: "2026-07-28 16:42", cashier: "收银员 07",
@@ -125,7 +125,7 @@ __||______||____
       invoice: {
         invoiceNo: "INV-2026-0728", issueDate: "2026-07-28", dueDate: "2026-08-11",
         clientName: "岬角编辑室", clientAddress: "东岸区航标街 18 号\naccounts@cape-editorial.example",
-        terms: "请于到期日前完成付款。\n银行信息：OC BANK · 0628 2048 0716", notes: "感谢您的委托。"
+        terms: "请于到期日前完成付款。\n银行信息：BANK · 0628 2048 0716", notes: "感谢您的委托。"
       },
       items: [
         { id:first, name:"黄铜票据夹", description:"BRASS · 80 MM", quantity:2, price:36 },

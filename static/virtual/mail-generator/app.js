@@ -372,7 +372,7 @@
   }
 
   function initials(value) {
-    const clean = String(value || "OC").trim();
+    const clean = String(value || "我").trim();
     return clean.slice(0, 2).toUpperCase();
   }
 
@@ -684,7 +684,7 @@
           </li>
         `).join("")}
       </ul>
-      <div class="account-footer">OC MAIL ARCHIVE · LOCAL DESK</div>
+      <div class="account-footer">MAIL ARCHIVE · LOCAL DESK</div>
     `;
   }
 

@@ -66,7 +66,7 @@
       version: 2,
       projectName: "海风食堂点评档案",
       item: {
-        platformName: "OC 点评",
+        platformName: "点评",
         type: "restaurant",
         category: "海边料理 · 家常菜",
         name: "海风食堂",
@@ -540,7 +540,7 @@
     canvas.style.setProperty("--rv-font", state.style.fontScale);
     canvas.innerHTML = `
       <header class="rv-appbar">
-        <div><b>${escapeHtml(item.platformName || "OC 点评")}</b> <span>· ${escapeHtml(item.category)}</span></div>
+        <div><b>${escapeHtml(item.platformName || "点评")}</b> <span>· ${escapeHtml(item.category)}</span></div>
         <div class="rv-appbar-actions"><span>⌕</span><span>♡</span><span>•••</span></div>
       </header>
       ${state.style.showWatermark ? '<div class="rv-watermark">MOCKUP / FICTIONAL REVIEW</div>' : ""}

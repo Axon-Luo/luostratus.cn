@@ -267,8 +267,8 @@
       canvasMode: "portrait",
       exportScale: "2",
       common: {
-        recipient: { name: "雾岛眠川", phone: "OC-071-2048", address: "雾港市 第七码头区 月蚀环路 17 号 星鲸公寓 B-04", city: "雾港市", zip: "VG-0717" },
-        sender: { name: "白塔零七", phone: "OC-319-7710", address: "镜海市 浮岛新区 第三折跃站 北翼寄存柜 A-19", city: "镜海市", zip: "MH-0319" },
+        recipient: { name: "雾岛眠川", phone: "071-2048", address: "雾港市 第七码头区 月蚀环路 17 号 星鲸公寓 B-04", city: "雾港市", zip: "VG-0717" },
+        sender: { name: "白塔零七", phone: "319-7710", address: "镜海市 浮岛新区 第三折跃站 北翼寄存柜 A-19", city: "镜海市", zip: "MH-0319" },
         trackingNo: "XF1439201984210",
         cargo: "3C数码配件 / 智能手表及无线耳机 [内置锂电池]",
         weight: "1.8",

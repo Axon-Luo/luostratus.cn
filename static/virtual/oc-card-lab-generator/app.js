@@ -138,7 +138,7 @@
       stampText: "SAMPLE",
       photoTag: "PORTRAIT / 角色形象",
       sectionPrefix: "//",
-      footerWarning: "OC CARD LAB · 此处可填写页脚文字"
+      footerWarning: "CARD LAB · 此处可填写页脚文字"
     },
     magazine: {
       masthead: "PERSONA · CHARACTER ISSUE",
@@ -160,7 +160,7 @@
     },
     scrap: {
       diaryTitle: "示例人物的观察日记",
-      headerSub: "OC PROFILE · 手帐版设定卡",
+      headerSub: "PROFILE · 手帐版设定卡",
       polaroidCaption: "此处可填写照片说明",
       recorder: "记录人",
       dateLine: "YYYY.MM.DD",
@@ -271,7 +271,7 @@
           { id: uid("rel"), name: "关系人物三", desc: "此处可填写人物关系" }
         ],
         portraitImage: "",
-        footerText: "OC CARD LAB · PERSONAL USE ONLY"
+        footerText: "CARD LAB · PERSONAL USE ONLY"
       },
       templateData: clone(DEFAULT_TEMPLATE_DATA),
       templateColors: clone(DEFAULT_COLORS),
@@ -1486,7 +1486,7 @@
       };
       if (!stickersOnly) options.backgroundColor = activeColors().paper;
       const blob = await window.htmlToImage.toBlob(canvas, options);
-      downloadBlob(blob, `${state.projectName || "OC设定卡"}-${label}.png`);
+      downloadBlob(blob, `${state.projectName || "设定卡"}-${label}.png`);
       showToast(`${label}已导出`);
     } catch (error) {
       console.error(error);
@@ -1514,7 +1514,7 @@
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${state.projectName || "OC设定卡"}.json`;
+      link.download = `${state.projectName || "设定卡"}.json`;
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       showToast("项目 JSON 已保存");
