@@ -75,6 +75,16 @@
 <style>
 .tools-section { margin-top: 32px; }
 .tools-section h2 { margin-bottom: 16px; font-size: 1.3rem; }
+.tools-section .section-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.tools-section .section-title-row h2 { margin-bottom: 0; }
+.section-hint { color: var(--secondary); font-size: 0.8rem; }
 .tools-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -127,7 +137,10 @@
 </section>
 
 <section class="tools-section">
-  <h2>虚拟信息生成器</h2>
+  <div class="section-title-row">
+    <h2>虚拟信息生成器</h2>
+    <span class="section-hint">使用以下功能时建议开启浅色模式</span>
+  </div>
   <div class="tools-grid">
     {{ range $virtual }}
     <a href="{{ .href }}" class="tool-card">
