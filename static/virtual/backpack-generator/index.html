@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#59616d">
+  <meta name="description" content="OC 的背包：制作角色游戏背包、装备栏与物品详情界面。">
+  <title>OC 的背包 · OC INVENTORY</title>
+  <link rel="stylesheet" href="../player/FZG_CN/result.css">
+  <link rel="stylesheet" href="../shared/fonts/noto-serif-sc/result.css?v=20260729-1">
+  <link rel="stylesheet" href="./app.css?v=20260731-33">
+  <link rel="stylesheet" href="../shared/vendor/coloris/coloris.min.css">
+  <link rel="stylesheet" href="../shared/oc-color-picker.css?v=20260803-1">
+  <script src="./vendor/html-to-image.min.js" defer></script>
+  <script src="../shared/export-fonts.js?v=20260729-1" defer></script>
+  <script src="../shared/browser-image-store.js" defer></script>
+  <script src="../shared/vendor/coloris/coloris.min.js" defer></script>
+  <script src="../shared/oc-color-picker.js?v=20260803-1" defer></script>
+  <script src="./app.js?v=20260731-43" defer></script>
+</head>
+<body data-mobile-panel="content">
+  <header class="topbar">
+    <a class="brand" href="../" aria-label="返回 OC 桌面">
+      <span class="brand-mark">包</span>
+      <span><b>OC 的背包</b><small>OC INVENTORY</small></span>
+    </a>
+    <label class="project-field"><span>项目</span><input id="project-name" value="夜航者的旅行背包"></label>
+    <div class="top-actions">
+      <button class="button desktop-action" id="undo" type="button">撤销</button>
+      <button class="button desktop-action" id="redo" type="button">重做</button>
+      <button class="button" id="start-tour" type="button"><span class="desktop-label">教程</span><span class="mobile-label">?</span></button>
+      <button class="button desktop-action" id="new-project" type="button">新建</button>
+      <button class="button" id="import-trigger" type="button">导入</button>
+      <button class="button desktop-action" id="save-json" type="button">保存 JSON</button>
+      <button class="button primary" id="export-full" type="button">导出</button>
+      <input id="import-json" type="file" accept="application/json,.json" hidden>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="editor-panel content-panel">
+      <header class="panel-heading"><span>01</span><div><h1>背包内容</h1><p>角色、装备与物品资料</p></div></header>
+      <div class="panel-scroll">
+        <section class="editor-card" id="character-editor-card">
+          <div class="card-title"><div><h2>角色资料</h2><p>背包持有者与状态信息。</p></div><span>PROFILE</span></div>
+          <div class="crop-variant-grid">
+            <div class="crop-variant"><div class="crop-variant-heading"><strong>头像</strong><small>页眉角色头像</small></div><div class="upload-line"><div class="upload-preview avatar-preview" id="avatar-preview">夜</div><div><button class="small-button" id="avatar-upload-trigger" type="button">上传并裁切</button><button class="text-button" id="avatar-remove" type="button">移除</button></div></div><input id="avatar-upload" type="file" accept="image/*" hidden></div>
+            <div class="crop-variant"><div class="crop-variant-heading"><strong>立绘</strong><small>角色资料画框</small></div><div class="upload-line"><div class="upload-preview portrait-upload-preview" id="portrait-preview">夜</div><div><button class="small-button" id="portrait-upload-trigger" type="button">上传并裁切</button><button class="text-button" id="portrait-remove" type="button">移除</button></div></div><input id="portrait-upload" type="file" accept="image/*" hidden></div>
+          </div>
+          <div class="field-grid two">
+            <label class="field"><span>角色姓名</span><input id="character-name"></label>
+            <label class="field"><span>职业 / 身份</span><input id="character-class"></label>
+            <label class="field"><span>年龄</span><input id="character-level" type="number" min="0" max="999"></label>
+            <label class="field"><span>状态</span><input id="character-status"></label>
+          </div>
+          <label class="field"><span>角色短句</span><input id="character-subtitle"></label>
+          <div class="field-grid two">
+            <label class="field"><span>生命值</span><input id="character-hp"></label>
+            <label class="field"><span>魔力 / 精力</span><input id="character-mp"></label>
+          </div>
+        </section>
+
+        <section class="editor-card">
+          <div class="card-title"><div><h2>背包资料</h2><p>标题、容量与资源读数。</p></div><span>INVENTORY</span></div>
+          <label class="field"><span>背包名称</span><input id="backpack-title"></label>
+          <label class="field"><span>副标题</span><input id="backpack-subtitle"></label>
+          <div class="field-grid two">
+            <label class="field"><span>货币</span><input id="backpack-currency"></label>
+            <label class="field"><span>容量</span><input id="backpack-capacity" type="number" min="8" max="48"></label>
+            <label class="field"><span>当前负重</span><input id="backpack-weight" type="number" min="0" step="0.1"></label>
+            <label class="field"><span>负重上限</span><input id="backpack-weight-max" type="number" min="1" step="0.1"></label>
+          </div>
+        </section>
+
+        <section class="editor-card" id="equipment-editor-card">
+          <div class="card-title"><div><h2>装备槽</h2><p>槽位名称和当前装备。</p></div><button class="small-button" id="add-equipment" type="button">＋ 槽位</button></div>
+          <div class="stack-list" id="equipment-editor-list"></div>
+        </section>
+
+        <section class="editor-card" id="items-editor-card">
+          <div class="card-title"><div><h2>物品清单</h2><p>选择物品后编辑详细资料。</p></div><button class="small-button" id="add-item" type="button">＋ 物品</button></div>
+          <div class="category-manager" aria-labelledby="category-manager-title">
+            <div class="category-manager-heading">
+              <div><strong id="category-manager-title">自定义分类</strong><small>先建立分类，编辑物品时直接选择。</small></div>
+              <span id="category-count">0 类</span>
+            </div>
+            <div class="category-create-row">
+              <input id="new-category-name" autocomplete="off" maxlength="18" placeholder="例如：纪念品" aria-label="新分类名称">
+              <button class="small-button" id="add-category" type="button">添加分类</button>
+            </div>
+            <div class="category-manager-list" id="category-manager-list"></div>
+          </div>
+          <div class="item-editor-list" id="item-editor-list"></div>
+        </section>
+
+        <section class="editor-card" id="item-detail-editor">
+          <div class="card-title"><div><h2>当前物品</h2><p id="selected-item-caption">编辑选中物品。</p></div><span>ITEM</span></div>
+          <div class="crop-variant-grid">
+            <div class="crop-variant"><div class="crop-variant-heading"><strong>物品栏图片</strong><small>背包格与清单缩略图</small></div><div class="upload-line"><div class="upload-preview item-image-preview" id="item-grid-image-preview">✦</div><div><button class="small-button" id="item-grid-image-upload-trigger" type="button">上传并裁切</button><button class="text-button" id="item-grid-image-remove" type="button">移除</button></div></div><input id="item-grid-image-upload" type="file" accept="image/*" hidden></div>
+            <div class="crop-variant"><div class="crop-variant-heading"><strong>当前物品图片</strong><small>右侧详情卡大图</small></div><div class="upload-line"><div class="upload-preview item-detail-image-preview" id="item-detail-image-preview">✦</div><div><button class="small-button" id="item-detail-image-upload-trigger" type="button">上传并裁切</button><button class="text-button" id="item-detail-image-remove" type="button">移除</button></div></div><input id="item-detail-image-upload" type="file" accept="image/*" hidden></div>
+          </div>
+          <label class="field"><span>物品名称</span><input id="item-name"></label>
+          <div class="field-grid two">
+            <label class="field"><span>分类</span><select id="item-category"></select></label>
+            <label class="field"><span>稀有度</span><select id="item-rarity"><option value="common">普通</option><option value="uncommon">精良</option><option value="rare">稀有</option><option value="epic">史诗</option><option value="legendary">传说</option></select></label>
+            <label class="field"><span>数量</span><input id="item-quantity" type="number" min="1" max="9999"></label>
+            <label class="field"><span>装备槽</span><select id="item-equipment-slot"></select></label>
+            <label class="field"><span>重量</span><input id="item-weight" type="number" min="0" step="0.1"></label>
+            <label class="field"><span>价格</span><input id="item-price"></label>
+          </div>
+          <label class="range-field"><span>耐久度 <output id="item-durability-output">100%</output></span><input id="item-durability" type="range" min="0" max="100"></label>
+          <label class="field"><span>物品描述</span><textarea id="item-description" rows="4"></textarea></label>
+          <label class="field"><span>属性（每行一项）</span><textarea id="item-stats" rows="3"></textarea></label>
+          <label class="field"><span>标签（顿号或逗号分隔）</span><input id="item-tags"></label>
+          <div class="check-grid"><label><input id="item-locked" type="checkbox"> 锁定物品</label><label><input id="item-quest" type="checkbox"> 特别标记</label></div>
+        </section>
+      </div>
+    </aside>
+
+    <section class="preview-panel">
+      <header class="preview-toolbar">
+        <div><i class="preview-dot"></i><strong>实时画布</strong></div>
+        <div class="preview-actions"><button id="fit-preview" type="button">适合画布</button><button id="export-character" type="button">角色卡</button><button id="export-grid" type="button">物品格</button><button id="export-detail" type="button">物品卡</button></div>
+      </header>
+      <div class="preview-viewport" id="preview-viewport">
+        <div class="preview-stage" id="preview-stage">
+          <article class="inventory-canvas" id="inventory-canvas" data-theme="rpg" data-device="wide">
+            <div class="canvas-noise"></div>
+            <header class="inventory-header">
+              <div class="terminal-command" aria-hidden="true"><span class="terminal-command-scifi">&gt; inventory.scan --local</span><span class="terminal-command-pixel">FIELD PACK TERMINAL</span><em>LINK READY</em></div>
+              <div class="game-title"><small id="canvas-kicker">OC INVENTORY / 01</small><h1 id="canvas-backpack-title">夜航者的旅行背包</h1><p id="canvas-backpack-subtitle">从旧港一路带回来的物件。</p></div>
+              <div class="character-strip">
+                <div class="mini-avatar" id="canvas-mini-avatar">夜</div>
+                <div><strong id="canvas-character-name">林照夜</strong><span id="canvas-character-meta"><span id="canvas-character-age">27 岁</span><span class="character-meta-divider">·</span><span id="canvas-character-role">档案修复师</span></span></div>
+              </div>
+              <div class="header-resources"><span id="canvas-currency">2,460 G</span><span id="canvas-capacity">12 / 24</span></div>
+            </header>
+            <div class="inventory-body">
+              <aside class="character-pane" id="character-export-block">
+                <div class="portrait-frame"><div class="portrait-avatar" id="canvas-avatar">夜</div><span id="canvas-character-status">夜航中</span></div>
+                <div class="character-copy"><small id="canvas-profile-label">TRAVELLER PROFILE</small><h2 id="canvas-character-name-large">林照夜</h2><p id="canvas-character-subtitle">“将失去的东西重新编号。”</p></div>
+                <div class="resource-bars"><div><span>HP</span><i><b id="hp-bar"></b></i><em id="canvas-hp">86 / 100</em></div><div><span>MP</span><i><b id="mp-bar"></b></i><em id="canvas-mp">42 / 60</em></div></div>
+                <div class="equipment-block" id="equipment-export-block"><div class="section-label"><span id="canvas-equipment-label">EQUIPMENT</span><em>装备栏</em></div><div class="equipment-grid" id="canvas-equipment-grid"></div></div>
+              </aside>
+              <main class="bag-pane" id="grid-export-block">
+                <div class="bag-heading"><div><small id="canvas-grid-label">STORAGE / GRID</small><h2>物品</h2></div><div class="weight-readout"><span id="canvas-weight">18.6 / 36 KG</span><i><b id="weight-bar"></b></i></div></div>
+                <nav class="category-tabs" id="canvas-category-tabs"></nav>
+                <div class="terminal-columns" aria-hidden="true"><span>OBJECT TABLE</span><em>DUAL DATA BANK</em></div>
+                <div class="inventory-grid" id="canvas-inventory-grid"></div>
+                <div class="quick-stats"><span>已使用 <b id="canvas-used-slots">12</b></span><span>空位 <b id="canvas-empty-slots">12</b></span><span>特别物件 <b id="canvas-quest-count">2</b></span></div>
+              </main>
+              <aside class="item-detail-pane" id="detail-export-block">
+                <div class="detail-index"><span id="canvas-item-index">ITEM 01</span><em id="canvas-item-rarity">RARE</em></div>
+                <div class="detail-image" id="canvas-detail-image">✦</div>
+                <div class="detail-copy"><small id="canvas-item-category">WEAPON</small><h2 id="canvas-item-name">潮痕短刀</h2><p id="canvas-item-description">在退潮后的礁石间找到，刀背留有无法辨认的航线刻痕。</p></div>
+                <div class="detail-stats" id="canvas-item-stats"></div>
+                <div class="durability"><span>耐久度 <em id="canvas-item-durability">82%</em></span><i><b id="durability-bar"></b></i></div>
+                <div class="detail-tags" id="canvas-item-tags"></div>
+                <footer><span id="canvas-item-weight">0.8 KG</span><strong id="canvas-item-price">320 G</strong></footer>
+              </aside>
+            </div>
+            <footer class="inventory-footer"><span id="canvas-footer-left">OC BACKPACK / PERSONAL FILE</span><span id="canvas-footer-right">PERSONAL USE</span></footer>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <div class="mobile-resizer" id="mobile-resizer" role="separator" aria-label="调整预览区域高度" aria-orientation="horizontal" tabindex="0"><span></span></div>
+
+    <aside class="editor-panel style-panel">
+      <header class="panel-heading"><span>02</span><div><h1>视觉样式</h1><p>模板、颜色与导出设置</p></div></header>
+      <div class="panel-scroll">
+        <section class="editor-card">
+          <div class="card-title"><div><h2>背包模板</h2><p>模板会调整结构和整套配色。</p></div><span>THEME</span></div>
+          <div class="theme-grid">
+            <button class="theme-button active" data-theme-option="rpg" type="button"><i class="theme-rpg"></i><b>经典 RPG</b><small>ARCHIVE QUEST</small></button>
+            <button class="theme-button" data-theme-option="scifi" type="button"><i class="theme-scifi"></i><b>深空终端</b><small>COMMAND STORAGE</small></button>
+            <button class="theme-button" data-theme-option="pixel" type="button"><i class="theme-pixel"></i><b>外勤终端</b><small>LIGHT FIELD PACK</small></button>
+            <button class="theme-button" data-theme-option="editorial" type="button"><i class="theme-editorial"></i><b>图鉴编辑部</b><small>ITEM INDEX</small></button>
+            <button class="theme-button" data-theme-option="victorian" type="button"><i class="theme-victorian"></i><b>旧纸背包</b><small>TYPEWRITTEN FIELD PACK</small></button>
+            <button class="theme-button" data-theme-option="crimson" type="button"><i class="theme-crimson"></i><b>午夜衣橱</b><small>MIDNIGHT VALISE</small></button>
+
+          </div>
+        </section>
+        <section class="editor-card">
+          <div class="card-title"><div><h2>画布与排版</h2><p>输出比例和格子密度。</p></div><span>CANVAS</span></div>
+          <label class="field"><span>画布尺寸</span><select id="canvas-device"><option value="wide">宽屏游戏界面 · 1280×780</option><option value="square">方形物品图鉴 · 960×1050</option><option value="portrait">竖屏手游背包 · 720×1260 起</option></select></label>
+          <label class="field"><span>物品格列数</span><select id="grid-columns"><option value="4">4 列</option><option value="5">5 列</option><option value="6">6 列</option></select></label>
+          <label class="range-field"><span>界面字号 <output id="font-scale-output">100%</output></span><input id="font-scale" type="range" min="85" max="120" value="100"></label>
+          <div class="check-grid"><label><input id="show-slot-numbers" type="checkbox" checked> 显示格子编号</label><label><input id="show-footer" type="checkbox" checked> 显示底栏</label></div>
+        </section>
+        <section class="editor-card">
+          <div class="card-title"><div><h2>自定义颜色</h2><p>切换模板后可继续微调。</p></div><button class="small-button" id="reset-colors" type="button">恢复模板</button></div>
+          <div class="color-grid">
+            <label class="color-field"><span>重点色</span><input id="color-accent" type="color"></label>
+            <label class="color-field"><span>深色</span><input id="color-accent-dark" type="color"></label>
+            <label class="color-field"><span>背景</span><input id="color-background" type="color"></label>
+            <label class="color-field"><span>面板</span><input id="color-panel" type="color"></label>
+            <label class="color-field"><span>文字</span><input id="color-ink" type="color"></label>
+          </div>
+        </section>
+        <section class="editor-card" id="export-editor-card">
+          <div class="card-title"><div><h2>导出图片</h2><p>完整画布或单独部件。</p></div><span>PNG</span></div>
+          <label class="field"><span>导出倍率</span><select id="export-scale"><option value="2">2× 高清</option><option value="3">3× 超清</option></select></label>
+          <div class="export-grid"><button class="button primary" id="export-full-side" type="button">完整背包</button><button class="button" id="export-character-side" type="button">角色资料</button><button class="button" id="export-equipment-side" type="button">装备栏</button><button class="button" id="export-grid-side" type="button">物品格</button><button class="button" id="export-detail-side" type="button">当前物品</button></div>
+          <p class="help-copy">导出时会自动隐藏选中状态、控制标记和滚动条，并嵌入当前文字所需字体。</p>
+        </section>
+      </div>
+    </aside>
+
+    <nav class="mobile-main-tabs" aria-label="移动端编辑面板" role="tablist"><button class="active" data-mobile-panel="content" type="button" role="tab" aria-selected="true">内容</button><button data-mobile-panel="style" type="button" role="tab" aria-selected="false">样式</button></nav>
+  </main>
+
+  <div class="crop-modal" id="crop-modal" hidden>
+    <div class="crop-backdrop" data-crop-close></div>
+    <section class="crop-dialog" role="dialog" aria-modal="true" aria-labelledby="crop-title">
+      <header><div><span>IMAGE CROP</span><h2 id="crop-title">裁切图片</h2></div><button type="button" data-crop-close aria-label="关闭">×</button></header>
+      <div class="crop-stage" id="crop-stage"><canvas id="crop-canvas" width="512" height="512"></canvas></div>
+      <label class="range-field"><span>缩放 <output id="crop-zoom-output">100%</output></span><input id="crop-zoom" type="range" min="1" max="3" step="0.01" value="1"></label>
+      <p id="crop-target-note">拖动图片调整位置，缩放后再应用裁切。</p>
+      <footer><button class="button" type="button" data-crop-close>取消</button><button class="button primary" id="crop-apply" type="button">应用裁切</button></footer>
+    </section>
+  </div>
+
+  <div class="tour-overlay" id="tour-overlay" hidden>
+    <div class="tour-focus" id="tour-focus"></div>
+    <section class="tour-card" id="tour-card"><header><span>QUICK TOUR</span><em id="tour-counter">01 / 06</em></header><h2 id="tour-title">欢迎来到 OC 的背包</h2><p id="tour-copy">从角色资料开始，逐步制作游戏背包界面。</p><footer><button class="button" id="tour-skip" type="button">退出</button><div><button class="button" id="tour-prev" type="button">上一步</button><button class="button primary" id="tour-next" type="button">下一步</button></div></footer></section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

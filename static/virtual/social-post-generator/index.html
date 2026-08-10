@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111111">
+  <title>社交帖子生成器</title>
+  <link rel="stylesheet" href="./app.css">
+  <link rel="stylesheet" href="../shared/vendor/coloris/coloris.min.css">
+  <link rel="stylesheet" href="../shared/oc-color-picker.css?v=20260803-2">
+  <script src="./vendor/html-to-image.min.js"></script>
+  <script src="../shared/vendor/coloris/coloris.min.js" defer></script>
+  <script src="../shared/oc-color-picker.js?v=20260803-1" defer></script>
+  <script src="./app.js?v=20260809-1" defer></script>
+</head>
+<body data-editor-tab="content">
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="返回顶部">
+      <span class="brand-mark">帖</span>
+      <span><b>社交帖子生成器</b><small>SOCIAL POST STUDIO</small></span>
+    </a>
+    <div class="top-actions">
+      <button class="button ghost desktop-action" id="undo-button" type="button">撤销</button>
+      <button class="button ghost desktop-action" id="redo-button" type="button">重做</button>
+      <button class="button ghost tutorial-button" id="tutorial-button" type="button">教程</button>
+      <label class="button ghost file-button"><span class="desktop-label">导入 JSON</span><span class="mobile-label">导入</span><input id="import-input" type="file" accept=".json,application/json"></label>
+      <button class="button ghost" id="save-json-button" type="button"><span class="desktop-label">保存 JSON</span><span class="mobile-label">保存</span></button>
+      <button class="button primary" id="export-button" type="button"><span class="desktop-label">导出 PNG</span><span class="mobile-label">导出</span></button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="editor-panel content-panel" id="content-editor-panel" aria-label="内容编辑">
+      <div class="platform-switch" role="tablist" aria-label="平台模板">
+        <button class="active" type="button" data-platform-option="x">X / Twitter</button>
+        <button type="button" data-platform-option="instagram">Instagram</button>
+        <button type="button" data-platform-option="tumblr">Tumblr</button>
+      </div>
+      <nav class="main-tabs mobile-editor-tabs" aria-label="编辑模式">
+        <button class="main-tab active" type="button" data-main-tab="content">内容编辑</button>
+        <button class="main-tab" type="button" data-main-tab="style">样式设置</button>
+      </nav>
+      <div class="editor-scroll">
+        <section class="tab-page active" data-tab-page="content">
+          <div class="section-heading">
+            <div><span class="eyebrow">CONTENT</span><h2 id="content-heading">X 帖子</h2></div>
+            <button class="text-button danger" id="clear-button" type="button">一键清空</button>
+          </div>
+          <div id="content-form"></div>
+          <section class="card media-card">
+            <div class="card-title">
+              <div><h3>页面图片</h3><p>支持 1—4 张图片，可用于帖子媒体、轮播、Story、Reels 和账户网格。</p></div>
+              <span>MEDIA</span>
+            </div>
+            <label class="button compact media-add-button">添加图片
+              <input id="media-input" type="file" accept="image/*" multiple>
+            </label>
+            <div class="media-editor" id="media-editor"></div>
+          </section>
+        </section>
+      </div>
+    </aside>
+
+    <section class="preview-panel" id="preview-panel" aria-label="实时预览">
+      <div class="preview-toolbar">
+        <div><span class="eyebrow">LIVE CANVAS</span><strong>实时预览</strong></div>
+        <div class="preview-actions">
+          <span class="save-state" id="save-state"><i></i>已保存</span>
+          <button class="icon-button" id="focus-button" type="button" aria-label="专注预览">⛶</button>
+        </div>
+      </div>
+      <div class="preview-viewport" id="preview-viewport">
+        <div class="canvas-frame" id="canvas-frame">
+          <article id="social-canvas" data-platform="x" data-theme="light" aria-label="帖子画布"></article>
+        </div>
+      </div>
+    </section>
+
+    <div
+      class="mobile-resizer"
+      id="mobile-resizer"
+      role="separator"
+      aria-label="调整预览区域高度"
+      aria-orientation="horizontal"
+      aria-valuemin="22"
+      aria-valuemax="72"
+      aria-valuenow="46"
+      tabindex="0"
+    ><span aria-hidden="true"></span></div>
+
+    <aside class="editor-panel style-panel" id="style-editor-panel" aria-label="样式设置">
+      <nav class="main-tabs mobile-editor-tabs" aria-label="编辑模式">
+        <button class="main-tab" type="button" data-main-tab="content">内容编辑</button>
+        <button class="main-tab active" type="button" data-main-tab="style">样式设置</button>
+      </nav>
+      <div class="editor-scroll">
+        <section class="tab-page" data-tab-page="style">
+          <div class="section-heading">
+            <div><span class="eyebrow">STYLE</span><h2>视觉设置</h2></div>
+          </div>
+          <section class="card">
+            <div class="card-title"><h3>视觉预设</h3><span>THEME</span></div>
+            <div class="theme-presets" id="theme-presets"></div>
+          </section>
+          <section class="card" id="style-form"></section>
+        </section>
+      </div>
+    </aside>
+  </main>
+  <div class="crop-modal" id="crop-modal" hidden>
+    <div class="crop-backdrop" data-close-crop></div>
+    <section class="crop-dialog" role="dialog" aria-modal="true" aria-labelledby="crop-title">
+      <header><div><span>IMAGE CROP</span><h2 id="crop-title">调整图片</h2></div><button type="button" data-close-crop aria-label="关闭">×</button></header>
+      <div class="crop-stage" id="crop-stage"><img id="crop-image" alt="裁切预览"></div>
+      <p>在预览中拖动图片调整取景位置。</p>
+      <label class="range-field"><span>图片缩放 <output id="crop-zoom-output">100%</output></span><input id="crop-zoom" type="range" min="1" max="3" step=".05" value="1"></label>
+      <footer><button class="button ghost" type="button" data-close-crop>取消</button><button class="button primary" id="crop-apply" type="button">完成</button></footer>
+    </section>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <button class="focus-exit" id="focus-exit-button" type="button">退出专注预览</button>
+</body>
+</html>

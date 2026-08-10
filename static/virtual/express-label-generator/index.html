@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#56618a">
+  <meta name="description" content="快递面单工坊：制作六套风格的虚构快递电子面单，支持贴纸、配色与高清导出。">
+  <title>快递面单工坊 · EXPRESS LABEL CRAFT</title>
+  <link rel="stylesheet" href="../shared/fonts/noto-sans-sc/result.css">
+  <link rel="stylesheet" href="../shared/fonts/noto-serif-sc/result.css">
+  <link rel="stylesheet" href="../shared/vendor/coloris/coloris.min.css">
+  <link rel="stylesheet" href="../shared/oc-color-picker.css?v=20260806-1">
+  <link rel="stylesheet" href="./app.css?v=20260808-2">
+  <script src="./vendor/html-to-image.min.js" defer></script>
+  <script src="../shared/browser-image-store.js" defer></script>
+  <script src="../shared/export-fonts.js" defer></script>
+  <script src="../shared/vendor/coloris/coloris.min.js" defer></script>
+  <script src="../shared/oc-color-picker.js?v=20260806-1" defer></script>
+  <script src="./app.js?v=20260808-3" defer></script>
+</head>
+<body data-mobile-panel="content">
+  <header class="topbar">
+    <a class="brand" href="../index.html" aria-label="返回 OC 桌面">
+      <span class="brand-mark">单</span>
+      <span class="brand-copy"><b>快递面单工坊</b><small>EXPRESS LABEL CRAFT</small></span>
+    </a>
+    <label class="project-field"><span>项目</span><input id="project-name" maxlength="80" autocomplete="off"></label>
+    <div class="top-actions">
+      <button class="button quiet desktop-action" id="undo" type="button">撤销</button>
+      <button class="button quiet desktop-action" id="redo" type="button">重做</button>
+      <button class="button desktop-action" id="new-project" type="button">新建</button>
+      <button class="button" id="start-tour" type="button">教程</button>
+      <label class="button file-button desktop-action">导入<input id="import-json" type="file" accept=".json,application/json"></label>
+      <button class="button desktop-action" id="save-json" type="button">保存 JSON</button>
+      <button class="button primary" id="export-full" type="button">导出</button>
+    </div>
+  </header>
+
+  <main class="workspace" id="workspace">
+    <aside class="editor-panel content-panel" aria-label="内容编辑">
+      <div class="panel-heading"><div><h1>内容编辑</h1><p>共通内容与本模板专属字段</p></div></div>
+      <div class="panel-scroll">
+        <section class="form-group" id="common-group">
+          <button class="group-toggle" type="button" data-group-toggle="common"><b>共通内容</b><small>六套模板共享同一份数据</small><i aria-hidden="true"></i></button>
+          <div class="group-body" id="common-form"></div>
+        </section>
+        <section class="form-group" id="template-group">
+          <button class="group-toggle" type="button" data-group-toggle="template"><b id="template-group-title">本模板专属</b><small>切换模板只替换这一组，数据不丢</small><i aria-hidden="true"></i></button>
+          <div class="group-body" id="template-form"></div>
+        </section>
+      </div>
+    </aside>
+
+    <section class="preview-panel">
+      <div class="preview-toolbar">
+        <div><strong>实时画布</strong><span id="save-state" aria-live="polite">已保存</span></div>
+        <div class="preview-actions"><button id="fit-canvas" type="button">适合</button><button id="focus-preview" type="button">专注</button></div>
+      </div>
+      <div class="preview-viewport" id="preview-viewport">
+        <div class="preview-stage" id="preview-stage">
+          <article class="label-canvas" id="label-canvas" data-template="domestic" data-mode="portrait"></article>
+        </div>
+      </div>
+    </section>
+
+    <div class="mobile-resizer" id="mobile-resizer" role="separator" aria-orientation="horizontal" aria-valuemin="22" aria-valuemax="72" aria-valuenow="40" tabindex="0" aria-label="调整预览高度"><span></span></div>
+
+    <aside class="editor-panel style-panel" aria-label="样式与导出">
+      <div class="panel-heading"><div><h1>样式与导出</h1><p>模板、配色、贴纸和高清导出</p></div></div>
+      <div class="panel-scroll">
+        <section class="editor-card" id="templates-card">
+          <div class="card-title"><div><h2>面单模板</h2><p>六套模板逐套移植样稿构图。</p></div></div>
+          <div class="theme-grid" id="theme-grid"></div>
+        </section>
+
+        <section class="editor-card" id="layout-card">
+          <div class="card-title"><div><h2>画布方向</h2><p>竖版宽 380px / 横版宽 580px，高度随内容。</p></div></div>
+          <div class="segmented" id="canvas-mode"><button data-canvas-mode="portrait" type="button">竖版</button><button data-canvas-mode="landscape" type="button">横版</button></div>
+        </section>
+
+        <section class="editor-card" id="colors-card">
+          <div class="card-title"><div><h2>模板配色</h2><p>每套模板独立保存，仅作用于面单本体。</p></div></div>
+          <div class="color-grid">
+            <label class="color-field"><span>纸面与反白</span><input type="color" data-template-color="paper"></label>
+            <label class="color-field"><span>正文与深色块</span><input type="color" data-template-color="ink"></label>
+            <label class="color-field"><span>重点与印章</span><input type="color" data-template-color="accent"></label>
+            <label class="color-field"><span>次要文字</span><input type="color" data-template-color="muted"></label>
+            <label class="color-field"><span>边框与分隔线</span><input type="color" data-template-color="line"></label>
+            <label class="color-field"><span>条码与二维码</span><input type="color" data-template-color="code"></label>
+          </div>
+          <button class="text-button" id="reset-colors" type="button">恢复默认配色</button>
+        </section>
+
+        <section class="editor-card" id="codes-card">
+          <div class="card-title"><div><h2>条码外观</h2><p>装饰图形，不可被真实物流系统扫描。</p></div></div>
+          <label class="range-field"><span>条码高度 <output id="barcode-density-output">标准</output></span><input id="barcode-density" type="range" min="1" max="4" step="1"></label>
+          <div class="check-grid"><label><input type="checkbox" id="show-barcode"> 显示条码</label><label><input type="checkbox" id="show-qr"> 显示二维码</label></div>
+        </section>
+
+        <section class="editor-card" id="add-sticker-card">
+          <div class="card-title"><div><h2>添加贴纸</h2><p>贴纸拥有独立字体和颜色，不受模板配色影响。</p></div></div>
+          <label class="field"><span>文字内容</span><textarea id="new-sticker-text" rows="2" placeholder="FRAGILE / 批注 / 署名"></textarea></label>
+          <div class="sticker-add-actions"><button class="button compact" id="add-text-sticker" type="button">文字贴纸</button><label class="button compact file-button">图片贴纸<input id="sticker-image-input" type="file" accept="image/*"></label></div>
+          <div class="preset-grid" id="preset-grid">
+            <button data-sticker-preset="fragile" type="button">FRAGILE 易碎</button>
+            <button data-sticker-preset="thisway" type="button">此面向上</button>
+            <button data-sticker-preset="signature" type="button">SIGNATURE 签收</button>
+            <button data-sticker-preset="urgent" type="button">URGENT 加急</button>
+            <button data-sticker-preset="fictional" type="button">FICTIONAL PROP</button>
+          </div>
+        </section>
+
+        <section class="editor-card" id="sticker-layer-card">
+          <div class="card-title"><div><h2>贴纸图层</h2><p>横竖方向分别记住位置。</p></div></div>
+          <div class="sticker-list" id="sticker-list"></div>
+        </section>
+
+        <section class="editor-card" id="selected-sticker-card">
+          <div class="card-title"><div><h2>当前贴纸</h2><p>位置、尺寸、旋转与私有样式。</p></div></div>
+          <div id="sticker-editor"><p class="empty-note">请新建或选择一个贴纸。</p></div>
+        </section>
+
+        <section class="editor-card" id="export-card">
+          <div class="card-title"><div><h2>导出图片</h2><p>导出会自动清理所有编辑控制柄。</p></div></div>
+          <label class="field"><span>导出倍率</span><select id="export-scale"><option value="2">2× 清晰</option><option value="3">3× 超清</option><option value="4">4× 印刷级</option></select></label>
+          <div class="export-grid"><button class="button primary" data-export-target="full" type="button">完整面单</button><button class="button" data-export-target="stickers" type="button">透明贴纸</button></div>
+        </section>
+      </div>
+    </aside>
+
+    <nav class="mobile-main-tabs" aria-label="手机编辑区"><button class="active" data-mobile-panel="content" type="button">内容</button><button data-mobile-panel="style" type="button">样式</button></nav>
+  </main>
+
+  <div class="tour-overlay" id="tour-overlay" hidden>
+    <button class="tour-blocker" type="button" data-close-tour aria-label="退出教程"></button>
+    <div class="tour-focus" id="tour-focus" aria-hidden="true"></div>
+    <section class="tour-card" id="tour-card" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+      <header><span id="tour-progress">1 / 6</span><button type="button" data-close-tour aria-label="退出教程">×</button></header>
+      <h2 id="tour-title"></h2><p id="tour-copy"></p>
+      <footer><button class="button" id="tour-prev" type="button">上一步</button><button class="button primary" id="tour-next" type="button">下一步</button></footer>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

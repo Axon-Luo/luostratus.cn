@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#565c68">
+  <meta name="description" content="OC 设定卡工坊：四套风格模板（档案卷宗 / 时尚杂志 / RPG 面板 / 手帐拼贴），填写角色资料即可导出高清 OC 设定卡。">
+  <title>OC 设定卡工坊 · OC CARD LAB</title>
+  <link rel="stylesheet" href="../shared/fonts/noto-sans-sc/result.css">
+  <link rel="stylesheet" href="../shared/fonts/noto-serif-sc/result.css">
+  <link rel="stylesheet" href="../shared/vendor/coloris/coloris.min.css">
+  <link rel="stylesheet" href="../shared/oc-color-picker.css?v=20260806-1">
+  <link rel="stylesheet" href="./app.css?v=20260808-6">
+  <script src="./vendor/html-to-image.min.js" defer></script>
+  <script src="../shared/browser-image-store.js" defer></script>
+  <script src="../shared/export-fonts.js" defer></script>
+  <script src="../shared/vendor/coloris/coloris.min.js" defer></script>
+  <script src="../shared/oc-color-picker.js?v=20260806-1" defer></script>
+  <script src="./app.js?v=20260809-1" defer></script>
+</head>
+<body data-mobile-panel="content">
+  <header class="topbar">
+    <a class="brand" href="../index.html" aria-label="返回 OC 桌面">
+      <span class="brand-mark">卡</span>
+      <span class="brand-copy"><b>OC 设定卡工坊</b><small>OC CARD LAB</small></span>
+    </a>
+    <label class="project-field"><span>项目</span><input id="project-name" data-path="projectName" autocomplete="off"></label>
+    <div class="top-actions">
+      <button class="button quiet desktop-action" id="undo" type="button">撤销</button>
+      <button class="button quiet desktop-action" id="redo" type="button">重做</button>
+      <button class="button" id="new-project" type="button">新建</button>
+      <button class="button" id="start-tour" type="button">教程</button>
+      <label class="button file-button desktop-action">导入<input id="import-json" type="file" accept=".json,application/json"></label>
+      <button class="button desktop-action" id="save-json" type="button">保存 JSON</button>
+      <button class="button primary" id="export-full-top" type="button">导出</button>
+    </div>
+  </header>
+
+  <main class="workspace" id="workspace">
+    <nav class="mobile-main-tabs" aria-label="手机编辑区">
+      <button class="active" data-mobile-panel="content" type="button">内容</button>
+      <button data-mobile-panel="style" type="button">样式</button>
+    </nav>
+
+    <aside class="editor-panel content-panel">
+      <div class="panel-heading"><span>内容</span><div><h1>角色内容</h1><p>共通资料在四套模板间共享</p></div></div>
+      <div class="panel-scroll">
+        <details class="editor-group" open>
+          <summary class="group-summary"><b>共通内容</b><small>切换模板不会丢失</small></summary>
+
+          <section class="editor-card" id="identity-card">
+            <div class="card-title"><div><h2>基础身份</h2><p>留空字段不进入成品。</p></div><span>BASIC</span></div>
+            <div class="field-grid">
+              <label class="field"><span>姓名</span><input data-path="common.name"></label>
+              <label class="field"><span>英文 / 罗马字名</span><input data-path="common.nameEn"></label>
+            </div>
+            <label class="field"><span>称号 / 代号</span><input data-path="common.alias"></label>
+            <div class="field-grid three">
+              <label class="field"><span>年龄</span><input data-path="common.age"></label>
+              <label class="field"><span>生日</span><input data-path="common.birthday"></label>
+              <label class="field"><span>身高</span><input data-path="common.height"></label>
+            </div>
+            <label class="field"><span>座右铭 / 代表台词</span><textarea data-path="common.motto" rows="2"></textarea></label>
+            <label class="field"><span>页脚文本</span><input data-path="common.footerText"></label>
+          </section>
+
+          <section class="editor-card" id="info-rows-card">
+            <div class="card-title"><div><h2>附加信息行</h2><p>血型、种族、所属等，最多 6 行。</p></div><button class="button compact" id="add-info-row" type="button">新增</button></div>
+            <div class="dynamic-list" id="info-row-list"></div>
+          </section>
+
+          <section class="editor-card" id="likes-card">
+            <div class="card-title"><div><h2>喜好与厌恶</h2><p>用顿号或逗号分隔，多种模板呈现。</p></div><span>PREF</span></div>
+            <label class="field"><span>喜欢</span><textarea data-path="common.likes" rows="2"></textarea></label>
+            <label class="field"><span>厌恶 / 害怕</span><textarea data-path="common.dislikes" rows="2"></textarea></label>
+          </section>
+
+          <section class="editor-card" id="portrait-card">
+            <div class="card-title"><div><h2>主形象图</h2><p>原图只存一次，四套模板分别裁切。</p></div><span>IMAGE</span></div>
+            <article class="image-control">
+              <div class="upload-preview portrait" id="portrait-preview"><span>形象</span></div>
+              <div>
+                <b>角色形象图片</b>
+                <p>按当前模板槽位比例裁切；切换模板后可重新裁切。</p>
+                <label class="button compact file-button">上传并裁切<input id="portrait-input" type="file" accept="image/*"></label>
+                <button class="text-button" id="recrop-portrait" type="button">重新裁切</button>
+                <button class="text-button" id="remove-portrait" type="button">移除</button>
+              </div>
+            </article>
+          </section>
+
+          <section class="editor-card" id="palette-card">
+            <div class="card-title"><div><h2>角色色卡</h2><p>内容数据，最多 6 个，点击色票可复制。</p></div><button class="button compact" id="add-palette" type="button">新增</button></div>
+            <div class="dynamic-list" id="palette-list"></div>
+          </section>
+
+          <section class="editor-card" id="details-card">
+            <div class="card-title"><div><h2>细节图</h2><p>最多 4 张，无图时显示图标占位。</p></div><button class="button compact" id="add-detail" type="button">新增</button></div>
+            <div class="dynamic-list" id="detail-list"></div>
+          </section>
+
+          <section class="editor-card" id="stats-card">
+            <div class="card-title"><div><h2>能力数值</h2><p>0-10 分，最多 6 项，四种呈现形态。</p></div><button class="button compact" id="add-stat" type="button">新增</button></div>
+            <div class="dynamic-list" id="stat-list"></div>
+          </section>
+
+          <section class="editor-card" id="bio-card">
+            <div class="card-title"><div><h2>个人小传</h2><p>长文只在小传区内换行。</p></div><span>BIO</span></div>
+            <label class="field"><span>小传</span><textarea data-path="common.bio" rows="6"></textarea></label>
+          </section>
+
+          <section class="editor-card" id="relations-card">
+            <div class="card-title"><div><h2>人物关系</h2><p>最多 6 条。</p></div><button class="button compact" id="add-relation" type="button">新增</button></div>
+            <div class="dynamic-list" id="relation-list"></div>
+          </section>
+        </details>
+
+        <details class="editor-group" open>
+          <summary class="group-summary"><b id="template-fields-title">本模板专属</b><small>随模板整组替换</small></summary>
+          <section class="editor-card" id="template-fields-card">
+            <div id="template-fields"></div>
+          </section>
+        </details>
+      </div>
+    </aside>
+
+    <section class="preview-panel">
+      <div class="preview-toolbar">
+        <div><strong>实时画布</strong><span id="save-state">已保存</span></div>
+        <div class="preview-actions">
+          <button data-canvas-mode="portrait" type="button">竖版</button>
+          <button data-canvas-mode="landscape" type="button">横版</button>
+          <button id="fit-canvas" type="button">适合</button>
+        </div>
+      </div>
+      <div class="preview-viewport" id="preview-viewport">
+        <div class="preview-stage" id="preview-stage">
+          <article class="oc-canvas" id="oc-canvas" data-template="dossier" data-mode="portrait"></article>
+        </div>
+      </div>
+    </section>
+
+    <div class="mobile-resizer" id="mobile-resizer" role="separator" aria-orientation="horizontal" aria-valuemin="22" aria-valuemax="72" aria-valuenow="40" tabindex="0" aria-label="调整预览高度"><span></span></div>
+
+    <aside class="editor-panel style-panel">
+      <div class="panel-heading"><span>样式</span><div><h1>模板与导出</h1><p>模板、配色、贴纸和高清导出</p></div></div>
+      <div class="panel-scroll">
+        <section class="editor-card" id="templates-card">
+          <div class="card-title"><div><h2>设定卡模板</h2><p>四套模板完整移植样稿构图。</p></div><span>STYLE</span></div>
+          <div class="theme-grid" id="theme-grid"></div>
+          <div class="orientation-control">
+            <span>画布版式</span>
+            <div class="orientation-switch" role="group" aria-label="切换横版或竖版">
+              <button data-canvas-mode="portrait" type="button">竖版</button>
+              <button data-canvas-mode="landscape" type="button">横版</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="editor-card" id="colors-card">
+          <div class="card-title"><div><h2>模板配色</h2><p>每套模板独立保存，可恢复默认。</p></div><span>COLOR</span></div>
+          <div class="color-grid">
+            <label class="color-field"><span>纸张色</span><input type="color" data-template-color="paper"></label>
+            <label class="color-field"><span>主文字</span><input type="color" data-template-color="ink"></label>
+            <label class="color-field"><span>重点色</span><input type="color" data-template-color="accent"></label>
+            <label class="color-field"><span>辅助色</span><input type="color" data-template-color="muted"></label>
+            <label class="color-field"><span>边线色</span><input type="color" data-template-color="line"></label>
+          </div>
+          <button class="text-button" id="reset-colors" type="button">恢复默认配色</button>
+        </section>
+
+        <section class="editor-card" id="add-sticker-card">
+          <div class="card-title"><div><h2>添加贴纸</h2><p>贴纸拥有独立字体与配色。</p></div><span>STICKER</span></div>
+          <label class="field"><span>文字内容</span><textarea id="new-sticker-text" rows="2" placeholder="批注 / 署名 / 装饰文字"></textarea></label>
+          <div class="sticker-add-actions">
+            <button class="button compact" id="add-text-sticker" type="button">文字贴纸</button>
+            <label class="button compact file-button">图片贴纸<input id="sticker-image-input" type="file" accept="image/*"></label>
+          </div>
+          <div class="preset-sticker-grid">
+            <button class="preset-chip" data-sticker-preset="topsecret" type="button">TOP SECRET</button>
+            <button class="preset-chip" data-sticker-preset="approved" type="button">APPROVED</button>
+            <button class="preset-chip" data-sticker-preset="tape" type="button">和纸胶带</button>
+            <button class="preset-chip" data-sticker-preset="star" type="button">☆ 今日最推</button>
+            <button class="preset-chip" data-sticker-preset="heart" type="button">♥ 心动瞬间</button>
+            <button class="preset-chip" data-sticker-preset="memo" type="button">手写便签</button>
+          </div>
+        </section>
+
+        <section class="editor-card" id="sticker-layer-card">
+          <div class="card-title"><div><h2>贴纸图层</h2><p>可拖动排序，也可用上下层按钮。</p></div><span>LAYER</span></div>
+          <div class="sticker-list" id="sticker-list"></div>
+        </section>
+
+        <section class="editor-card" id="selected-sticker-card">
+          <div class="card-title"><div><h2>当前贴纸</h2><p>横竖版分别记忆位置。</p></div><span>EDIT</span></div>
+          <div id="sticker-editor"><p class="empty-note">请新建或选择一个贴纸。</p></div>
+        </section>
+
+        <section class="editor-card" id="export-card">
+          <div class="card-title"><div><h2>导出图片</h2><p>按画布真实宽高导出，不受预览缩放影响。</p></div><span>PNG</span></div>
+          <label class="field"><span>导出倍率</span><select data-path="exportScale"><option value="2">2× 清晰</option><option value="3">3× 超清</option><option value="4">4× 印刷级</option></select></label>
+          <div class="export-grid">
+            <button class="button primary" data-export-target="full" type="button">完整设定卡</button>
+            <button class="button" data-export-target="stickers" type="button">仅贴纸透明 PNG</button>
+          </div>
+          <p class="help-copy">导出会隐藏选择框、控制柄、色卡按钮态和溢出提示。</p>
+        </section>
+      </div>
+    </aside>
+
+  </main>
+
+  <div class="crop-modal" id="crop-modal" hidden>
+    <div class="modal-backdrop" data-crop-close></div>
+    <section class="crop-dialog" role="dialog" aria-modal="true" aria-labelledby="crop-title">
+      <header><div><small>IMAGE CROP</small><h2 id="crop-title">裁切图片</h2></div><button type="button" data-crop-close aria-label="关闭">×</button></header>
+      <div class="crop-stage" id="crop-stage"><canvas id="crop-canvas" width="1000" height="1000"></canvas></div>
+      <label class="range-field"><span>缩放</span><input id="crop-zoom" type="range" min="1" max="4" value="1" step=".01"></label>
+      <p id="crop-hint">拖动图片调整构图。裁切框比例来自当前模板与画布方向的真实槽位。</p>
+      <footer><button class="button" data-crop-close type="button">取消</button><button class="button primary" id="apply-crop" type="button">应用裁切</button></footer>
+    </section>
+  </div>
+
+  <div class="tour-overlay" id="tour-overlay" hidden>
+    <button class="tour-blocker" type="button" data-close-tour aria-label="退出教程"></button>
+    <div class="tour-focus" id="tour-focus" aria-hidden="true"></div>
+    <section class="tour-card" id="tour-card" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+      <header><span id="tour-progress">1 / 7</span><button type="button" data-close-tour aria-label="退出教程">×</button></header>
+      <h2 id="tour-title"></h2>
+      <p id="tour-copy"></p>
+      <footer><button class="button" id="tour-prev" type="button">上一步</button><button class="button primary" id="tour-next" type="button">下一步</button></footer>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

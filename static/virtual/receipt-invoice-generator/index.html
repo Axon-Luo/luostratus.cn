@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#6e5a7e">
+  <meta name="description" content="OC 票据：制作机打小票与 Invoice，并自由添加文字或图片贴纸。">
+  <title>OC 票据 · RECEIPT & INVOICE STUDIO</title>
+  <link rel="stylesheet" href="./app.css?v=20260729-mobile-split5">
+  <link rel="stylesheet" href="../shared/vendor/coloris/coloris.min.css">
+  <link rel="stylesheet" href="../shared/oc-color-picker.css?v=20260803-1">
+  <script src="./vendor/html-to-image.min.js" defer></script>
+  <script src="../shared/browser-image-store.js" defer></script>
+  <script src="./fonts/bodoni-moda-embedded.js" defer></script>
+  <script src="../shared/vendor/coloris/coloris.min.js" defer></script>
+  <script src="../shared/oc-color-picker.js?v=20260803-1" defer></script>
+  <script src="./app.js?v=20260729-mobile-split5" defer></script>
+</head>
+<body data-mobile-panel="content">
+  <header class="topbar">
+    <a class="brand" href="../" aria-label="返回 OC 桌面">
+      <span class="brand-mark">票</span>
+      <span><b>OC 票据</b><small>RECEIPT &amp; INVOICE STUDIO</small></span>
+    </a>
+    <label class="project-field"><span>项目</span><input id="project-name" data-path="projectName"></label>
+    <div class="top-actions">
+      <button class="button quiet desktop-action" id="undo" type="button">撤销</button>
+      <button class="button quiet desktop-action" id="redo" type="button">重做</button>
+      <button class="button" id="start-tour" type="button"><span class="desktop-label">教程</span><span class="mobile-label">?</span></button>
+      <button class="button" id="new-project" type="button">新建</button>
+      <label class="button file-button desktop-action">导入<input id="import-json" type="file" accept=".json,application/json"></label>
+      <button class="button desktop-action" id="save-json" type="button">保存 JSON</button>
+      <button class="button primary" id="export-full" type="button"><span class="desktop-label">导出完整票据</span><span class="mobile-label">导出</span></button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="editor-panel content-panel">
+      <nav class="mobile-main-tabs">
+        <button class="active" data-mobile-tab="content" type="button">内容</button>
+        <button data-mobile-tab="style" type="button">样式 / 贴纸</button>
+      </nav>
+      <div class="panel-heading"><span>01</span><div><h1>内容编辑</h1><p>票据资料、商品与金额</p></div></div>
+      <div class="editor-scroll">
+        <section class="editor-card mode-card" id="mode-card">
+          <div class="card-title"><div><h2>票据类型</h2><p>两种模式分别保留模板与贴纸。</p></div></div>
+          <div class="mode-switch" id="mode-switch">
+            <button data-mode="receipt" type="button">机打小票<small>RECEIPT</small></button>
+            <button data-mode="invoice" type="button">Invoice<small>A4 DOCUMENT</small></button>
+          </div>
+        </section>
+
+        <section class="editor-card" id="business-card">
+          <div class="card-title"><div><h2>商家资料</h2><p>两种票据共同使用。</p></div></div>
+          <div class="business-logo-control">
+            <div class="business-logo-preview" id="business-logo-preview"><span>LOGO</span></div>
+            <div class="business-logo-actions">
+              <label class="button compact file-button">上传 Logo<input id="business-logo-input" type="file" accept="image/*"></label>
+              <button class="text-button" id="remove-business-logo" type="button">移除 Logo</button>
+              <p>显示在商店名称上方，支持 PNG、JPG 与 WebP。</p>
+            </div>
+          </div>
+          <label class="field"><span>商家 / 工作室名称</span><input data-path="business.name"></label>
+          <label class="field"><span>副标题 / 经营说明</span><input data-path="business.subtitle"></label>
+          <label class="field"><span>地址</span><textarea data-path="business.address" rows="2"></textarea></label>
+          <div class="field-grid">
+            <label class="field"><span>电话</span><input data-path="business.phone"></label>
+            <label class="field"><span>邮箱</span><input data-path="business.email"></label>
+          </div>
+          <label class="field"><span>税号 / 注册编号</span><input data-path="business.taxId"></label>
+        </section>
+
+        <section class="editor-card" id="mode-fields-card">
+          <div class="card-title"><div><h2 id="mode-fields-title">小票资料</h2><p id="mode-fields-copy"></p></div></div>
+          <div id="mode-fields"></div>
+        </section>
+
+        <section class="editor-card" id="items-card">
+          <div class="card-title"><div><h2>商品明细</h2><p>两种票据共享同一份商品数据。</p></div><button class="button compact" id="add-item" type="button">＋ 商品</button></div>
+          <div class="item-list" id="item-list"></div>
+        </section>
+
+        <section class="editor-card" id="selected-item-card">
+          <div class="card-title"><div><h2>当前商品</h2><p>名称、描述、数量与单价。</p></div></div>
+          <div id="selected-item-editor"></div>
+        </section>
+
+        <section class="editor-card" id="pricing-card">
+          <div class="card-title"><div><h2>金额计算</h2><p>小计和总额会自动计算。</p></div></div>
+          <div class="field-grid">
+            <label class="field"><span>货币符号</span><input data-path="pricing.currency"></label>
+            <label class="field"><span>折扣</span><input data-path="pricing.discount" type="number" min="0" step=".01"></label>
+          </div>
+          <div class="field-grid">
+            <label class="field"><span>税率 %</span><input data-path="pricing.taxRate" type="number" min="0" step=".1"></label>
+            <label class="field"><span>运费 / 服务费</span><input data-path="pricing.shipping" type="number" min="0" step=".01"></label>
+          </div>
+        </section>
+
+        <section class="editor-card" id="ascii-card">
+          <div class="card-title"><div><h2>ASCII 图案</h2><p>显示在 Total 下方，保留空格与换行。</p></div></div>
+          <div id="ascii-editor"></div>
+        </section>
+      </div>
+    </aside>
+
+    <section class="preview-panel">
+      <div class="preview-toolbar">
+        <div><span class="preview-dot"></span><strong>实时画布</strong></div>
+        <div class="section-actions">
+          <button data-export-section="header" type="button">页头</button>
+          <button data-export-section="items" type="button">明细</button>
+          <button data-export-section="totals" type="button">合计</button>
+          <button data-export-section="stickers" type="button">贴纸</button>
+        </div>
+      </div>
+      <div class="preview-viewport" id="preview-viewport">
+        <div class="preview-stage" id="preview-stage">
+          <article class="document-canvas" id="document-canvas" data-mode="receipt" data-template="thermal"></article>
+        </div>
+      </div>
+    </section>
+
+    <div class="mobile-resizer" id="mobile-resizer" role="separator" aria-orientation="horizontal" tabindex="0" aria-label="调整预览高度"><span></span></div>
+
+    <aside class="editor-panel style-panel">
+      <nav class="mobile-main-tabs">
+        <button data-mobile-tab="content" type="button">内容</button>
+        <button class="active" data-mobile-tab="style" type="button">样式 / 贴纸</button>
+      </nav>
+      <div class="panel-heading"><span>02</span><div><h1>样式与贴纸</h1><p>模板、字体、图层和导出</p></div></div>
+      <div class="editor-scroll">
+        <section class="editor-card" id="templates-card">
+          <div class="card-title"><div><h2>页面模板</h2><p id="template-copy">小票模板包含像素风。</p></div></div>
+          <div class="theme-grid" id="theme-grid"></div>
+        </section>
+
+        <section class="editor-card">
+          <div class="card-title"><div><h2>画布与排版</h2></div></div>
+          <div id="document-size-control"></div>
+          <label class="field"><span>文档字体</span><select data-path="style.documentFont">
+            <option value="sans">Noto Sans SC / 黑体</option>
+            <option value="serif">Noto Serif SC / 宋体</option>
+            <option value="xiaowei">ZCOOL 小薇</option>
+            <option value="wenkai">霞鹜文楷</option>
+            <option value="handwriting">马善政毛笔体</option>
+            <option value="pixel">本地像素字体</option>
+          </select></label>
+          <label class="range-field"><span>画布字号 <output id="font-scale-output"></output></span><input data-path="style.fontScale" type="range" min=".82" max="1.28" step=".01"></label>
+          <div class="color-grid">
+            <label class="color-field"><span>强调色</span><input data-color="accent" type="color"></label>
+            <label class="color-field"><span>纸张</span><input data-color="paper" type="color"></label>
+            <label class="color-field"><span>正文</span><input data-color="ink" type="color"></label>
+            <label class="color-field"><span>弱文字</span><input data-color="muted" type="color"></label>
+          </div>
+          <button class="text-button" id="reset-colors" type="button">恢复当前模板配色</button>
+        </section>
+
+        <section class="editor-card" id="stickers-card">
+          <div class="card-title"><div><h2>添加贴纸</h2><p>图片支持透明背景，文字支持换行。</p></div></div>
+          <label class="field"><span>文字内容</span><textarea id="new-sticker-text" rows="3" placeholder="谢谢惠顾 / PAID / 手写备注…"></textarea></label>
+          <div class="sticker-add-actions">
+            <button class="button compact" id="add-text-sticker" type="button">＋ 文字贴纸</button>
+            <label class="button compact file-button">＋ 图片贴纸<input id="sticker-image-input" type="file" accept="image/*"></label>
+          </div>
+        </section>
+
+        <section class="editor-card">
+          <div class="card-title"><div><h2>贴纸图层</h2><p>拖动排序只影响遮挡顺序。</p></div></div>
+          <div class="sticker-list" id="sticker-list"></div>
+        </section>
+
+        <section class="editor-card" id="selected-sticker-card">
+          <div class="card-title"><div><h2>当前贴纸</h2><p>可精确调整位置、缩放和旋转。</p></div></div>
+          <div id="selected-sticker-editor"></div>
+        </section>
+
+        <section class="editor-card" id="export-card">
+          <div class="card-title"><div><h2>高清导出</h2><p>选中边框和操作柄不会进入图片。</p></div></div>
+          <label class="field"><span>导出倍率</span><select data-path="style.exportScale"><option value="2">2× 高清</option><option value="3">3× 超清</option></select></label>
+          <button class="button primary wide" id="export-long" type="button">导出完整票据 PNG</button>
+          <p class="field-help">图片资源存入浏览器图片库；JSON 会生成包含图片的可迁移备份。</p>
+        </section>
+      </div>
+    </aside>
+  </main>
+
+  <div class="tour-overlay" id="tour-overlay" hidden>
+    <button class="tour-blocker" type="button" data-close-tour aria-label="退出使用教程"></button>
+    <div class="tour-focus" id="tour-focus" aria-hidden="true"></div>
+    <section class="tour-card" id="tour-card" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+      <header><span id="tour-progress">01 / 08</span><button type="button" data-close-tour aria-label="退出教程">×</button></header>
+      <h2 id="tour-title"></h2>
+      <p id="tour-copy"></p>
+      <footer><button class="button" id="tour-prev" type="button">上一步</button><button class="button primary" id="tour-next" type="button">下一步</button></footer>
+    </section>
+  </div>  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

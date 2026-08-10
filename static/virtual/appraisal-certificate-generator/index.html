@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#65705b">
+  <meta name="description" content="OC 鉴定书：制作珠宝、文物、司法、伤情及通用虚构鉴定文书。">
+  <title>OC 鉴定书 · APPRAISAL DOCUMENT STUDIO</title>
+  <link rel="stylesheet" href="../shared/fonts/noto-serif-sc/result.css">
+  <link rel="stylesheet" href="./app.css?v=20260730-14">
+  <link rel="stylesheet" href="../shared/vendor/coloris/coloris.min.css">
+  <link rel="stylesheet" href="../shared/oc-color-picker.css?v=20260803-2">
+  <script src="../shared/browser-image-store.js"></script>
+  <script src="../shared/export-fonts.js"></script>
+  <script src="./vendor/html-to-image.min.js"></script>
+  <script src="../shared/vendor/coloris/coloris.min.js" defer></script>
+  <script src="../shared/oc-color-picker.js?v=20260803-1" defer></script>
+  <script src="./app.js?v=20260809-1" defer></script>
+</head>
+<body data-mobile-panel="content">
+  <header class="topbar">
+    <a class="brand" href="../" aria-label="返回 OC 桌面">
+      <span class="brand-mark" aria-hidden="true">鉴</span>
+      <span><b>OC 鉴定书</b><small>APPRAISAL DOCUMENT STUDIO</small></span>
+    </a>
+    <label class="project-field"><span>项目</span><input id="project-name" value="未登记样本鉴定档案"></label>
+    <div class="top-actions">
+      <button class="button desktop-action" id="undo" type="button" disabled>撤销</button>
+      <button class="button desktop-action" id="redo" type="button" disabled>重做</button>
+      <button class="button" id="start-tour" type="button">教程</button>
+      <button class="button" id="import-trigger" type="button">导入</button>
+      <button class="button desktop-action" id="save-json" type="button">保存 JSON</button>
+      <button class="button primary" id="export-full-top" type="button"><span class="desktop-label">导出鉴定书</span><span class="mobile-label">导出</span></button>
+      <input id="import-json" type="file" accept=".json,application/json" hidden>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="editor-panel content-panel">
+      <div class="panel-heading"><span>01</span><div><h1>内容编辑</h1><p>鉴定对象、检材、记录与结论</p></div></div>
+      <div class="panel-scroll">
+        <section class="editor-card" id="type-card">
+          <div class="card-title"><div><h2>鉴定类别</h2><p>类别决定字段提示，模板决定视觉排版。</p></div><span>TYPE</span></div>
+          <label class="field"><span>类别</span><select id="appraisal-type">
+            <option value="jewelry">珠宝鉴定</option>
+            <option value="artifact">文物鉴定</option>
+            <option value="judicial">司法鉴定</option>
+            <option value="injury">伤情鉴定</option>
+            <option value="general">通用鉴定</option>
+          </select></label>
+          <p class="notice">本工具用于虚构创作，不生成真实机构资质或防伪凭证。</p>
+        </section>
+
+        <section class="editor-card" id="document-card">
+          <div class="card-title"><div><h2>文书档案</h2><p>标题、编号、机构与受理信息。</p></div><span>FILE</span></div>
+          <label class="field"><span>鉴定书标题</span><input data-path="document.title"></label>
+          <label class="field"><span>虚构机构名称</span><input data-path="document.institution"></label>
+          <div class="field-grid two">
+            <label class="field"><span>档案编号</span><input data-path="document.reference"></label>
+            <label class="field"><span>签发日期</span><input data-path="document.issueDate"></label>
+          </div>
+          <div class="field-grid two">
+            <label class="field"><span>委托人</span><input data-path="document.applicant"></label>
+            <label class="field"><span>受理日期</span><input data-path="document.acceptedDate"></label>
+          </div>
+          <label class="field"><span>委托事项</span><textarea data-path="document.purpose" rows="3"></textarea></label>
+        </section>
+
+        <section class="editor-card" id="subject-card">
+          <div class="card-title"><div><h2 id="subject-editor-title">鉴定对象</h2><p>对象资料与用于版面的主图。</p></div><span>SUBJECT</span></div>
+          <div class="upload-line">
+            <div class="upload-preview main-image-preview" id="main-image-preview">样</div>
+            <div><button class="small-button" id="main-image-upload-trigger" type="button">上传并裁切</button><button class="text-button" id="main-image-remove" type="button">移除</button></div>
+            <input id="main-image-upload" type="file" accept="image/*" hidden>
+          </div>
+          <div class="field-grid two">
+            <label class="field"><span id="subject-name-label">对象名称</span><input data-path="subject.name"></label>
+            <label class="field"><span id="subject-category-label">对象类别</span><input data-path="subject.category"></label>
+          </div>
+          <label class="field"><span id="subject-meta-label">对象资料</span><input data-path="subject.meta"></label>
+          <label class="field"><span>外观或现状描述</span><textarea data-path="subject.description" rows="4"></textarea></label>
+        </section>
+
+        <section class="editor-card" id="findings-card">
+          <div class="card-title"><div><h2>检验项目</h2><p>自定义项目名、结果与说明。</p></div><button class="small-button" id="add-finding" type="button">＋ 项目</button></div>
+          <div class="stack-list" id="finding-list"></div>
+        </section>
+
+        <section class="editor-card" id="evidence-card">
+          <div class="card-title"><div><h2>检材与附件</h2><p>上传照片并记录检材说明。</p></div><button class="small-button" id="add-evidence" type="button">＋ 检材</button></div>
+          <div class="stack-list" id="evidence-list"></div>
+        </section>
+
+        <section class="editor-card" id="analysis-card">
+          <div class="card-title"><div><h2>分析与意见</h2><p>方法、分析过程和最终结论。</p></div><span>OPINION</span></div>
+          <label class="field"><span>检验方法</span><textarea data-path="document.methods" rows="4"></textarea></label>
+          <label class="field"><span>分析说明</span><textarea data-path="document.analysis" rows="6"></textarea></label>
+          <label class="field"><span>鉴定意见</span><textarea data-path="document.conclusion" rows="5"></textarea></label>
+          <label class="field"><span>备注</span><textarea data-path="document.notes" rows="3"></textarea></label>
+        </section>
+
+        <section class="editor-card" id="sign-card">
+          <div class="card-title"><div><h2>签署信息</h2><p>鉴定人员、复核人员与签发地点。</p></div><span>SIGN</span></div>
+          <div class="field-grid two">
+            <label class="field"><span>鉴定人</span><input data-path="document.examiner"></label>
+            <label class="field"><span>复核人</span><input data-path="document.reviewer"></label>
+          </div>
+          <label class="field"><span>签发地点</span><input data-path="document.location"></label>
+        </section>
+      </div>
+    </aside>
+
+    <section class="preview-panel">
+      <div class="preview-toolbar">
+        <div><i class="preview-dot"></i><strong>实时画布</strong></div>
+        <div class="preview-zoom-controls" aria-label="预览缩放">
+          <button id="preview-zoom-out" type="button" aria-label="缩小预览">−</button>
+          <output id="preview-zoom-output">100%</output>
+          <button id="preview-zoom-in" type="button" aria-label="放大预览">＋</button>
+        </div>
+        <div class="preview-actions">
+          <button data-export-section="subject" type="button">对象资料</button>
+          <button data-export-section="findings" type="button">检验记录</button>
+          <button data-export-section="conclusion" type="button">鉴定意见</button>
+          <button id="fit-preview" type="button">适合画布</button>
+          <button id="focus-preview" type="button">专注模式</button>
+        </div>
+      </div>
+      <div class="preview-viewport" id="preview-viewport">
+        <div class="preview-stage" id="preview-stage">
+          <article class="certificate-canvas" id="certificate-canvas" data-template="gem" data-paper="portrait"></article>
+        </div>
+      </div>
+    </section>
+
+    <div class="mobile-resizer" id="mobile-resizer" role="separator" aria-orientation="horizontal" aria-valuemin="22" aria-valuemax="72" aria-valuenow="40" tabindex="0" aria-label="调整预览高度"><span></span></div>
+
+    <aside class="editor-panel style-panel">
+      <div class="panel-heading"><span>02</span><div><h1>样式与导出</h1><p>模板、纸张、贴纸与导出</p></div></div>
+      <div class="panel-scroll">
+        <section class="editor-card" id="template-card">
+          <div class="card-title"><div><h2>页面模板</h2><p>模板改变结构，不会覆盖已填写内容。</p></div><span>STYLE</span></div>
+          <div class="theme-grid">
+            <button class="theme-button active" data-template-option="gem" type="button"><i class="theme-gem"></i><span><b>宝石实验室</b><small>GEM LAB</small></span></button>
+            <button class="theme-button" data-template-option="museum" type="button"><i class="theme-museum"></i><span><b>博物馆编目</b><small>MUSEUM FILE</small></span></button>
+            <button class="theme-button" data-template-option="judicial" type="button"><i class="theme-judicial"></i><span><b>司法意见书</b><small>EXPERT OPINION</small></span></button>
+            <button class="theme-button" data-template-option="clinical" type="button"><i class="theme-clinical"></i><span><b>临床检查</b><small>CLINICAL RECORD</small></span></button>
+            <button class="theme-button" data-template-option="editorial" type="button"><i class="theme-editorial"></i><span><b>证据档案</b><small>EVIDENCE EDITION</small></span></button>
+          </div>
+        </section>
+
+        <section class="editor-card">
+          <div class="card-title"><div><h2>纸张与排版</h2><p>单页保持标准比例，长页随内容增长。</p></div><span>PAGE</span></div>
+          <label class="field"><span>纸张模式</span><select id="paper-mode">
+            <option value="portrait">A4 竖版</option>
+            <option value="landscape">A4 横版</option>
+            <option value="long">自适应长页</option>
+          </select></label>
+          <label class="range-field"><span>画布字号 <output id="font-scale-output">100%</output></span><input id="font-scale" type="range" min="90" max="125" value="100"></label>
+          <div class="check-grid">
+            <label><input id="show-fiction" type="checkbox" checked> 显示虚构标记</label>
+            <label><input id="show-page-number" type="checkbox" checked> 显示页码</label>
+          </div>
+        </section>
+
+        <section class="editor-card" id="document-colors-card">
+          <div class="card-title"><div><h2>文书配色</h2><p>每套模板会分别记住自己的颜色。</p></div><span>COLOR</span></div>
+          <div class="color-grid">
+            <label class="color-field"><span>重点色</span><input type="color" data-doc-color="accent" value="#46666b"></label>
+            <label class="color-field"><span>辅助色</span><input type="color" data-doc-color="accent2" value="#90a6a4"></label>
+            <label class="color-field"><span>纸张色</span><input type="color" data-doc-color="paper" value="#f8faf9"></label>
+            <label class="color-field"><span>文字色</span><input type="color" data-doc-color="ink" value="#202828"></label>
+            <label class="color-field"><span>线框色</span><input type="color" data-doc-color="line" value="#b8c4c2"></label>
+          </div>
+          <button class="small-button color-reset" id="reset-colors" type="button">恢复当前模板默认色</button>
+        </section>
+
+        <section class="editor-card" id="stickers-card">
+          <div class="card-title"><div><h2>自由贴纸</h2><p>文字和图片可在画布中自由摆放。</p></div><span>LAYER</span></div>
+          <label class="field"><span>文字内容</span><textarea id="new-sticker-text" rows="3" placeholder="已复核 / 私人档案 / 手写备注"></textarea></label>
+          <div class="sticker-add-actions">
+            <button class="small-button" id="add-text-sticker" type="button">＋ 文字贴纸</button>
+            <label class="small-button file-button">＋ 图片贴纸<input id="sticker-image-input" type="file" accept="image/*"></label>
+          </div>
+          <div class="sticker-list" id="sticker-list"></div>
+        </section>
+
+        <section class="editor-card" id="selected-sticker-card">
+          <div class="card-title"><div><h2>当前贴纸</h2><p>位置、尺寸、旋转与独立配色。</p></div><span>EDIT</span></div>
+          <div id="selected-sticker-editor"><p class="empty-note">在画布或图层列表中选择一个贴纸。</p></div>
+        </section>
+
+        <section class="editor-card" id="export-card">
+          <div class="card-title"><div><h2>导出图片</h2><p>导出完整文书或单独部件。</p></div><span>PNG</span></div>
+          <label class="field"><span>导出倍率</span><select id="export-scale"><option value="2">2× 清晰</option><option value="3">3× 超清</option></select></label>
+          <div class="export-grid">
+            <button class="button primary" id="export-full" type="button">完整鉴定书</button>
+            <button class="button" data-export-section="subject" type="button">对象资料</button>
+            <button class="button" data-export-section="findings" type="button">检验记录</button>
+            <button class="button" data-export-section="conclusion" type="button">鉴定意见</button>
+          </div>
+          <p class="help-copy">图片保存在浏览器 IndexedDB。JSON 用于备份文字、布局与图片引用。</p>
+        </section>
+      </div>
+    </aside>
+
+    <nav class="mobile-main-tabs" aria-label="手机编辑区">
+      <button class="active" data-mobile-panel="content" type="button">内容</button>
+      <button data-mobile-panel="style" type="button">样式</button>
+    </nav>
+  </main>
+
+  <div class="crop-modal" id="crop-modal" hidden>
+    <div class="crop-backdrop" data-crop-close></div>
+    <section class="crop-dialog" role="dialog" aria-modal="true" aria-labelledby="crop-title">
+      <header><div><span>IMAGE CROP</span><h2 id="crop-title">裁切鉴定图片</h2></div><button type="button" data-crop-close aria-label="关闭">×</button></header>
+      <div class="crop-stage" id="crop-stage"><canvas id="crop-canvas" width="1200" height="900"></canvas></div>
+      <label class="range-field"><span>缩放</span><input id="crop-zoom" type="range" min="1" max="4" value="1" step=".01"></label>
+      <p>拖动画面调整位置，裁切结果会保存到当前浏览器。</p>
+      <footer><button class="button" data-crop-close type="button">取消</button><button class="button primary" id="crop-apply" type="button">应用裁切</button></footer>
+    </section>
+  </div>
+
+  <div class="tour-overlay" id="tour-overlay" hidden>
+    <div class="tour-focus" id="tour-focus"></div>
+    <section class="tour-card" id="tour-card" role="dialog" aria-modal="true">
+      <header><span>使用教程</span><em id="tour-progress">1 / 6</em></header>
+      <h2 id="tour-title">选择鉴定类别</h2>
+      <p id="tour-copy"></p>
+      <footer><button class="text-button" id="tour-skip" type="button">跳过</button><div><button class="button" id="tour-prev" type="button">上一步</button><button class="button primary" id="tour-next" type="button">下一步</button></div></footer>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

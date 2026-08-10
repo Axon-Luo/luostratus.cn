@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#526d78">
+  <meta name="description" content="OC 桌面情绪板：制作仿真电脑桌面、角色开始菜单与可自由摆放的图片文字窗口。">
+  <title>OC 桌面情绪板 · DESKTOP MOODBOARD</title>
+  <link rel="stylesheet" href="./app.css?v=20260729-mobile-split5">
+  <link rel="stylesheet" href="../shared/vendor/coloris/coloris.min.css">
+  <link rel="stylesheet" href="../shared/oc-color-picker.css?v=20260803-1">
+  <script src="./vendor/html-to-image.min.js" defer></script>
+  <script src="../shared/browser-image-store.js" defer></script>
+  <script src="../shared/vendor/coloris/coloris.min.js" defer></script>
+  <script src="../shared/oc-color-picker.js?v=20260803-1" defer></script>
+  <script src="./app.js?v=20260729-mobile-split5" defer></script>
+</head>
+<body data-mobile-panel="content">
+  <header class="topbar">
+    <a class="brand" href="../" aria-label="返回 OC 桌面">
+      <span class="brand-mark"><i></i><i></i><i></i><i></i></span>
+      <span><b>OC 桌面情绪板</b><small>DESKTOP MOODBOARD STUDIO</small></span>
+    </a>
+    <label class="project-field"><span>项目</span><input data-path="projectName" aria-label="项目名称"></label>
+    <div class="top-actions">
+      <button class="button quiet desktop-action" id="undo" type="button">撤销</button>
+      <button class="button quiet desktop-action" id="redo" type="button">重做</button>
+      <button class="button" id="new-project" type="button">新建</button>
+      <label class="button file-button desktop-action">导入<input id="import-json" type="file" accept=".json,application/json"></label>
+      <button class="button desktop-action" id="save-json" type="button">保存 JSON</button>
+      <button class="button quiet" id="start-tour" type="button">教程</button>
+      <button class="button" id="focus-mode" type="button" aria-pressed="false"><span class="desktop-label">专注模式</span><span class="mobile-label">专注</span></button>
+      <button class="button primary" id="export-full" type="button"><span class="desktop-label">导出完整桌面</span><span class="mobile-label">导出</span></button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="editor-panel content-panel">
+      <nav class="mobile-main-tabs">
+        <button class="active" data-mobile-tab="content" type="button">内容 / 素材</button>
+        <button data-mobile-tab="style" type="button">系统 / 导出</button>
+      </nav>
+      <div class="panel-heading"><span>01</span><div><h1>桌面内容</h1><p>角色设卡、图片与文字素材</p></div></div>
+      <div class="editor-scroll">
+        <section class="editor-card" id="character-editor-card">
+          <div class="card-title"><div><h2>角色开始菜单</h2><p>点击画布上的开始按钮查看设卡。</p></div></div>
+          <div class="profile-editor">
+            <div class="image-preview avatar-preview" id="avatar-preview"><span>头像</span></div>
+            <div class="image-actions">
+              <label class="button compact file-button">上传并裁切<input id="avatar-input" type="file" accept="image/*"></label>
+              <button class="text-button" id="remove-avatar" type="button">移除头像</button>
+            </div>
+          </div>
+          <label class="field"><span>角色姓名</span><input data-path="character.name"></label>
+          <div class="field-grid">
+            <label class="field"><span>代号 / 用户名</span><input data-path="character.alias"></label>
+            <label class="field"><span>当前状态</span><input data-path="character.status"></label>
+          </div>
+          <div class="field-grid">
+            <label class="field"><span>身份 / 职业</span><input data-path="character.role"></label>
+            <label class="field"><span>地点</span><input data-path="character.location"></label>
+          </div>
+          <label class="field"><span>角色引言</span><textarea data-path="character.quote" rows="3"></textarea></label>
+          <label class="field"><span>简介</span><textarea data-path="character.summary" rows="4"></textarea></label>
+          <label class="field"><span>关键词（顿号或逗号分隔）</span><input data-path="character.tags"></label>
+        </section>
+
+        <section class="editor-card" id="asset-add-card">
+          <div class="card-title"><div><h2>资源管理器</h2><p>素材添加后会出现在桌面和资源窗口。</p></div></div>
+          <label class="field"><span>文字贴纸</span><textarea id="new-text" rows="3" placeholder="输入便签、标题、终端文字……"></textarea></label>
+          <div class="field-grid">
+            <label class="field"><span>文字样式</span><select id="new-text-style">
+              <option value="note">便签</option>
+              <option value="terminal">终端</option>
+              <option value="plain">无框文字</option>
+              <option value="document">文本文档</option>
+            </select></label>
+            <label class="field"><span>默认外框</span><select id="new-text-frame">
+              <option value="auto">跟随样式</option>
+              <option value="window">程序窗口</option>
+              <option value="none">无外框</option>
+            </select></label>
+          </div>
+          <div class="add-actions">
+            <button class="button compact" id="add-text" type="button">＋ 添加文字</button>
+            <label class="button compact file-button">＋ 上传图片<input id="asset-image-input" type="file" accept="image/*" multiple></label>
+          </div>
+          <p class="field-help">支持 PNG、JPG、GIF 与 WebP；单张不超过 15MB。</p>
+        </section>
+
+        <section class="editor-card">
+          <div class="card-title"><div><h2>桌面图层</h2><p>拖动排列前后层级；列表顶部显示在最前。</p></div></div>
+          <div class="asset-list" id="asset-list"></div>
+        </section>
+
+        <section class="editor-card" id="selected-asset-card">
+          <div class="card-title"><div><h2>当前素材</h2><p>位置、尺寸、外框与图层。</p></div></div>
+          <div id="selected-asset-editor"></div>
+        </section>
+      </div>
+    </aside>
+
+    <section class="preview-panel">
+      <div class="preview-toolbar">
+        <div><span class="preview-dot"></span><strong>仿真桌面 · 1440 × 900</strong></div>
+        <div class="preview-actions">
+          <button data-window-toggle="explorer" type="button">资源管理器</button>
+          <button data-window-toggle="settings" type="button">设置</button>
+          <button data-window-toggle="start" type="button">开始菜单</button>
+        </div>
+      </div>
+      <div class="preview-viewport" id="preview-viewport">
+        <div class="preview-stage" id="preview-stage">
+          <article class="desktop-canvas" id="desktop-canvas" data-theme="aero"></article>
+        </div>
+      </div>
+    </section>
+
+    <div class="mobile-resizer" id="mobile-resizer" role="separator" aria-orientation="horizontal" tabindex="0" aria-label="调整预览高度"><span></span></div>
+
+    <aside class="editor-panel style-panel">
+      <nav class="mobile-main-tabs">
+        <button data-mobile-tab="content" type="button">内容 / 素材</button>
+        <button class="active" data-mobile-tab="style" type="button">系统 / 导出</button>
+      </nav>
+      <div class="panel-heading"><span>02</span><div><h1>系统设置</h1><p>桌面模板、窗口与导出</p></div></div>
+      <div class="editor-scroll">
+        <section class="editor-card">
+          <div class="card-title"><div><h2>电脑模板</h2><p>改变桌面、任务栏和系统窗口。</p></div></div>
+          <div class="theme-grid" id="theme-grid"></div>
+        </section>
+
+        <section class="editor-card">
+          <div class="card-title"><div><h2>壁纸与桌面</h2></div></div>
+          <div class="wallpaper-editor">
+            <div class="image-preview wallpaper-preview" id="wallpaper-preview"><span>壁纸</span></div>
+            <div class="image-actions">
+              <label class="button compact file-button">上传壁纸<input id="wallpaper-input" type="file" accept="image/*"></label>
+              <button class="text-button" id="remove-wallpaper" type="button">移除壁纸</button>
+            </div>
+          </div>
+          <div class="field-grid">
+            <label class="field"><span>壁纸颜色</span><input data-path="desktop.wallpaperColor" type="color"></label>
+            <label class="field"><span>强调色</span><input data-path="desktop.accent" type="color"></label>
+          </div>
+          <label class="check-field"><input data-path="desktop.showGrid" type="checkbox"><span>显示桌面网格</span></label>
+          <label class="check-field"><input data-path="desktop.showIconLabels" type="checkbox"><span>显示桌面图标名称</span></label>
+        </section>
+
+        <section class="editor-card">
+          <div class="card-title"><div><h2>窗口与任务栏</h2></div></div>
+          <label class="field"><span>素材窗口外框</span><select data-path="desktop.frameStyle">
+            <option value="system">跟随系统模板</option>
+            <option value="win95">Windows 95</option>
+            <option value="luna">Luna 蓝色</option>
+            <option value="aero">Aero 玻璃</option>
+            <option value="modern">现代扁平</option>
+            <option value="mac">Classic Macintosh</option>
+            <option value="editorial">Editorial 黑白</option>
+          </select></label>
+          <div class="field-grid">
+            <label class="field"><span>桌面时钟</span><input data-path="desktop.clock"></label>
+            <label class="field"><span>日期</span><input data-path="desktop.date"></label>
+          </div>
+          <label class="field"><span>任务栏状态</span><input data-path="desktop.taskbarStatus"></label>
+          <div class="window-buttons">
+            <button class="button compact" data-window-toggle="explorer" type="button">资源管理器</button>
+            <button class="button compact" data-window-toggle="settings" type="button">设置</button>
+            <button class="button compact" data-window-toggle="start" type="button">开始菜单</button>
+          </div>
+        </section>
+
+        <section class="editor-card" id="export-card">
+          <div class="card-title"><div><h2>高清导出</h2><p>导出当前窗口状态与桌面拼贴。</p></div></div>
+          <label class="field"><span>导出倍率</span><select data-path="exportScale">
+            <option value="2">2× · 2880 × 1800</option>
+            <option value="3">3× · 4320 × 2700</option>
+          </select></label>
+          <button class="button primary wide" id="export-long" type="button">导出完整桌面 PNG</button>
+          <p class="field-help">编辑选框与变形手柄不会进入图片。项目会自动保存在当前浏览器，JSON 可用于迁移。</p>
+        </section>
+      </div>
+    </aside>
+  </main>
+
+  <div class="tour-overlay" id="tour-overlay" hidden>
+    <button class="tour-blocker" type="button" data-close-tour aria-label="退出使用教程"></button>
+    <div class="tour-focus" id="tour-focus" aria-hidden="true"></div>
+    <section class="tour-card" id="tour-card" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+      <header>
+        <span id="tour-progress">01 / 08</span>
+        <button type="button" data-close-tour aria-label="退出教程">×</button>
+      </header>
+      <h2 id="tour-title"></h2>
+      <p id="tour-copy"></p>
+      <footer>
+        <button class="button" id="tour-prev" type="button">上一步</button>
+        <button class="button primary" id="tour-next" type="button">下一步</button>
+      </footer>
+    </section>
+  </div>
+
+  <div class="avatar-crop-modal" id="avatar-crop-modal" hidden>
+    <div class="avatar-crop-backdrop" data-close-avatar-crop></div>
+    <section class="avatar-crop-dialog" role="dialog" aria-modal="true" aria-labelledby="avatar-crop-title">
+      <header>
+        <div><span>AVATAR CROP</span><h2 id="avatar-crop-title">裁切角色头像</h2></div>
+        <button type="button" data-close-avatar-crop aria-label="关闭">×</button>
+      </header>
+      <div class="avatar-crop-stage" id="avatar-crop-stage"><img id="avatar-crop-image" alt="头像裁切预览"></div>
+      <p>拖动图片调整位置，使用滑杆缩放。裁切结果为 1:1 方形头像。</p>
+      <label class="avatar-crop-range"><span>图片缩放 <output id="avatar-crop-zoom-output">100%</output></span><input id="avatar-crop-zoom" type="range" min="1" max="3" step=".05" value="1"></label>
+      <footer>
+        <button class="button" id="reset-avatar-crop" type="button">重置</button>
+        <span></span>
+        <button class="button" type="button" data-close-avatar-crop>取消</button>
+        <button class="button primary" id="apply-avatar-crop" type="button">完成裁切</button>
+      </footer>
+    </section>
+  </div>
+
+  <div class="focus-toolbar" id="focus-toolbar" aria-label="专注模式控制">
+    <span>专注模式 · 移开鼠标即可隐藏</span>
+    <button id="focus-exit" type="button">退出专注</button>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

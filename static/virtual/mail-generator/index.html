@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#e9e1d8">
+  <meta name="description" content="用于制作虚构邮件、邮箱界面与回复线程的本地生成器。">
+  <title>邮件档案 · OC MAIL ARCHIVE</title>
+  <link rel="stylesheet" href="../player/FZG_CN/result.css">
+  <link rel="stylesheet" href="../shared/fonts/noto-serif-sc/result.css?v=20260729-1">
+  <link rel="stylesheet" href="./app.css?v=20260729-mobile-split5">
+  <link rel="stylesheet" href="../shared/vendor/coloris/coloris.min.css">
+  <link rel="stylesheet" href="../shared/oc-color-picker.css?v=20260803-1">
+  <script src="./vendor/html-to-image.min.js"></script>
+  <script src="../shared/export-fonts.js?v=20260729-1" defer></script>
+  <script src="../shared/browser-image-store.js" defer></script>
+  <script src="../shared/vendor/coloris/coloris.min.js" defer></script>
+  <script src="../shared/oc-color-picker.js?v=20260803-1" defer></script>
+  <script src="./app.js?v=20260729-mobile-split5" defer></script>
+</head>
+<body data-mobile-panel="content">
+  <header class="topbar">
+    <a class="brand" href="../" aria-label="返回OC桌面">
+      <span class="brand-mark">邮</span>
+      <span><b>邮件档案</b><small>OC MAIL ARCHIVE</small></span>
+    </a>
+
+    <label class="project-name-field">
+      <span class="sr-only">项目名称</span>
+      <input id="project-name" type="text" maxlength="80" autocomplete="off">
+    </label>
+
+    <div class="top-actions">
+      <button class="button ghost desktop-action" id="new-project" type="button">新建</button>
+      <button class="button ghost desktop-action" id="undo-button" type="button">撤销</button>
+      <button class="button ghost desktop-action" id="redo-button" type="button">重做</button>
+      <button class="button ghost" id="start-tour" type="button">
+        <span class="desktop-label">使用教程</span><span class="mobile-label">教程</span>
+      </button>
+      <label class="button ghost file-button">
+        <span class="desktop-label">导入 JSON</span><span class="mobile-label">导入</span>
+        <input id="import-input" type="file" accept=".json,application/json">
+      </label>
+      <button class="button ghost desktop-action" id="save-json" type="button">保存 JSON</button>
+      <button class="button primary" id="export-all" type="button">
+        <span class="desktop-label">导出完整 PNG</span><span class="mobile-label">导出</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="editor-panel content-panel" aria-label="内容编辑">
+      <nav class="mobile-main-tabs" aria-label="手机编辑区域">
+        <button class="active" type="button" data-mobile-tab="content">内容</button>
+        <button type="button" data-mobile-tab="style">样式</button>
+      </nav>
+      <div class="panel-heading">
+        <div><span class="eyebrow">CONTENT</span><h1>内容编辑</h1></div>
+        <span class="save-state" id="save-state"><i></i>已保存</span>
+      </div>
+
+      <div class="editor-scroll">
+        <section class="editor-card">
+          <div class="card-title"><h2>账户资料</h2><span>PROFILE</span></div>
+          <div class="avatar-editor">
+            <div class="avatar-preview" id="account-avatar-preview">OC</div>
+            <div>
+              <label class="button compact file-button">上传并裁切<input id="account-avatar-input" type="file" accept="image/*"></label>
+              <button class="text-button" id="remove-avatar" type="button">移除</button>
+            </div>
+          </div>
+          <label class="field"><span>账户名称</span><input data-account-field="name" type="text"></label>
+          <label class="field"><span>邮箱地址</span><input data-account-field="email" type="email"></label>
+          <label class="field"><span>身份 / 简介</span><textarea data-account-field="bio" rows="3"></textarea></label>
+          <label class="field"><span>账户状态</span><input data-account-field="status" type="text"></label>
+        </section>
+
+        <section class="editor-card" id="contacts-card">
+          <div class="card-title">
+            <div><h2>通讯录</h2><p>一次保存姓名、邮箱与头像。</p></div>
+            <button class="button compact" id="add-contact" type="button">＋ 联系人</button>
+          </div>
+          <div class="contact-editor-list" id="contact-editor-list"></div>
+        </section>
+
+        <section class="editor-card">
+          <div class="card-title"><h2>邮箱与文件夹</h2><button class="button compact" id="add-folder" type="button">＋ 文件夹</button></div>
+          <label class="field">
+            <span>当前邮箱</span>
+            <select id="active-folder"></select>
+          </label>
+          <div class="folder-editor" id="folder-editor"></div>
+        </section>
+
+        <section class="editor-card">
+          <div class="card-title">
+            <div><h2>邮件列表</h2><p>选择邮件后在下方编辑详细内容。</p></div>
+            <button class="button compact" id="add-mail" type="button">＋ 添加</button>
+          </div>
+          <div class="mail-editor-list" id="mail-editor-list"></div>
+        </section>
+
+        <section class="editor-card" id="selected-mail-editor">
+          <div class="card-title"><h2>当前邮件</h2><span>MESSAGE</span></div>
+          <div class="contact-fill-box">
+            <strong>从通讯录自动填入</strong>
+            <div class="field-grid">
+              <label class="field"><span>发件人</span><select id="contact-sender-select" data-contact-fill="sender"></select></label>
+              <label class="field"><span>收件人</span><select id="contact-to-select" data-contact-fill="to"></select></label>
+            </div>
+            <label class="field"><span>抄送</span><select id="contact-cc-select" data-contact-fill="cc"></select></label>
+          </div>
+          <div class="field-grid">
+            <label class="field"><span>发件人姓名</span><input data-mail-field="senderName" type="text"></label>
+            <label class="field"><span>发件人邮箱</span><input data-mail-field="senderEmail" type="email"></label>
+          </div>
+          <label class="field"><span>收件人</span><input data-mail-field="to" type="text"></label>
+          <label class="field"><span>抄送</span><input data-mail-field="cc" type="text"></label>
+          <label class="field"><span>所在文件夹</span><select id="mail-folder-field" data-mail-field="folder"></select></label>
+          <label class="field"><span>主题</span><input data-mail-field="subject" type="text"></label>
+          <label class="field"><span>列表摘要</span><textarea data-mail-field="preview" rows="2"></textarea></label>
+          <div class="field-grid">
+            <label class="field"><span>日期</span><input data-mail-field="date" type="text"></label>
+            <label class="field"><span>时间</span><input data-mail-field="time" type="text"></label>
+          </div>
+          <label class="field"><span>正文</span><textarea data-mail-field="body" rows="8"></textarea></label>
+          <div class="mail-body-image-editor">
+            <div class="mail-body-image-preview" id="mail-body-image-preview">正文配图</div>
+            <div>
+              <label class="button compact file-button">上传正文图片<input id="mail-body-image-input" type="file" accept="image/*"></label>
+              <button class="text-button" id="remove-mail-body-image" type="button">移除图片</button>
+              <p class="field-help">图片固定显示在正文与签名之间。</p>
+            </div>
+          </div>
+          <label class="field"><span>签名</span><textarea data-mail-field="signature" rows="3"></textarea></label>
+          <label class="field"><span>附件（每行一个）</span><textarea data-mail-field="attachments" rows="3"></textarea></label>
+          <div class="check-grid">
+            <label class="check-field"><input data-mail-field="read" type="checkbox"><span>已读</span></label>
+            <label class="check-field"><input data-mail-field="starred" type="checkbox"><span>星标</span></label>
+          </div>
+        </section>
+
+        <section class="editor-card">
+          <div class="card-title">
+            <div><h2>回复线程</h2><p>回复将按顺序显示在邮件正文下方。</p></div>
+            <button class="button compact" id="add-reply" type="button">＋ 回复</button>
+          </div>
+          <div class="reply-editor-list" id="reply-editor-list"></div>
+        </section>
+      </div>
+    </aside>
+
+    <section class="preview-panel" aria-label="实时预览">
+      <div class="preview-toolbar">
+        <div><span class="preview-dot"></span><span>实时画布</span><strong id="canvas-dimensions">1440 × 900</strong></div>
+        <div class="section-export-actions">
+          <button type="button" data-export-section="account">账户栏</button>
+          <button type="button" data-export-section="list">邮件列表</button>
+          <button type="button" data-export-section="message">邮件正文</button>
+          <button type="button" data-export-section="thread">回复线程</button>
+        </div>
+      </div>
+      <div class="preview-viewport" id="preview-viewport">
+        <div class="canvas-stage" id="canvas-stage">
+          <article id="mail-canvas" data-theme="archive">
+            <section class="mail-account-panel" id="mail-account-panel"></section>
+            <section class="mail-list-panel" id="mail-list-panel"></section>
+            <section class="mail-message-panel" id="mail-message-panel"></section>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <div class="mobile-resizer" id="mobile-resizer" role="separator" aria-label="调整预览区域高度" aria-orientation="horizontal" tabindex="0"><span></span></div>
+
+    <aside class="editor-panel style-panel" aria-label="样式设置">
+      <nav class="mobile-main-tabs" aria-label="手机编辑区域">
+        <button type="button" data-mobile-tab="content">内容</button>
+        <button class="active" type="button" data-mobile-tab="style">样式</button>
+      </nav>
+      <div class="panel-heading">
+        <div><span class="eyebrow">STYLE</span><h1>样式设置</h1></div>
+      </div>
+
+      <div class="editor-scroll">
+        <section class="editor-card">
+          <div class="card-title"><h2>主题预设</h2><span>THEME</span></div>
+          <div class="theme-grid" id="theme-grid"></div>
+        </section>
+
+        <section class="editor-card">
+          <div class="card-title"><h2>自定义颜色</h2><span>COLOR</span></div>
+          <div class="color-grid">
+            <label class="color-field"><span>整体背景</span><input data-color-field="background" type="color"></label>
+            <label class="color-field"><span>账户栏</span><input data-color-field="accountBg" type="color"></label>
+            <label class="color-field"><span>邮件列表</span><input data-color-field="listBg" type="color"></label>
+            <label class="color-field"><span>正文背景</span><input data-color-field="messageBg" type="color"></label>
+            <label class="color-field"><span>主文字</span><input data-color-field="ink" type="color"></label>
+            <label class="color-field"><span>次要文字</span><input data-color-field="muted" type="color"></label>
+            <label class="color-field"><span>强调色</span><input data-color-field="accent" type="color"></label>
+            <label class="color-field"><span>边框</span><input data-color-field="line" type="color"></label>
+          </div>
+          <button class="text-button" id="reset-theme-colors" type="button">恢复当前主题配色</button>
+        </section>
+
+        <section class="editor-card">
+          <div class="card-title"><h2>画布与布局</h2><span>LAYOUT</span></div>
+          <label class="field"><span>画布尺寸</span>
+            <select data-style-field="canvasSize">
+              <option value="wide">1440 × 900</option>
+              <option value="standard">1200 × 900</option>
+            </select>
+          </label>
+          <label class="range-field"><span>账户栏宽度 <output id="account-width-output"></output></span><input data-style-field="accountWidth" type="range" min="200" max="330" step="10"></label>
+          <label class="range-field"><span>邮件列表宽度 <output id="list-width-output"></output></span><input data-style-field="listWidth" type="range" min="300" max="460" step="10"></label>
+          <label class="range-field"><span>整体字号 <output id="font-scale-output"></output></span><input data-style-field="fontScale" type="range" min=".9" max="1.3" step=".05"></label>
+          <label class="range-field"><span>圆角 <output id="radius-output"></output></span><input data-style-field="radius" type="range" min="0" max="24" step="2"></label>
+          <label class="field"><span>完整导出模式</span>
+            <select data-style-field="exportMode">
+              <option value="screen">固定画布</option>
+              <option value="thread">完整线程</option>
+            </select>
+            <small class="field-help">固定画布保持所选尺寸并裁切超出内容；完整线程会随正文和回复自动增加高度。</small>
+          </label>
+          <label class="field"><span>PNG 导出清晰度</span>
+            <select data-style-field="exportScale">
+              <option value="2">高清 · 2×</option>
+              <option value="3">超清 · 3×</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="editor-card">
+          <div class="card-title"><h2>显示项目</h2><span>DISPLAY</span></div>
+          <label class="check-field"><input data-style-field="showSearch" type="checkbox"><span>搜索与筛选栏</span></label>
+          <label class="check-field"><input data-style-field="showToolbar" type="checkbox"><span>正文工具栏</span></label>
+          <label class="check-field"><input data-style-field="showMockup" type="checkbox"><span>虚构邮件标记</span></label>
+        </section>
+      </div>
+    </aside>
+  </main>
+
+  <div class="crop-modal" id="avatar-crop-modal" hidden>
+    <div class="crop-backdrop" data-close-avatar-crop></div>
+    <section class="crop-dialog" role="dialog" aria-modal="true" aria-labelledby="avatar-crop-title">
+      <header>
+        <div><span>IMAGE CROP</span><h2 id="avatar-crop-title">裁切账户头像</h2></div>
+        <button type="button" data-close-avatar-crop aria-label="关闭">×</button>
+      </header>
+      <div class="crop-stage" id="avatar-crop-stage"><img id="avatar-crop-image" alt="头像裁切预览"></div>
+      <p>拖动图片调整位置，使用滑杆缩放。</p>
+      <label class="range-field"><span>图片缩放 <output id="avatar-crop-zoom-output">100%</output></span><input id="avatar-crop-zoom" type="range" min="1" max="3" step=".05" value="1"></label>
+      <footer>
+        <button class="button ghost" type="button" data-close-avatar-crop>取消</button>
+        <button class="button primary" id="apply-avatar-crop" type="button">完成裁切</button>
+      </footer>
+    </section>
+  </div>
+  <div class="tour-overlay" id="tour-overlay" hidden>
+    <button class="tour-blocker" type="button" data-close-tour aria-label="退出使用教程"></button>
+    <div class="tour-focus" id="tour-focus" aria-hidden="true"></div>
+    <section class="tour-card" id="tour-card" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+      <header>
+        <span id="tour-progress">01 / 07</span>
+        <button type="button" data-close-tour aria-label="退出教程">×</button>
+      </header>
+      <h2 id="tour-title"></h2>
+      <p id="tour-copy"></p>
+      <footer>
+        <button class="button ghost" id="tour-prev" type="button">上一步</button>
+        <button class="button primary" id="tour-next" type="button">下一步</button>
+      </footer>
+    </section>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+

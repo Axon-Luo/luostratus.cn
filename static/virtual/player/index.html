@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#183b63">
+  <title>歌词时间线</title>
+
+
+  <link href="./FZG_CN/result.css" rel="stylesheet">
+  <link href="../shared/fonts/noto-serif-sc/result.css?v=20260729-1" rel="stylesheet">
+  <link rel="stylesheet" href="./app.css?v=20260729-noto1">
+  <link rel="stylesheet" href="../shared/vendor/coloris/coloris.min.css">
+  <link rel="stylesheet" href="../shared/oc-color-picker.css?v=20260803-2">
+  <script src="./vendor/html-to-image.min.js"></script>
+  <script src="../shared/export-fonts.js?v=20260729-1"></script>
+  <script src="../shared/vendor/coloris/coloris.min.js" defer></script>
+  <script src="../shared/oc-color-picker.js?v=20260803-1" defer></script>
+  <script src="./app.js?v=20260809-1" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="返回顶部"><span class="brand-mark">词</span><span><b>歌词时间线</b><small>LYRIC TIMELINE</small></span></a>
+    <div class="top-actions">
+      <button class="button ghost desktop-action" id="undo-button" type="button">撤销</button>
+      <button class="button ghost desktop-action" id="redo-button" type="button">重做</button>
+      <button class="button ghost tutorial-help-button" id="open-tutorial" type="button">教程</button>
+      <label class="button ghost file-button">导入 JSON<input id="import-input" type="file" accept=".json,application/json"></label>
+      <button class="button ghost desktop-action" id="json-button" type="button">保存 JSON</button>
+      <button class="button primary" id="export-button" type="button">导出 PNG</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="preview-panel" id="preview-panel" aria-label="实时预览">
+      <div class="preview-toolbar">
+        <div><span class="eyebrow">LIVE CANVAS</span><strong>实时预览</strong></div>
+        <div class="preview-actions"><span id="save-state" class="save-state"><i></i>已保存</span><button class="icon-button" id="focus-button" type="button" aria-label="专注预览">⛶</button></div>
+      </div>
+      <div class="preview-viewport" id="preview-viewport">
+        <div class="canvas-frame" id="canvas-frame">
+          <article id="player-canvas" data-template="retro" data-palette="default" data-ratio="landscape">
+            <div class="canvas-grain"></div>
+            <section class="cover-panel">
+              <div class="canvas-kicker"><span>NOW PLAYING</span><span id="canvas-track-number">TRACK 01</span></div>
+              <div class="cover-frame"><img id="canvas-cover" src="./cover.png" alt="歌曲封面"><div class="cover-shade"></div></div>
+              <div class="track-meta">
+                <p id="canvas-album">未命名专辑</p><h1 id="canvas-title">歌曲名</h1><h2 id="canvas-artist">歌手名</h2><div class="tag-list" id="canvas-tags"></div><div class="track-description" id="canvas-description"></div>
+              </div>
+              <div class="transport">
+                <div class="transport-row">
+                  <div class="transport-controls"><button class="transport-button" id="preview-prev" type="button" aria-label="上一句">‹</button><button class="play-button" id="preview-play" type="button" aria-label="播放或暂停"><span></span></button><button class="transport-button" id="preview-next" type="button" aria-label="下一句">›</button></div>
+                  <div class="transport-time"><time id="canvas-current">00:00</time><span>/</span><time id="canvas-duration">03:40</time></div>
+                </div>
+                <button class="progress-track" id="preview-progress" type="button" aria-label="播放进度"><span id="canvas-progress"></span><i id="canvas-progress-dot"></i></button>
+              </div>
+            </section>
+            <section class="lyrics-panel">
+              <header class="lyrics-heading"><div><span class="eyebrow" id="canvas-lyrics-eyebrow">LYRIC CHRONOLOGY</span><h3 id="canvas-lyrics-title">歌词时间线</h3></div><span id="canvas-line-count">0 LINES</span></header>
+              <div class="lyric-list" id="canvas-lyrics"></div>
+              <footer class="canvas-footer"><span id="canvas-project-name">未命名歌词项目</span><span id="canvas-footer-text">CREATED IN BROWSER</span></footer>
+            </section>
+          </article>
+          <article id="playlist-canvas" data-template="retro" data-palette="default" data-ratio="landscape" hidden>
+            <div class="playlist-grain"></div>
+            <section class="playlist-profile">
+              <div class="playlist-kicker"><span>LISTENER PROFILE</span><span>ACCOUNT 01</span></div>
+              <div class="profile-avatar"><img id="playlist-avatar" src="./cover.png" alt="账户头像"></div>
+              <p id="playlist-handle">@listener</p><h1 id="playlist-profile-name">未署名听众</h1>
+              <div class="profile-facts" id="playlist-profile-facts"></div><div class="profile-tags" id="playlist-profile-tags"></div><div class="profile-bio" id="playlist-profile-bio"></div><div class="profile-status" id="playlist-profile-status"></div><div class="profile-stats" id="playlist-profile-stats"></div>
+            </section>
+            <section class="playlist-content">
+              <header class="playlist-heading"><div><span class="playlist-eyebrow" id="playlist-subtitle">CURATED PLAYLIST</span><h2 id="playlist-title">夜航收藏</h2><p id="playlist-description"></p></div><span id="playlist-count">0 TRACKS</span></header>
+              <div class="playlist-tracks" id="playlist-canvas-tracks"></div>
+              <footer class="playlist-footer"><span id="playlist-project-name">未命名项目</span><span id="playlist-footer-text">CREATED IN BROWSER</span></footer>
+            </section>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <div
+      id="mobile-workspace-resizer"
+      class="mobile-workspace-resizer"
+      role="separator"
+      aria-label="调整预览区域高度"
+      aria-orientation="horizontal"
+      aria-valuemin="22"
+      aria-valuemax="72"
+      aria-valuenow="50"
+      tabindex="0"
+    ><span aria-hidden="true"></span></div>
+    <aside class="editor-panel" id="editor-panel">
+      <div class="generator-switch" aria-label="生成类型"><button class="active" data-page-type-option="lyrics" type="button">歌词页面</button><button data-page-type-option="playlist" type="button">播放列表</button></div>
+      <nav class="main-tabs" aria-label="编辑模式"><button class="main-tab active" data-main-tab="content" type="button">内容编辑</button><button class="main-tab" data-main-tab="style" type="button">样式设置</button></nav>
+      <div class="editor-scroll">
+        <section class="tab-page active" data-tab-page="content">
+          <div class="section-heading"><div><span class="eyebrow">CONTENT</span><h2>内容编排</h2></div><button class="text-button danger" id="clear-button" type="button">一键清空</button></div>
+          <div id="lyrics-content-panel">
+          <div class="card">
+            <div class="card-title"><h3>歌曲信息</h3><span>TRACK</span></div>
+            <label class="field"><span>项目名称</span><input data-field="name" type="text"></label>
+            <label class="field"><span>页脚文字</span><input data-field="footerText" type="text" maxlength="80" placeholder="CREATED IN BROWSER"></label>
+            <div class="field-grid"><label class="field"><span>歌曲名</span><input data-field="title" type="text"></label><label class="field"><span>歌手名</span><input data-field="artist" type="text"></label></div>
+            <label class="field"><span>专辑 / 出处</span><input data-field="album" type="text"></label>
+            <div class="field-grid"><label class="field"><span>标签（空格分隔）</span><input data-field="tags" type="text"></label><label class="field"><span>总时长</span><input data-field="durationText" type="text" placeholder="03:40"></label></div>
+            <label class="field"><span>歌曲简介</span><textarea data-field="description" rows="3" maxlength="300" placeholder="写一段简短的歌曲介绍"></textarea></label>
+            <label class="field"><span>封面图片</span><input id="cover-input" type="file" accept="image/*"></label><button class="text-button" id="reset-cover-button" type="button">恢复默认封面</button>
+          </div>
+          <div class="card">
+            <div class="card-title"><div><h3>歌词节点</h3><p>每一行都是一个带时间的节点，自动按时间排序。</p></div><button class="button compact" id="add-line-button" type="button">＋ 添加</button></div>
+            <div class="timeline-editor" id="timeline-editor"></div><button class="add-line-wide" id="add-line-wide" type="button">＋ 添加歌词节点</button>
+          </div>
+          </div>
+          <div id="playlist-content-panel" hidden>
+            <div class="card">
+              <div class="card-title"><h3>账户基本信息</h3><span>PROFILE</span></div>
+              <div class="field-grid"><label class="field"><span>账户名称</span><input data-profile-field="name" type="text"></label><label class="field"><span>账号 ID</span><input data-profile-field="handle" type="text"></label></div>
+              <div class="field-grid"><label class="field"><span>身份徽章</span><input data-profile-field="badge" type="text" maxlength="40"></label><label class="field"><span>所在地</span><input data-profile-field="location" type="text" maxlength="60"></label></div>
+              <label class="field"><span>加入日期</span><input data-profile-field="joined" type="text" maxlength="40" placeholder="例如：2024年5月"></label>
+              <label class="field"><span>账户简介</span><textarea data-profile-field="bio" rows="3" maxlength="240"></textarea></label>
+              <label class="field"><span>常听流派（空格分隔）</span><input data-profile-field="tags" type="text"></label>
+              <label class="field"><span>当前状态</span><input data-profile-field="status" type="text" maxlength="100" placeholder="例如：正在循环《潮汐来信》"></label>
+              <div class="profile-stat-fields"><label class="field"><span>收藏歌曲</span><input data-profile-field="statSongs" type="text" maxlength="20"></label><label class="field"><span>播放列表</span><input data-profile-field="statPlaylists" type="text" maxlength="20"></label><label class="field"><span>关注者</span><input data-profile-field="statFollowers" type="text" maxlength="20"></label></div>
+              <label class="field"><span>账户头像</span><input id="playlist-avatar-input" type="file" accept="image/*"></label><button class="text-button" id="reset-playlist-avatar" type="button">恢复默认头像</button>
+            </div>
+            <div class="card">
+              <div class="card-title"><h3>播放列表信息</h3><span>PLAYLIST</span></div>
+              <div class="field-grid"><label class="field"><span>播放列表名称</span><input data-playlist-field="title" type="text"></label><label class="field"><span>顶部小字</span><input data-playlist-field="subtitle" type="text"></label></div>
+              <label class="field"><span>播放列表简介</span><textarea data-playlist-field="description" rows="3" maxlength="240"></textarea></label>
+            </div>
+            <div class="card">
+              <div class="card-title"><div><h3>歌曲列表</h3><p>可添加封面、修改信息并调整顺序。</p></div><button class="button compact" id="add-track-button" type="button">＋ 添加</button></div>
+              <div class="playlist-editor" id="playlist-editor"></div><button class="add-line-wide" id="add-track-wide" type="button">＋ 添加歌曲</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="tab-page" data-tab-page="style">
+          <div class="section-heading"><div><span class="eyebrow">STYLE</span><h2>画布样式</h2></div></div>
+          <div class="card">
+            <div class="card-title"><h3>视觉预设</h3><span>THEME</span></div>
+            <div class="preset-grid">
+              <div class="preset-group-title">时间线新版</div>
+              <button class="preset" data-template-option="retro" type="button"><i class="swatch retro"></i><b>复古网格</b><small>Retro Grid</small></button>
+              <button class="preset" data-template-option="pixel" type="button"><i class="swatch pixel"></i><b>像素终端</b><small>Pixel Terminal</small></button>
+              <button class="preset" data-template-option="ins" type="button"><i class="swatch ins"></i><b>轻盈杂志</b><small>Soft Editorial</small></button>
+              <button class="preset" data-template-option="editorial" type="button"><i class="swatch editorial"></i><b>黑金画报</b><small>Dark Edition</small></button>
+              <div class="preset-group-title">原版重制 · 新版逻辑</div>
+              <button class="preset" data-template-option="classic-retro" type="button"><i class="swatch classic-retro"></i><b>原版复古网格</b><small>Original Retro</small></button>
+              <button class="preset" data-template-option="classic-pixel" type="button"><i class="swatch classic-pixel"></i><b>原版像素画</b><small>Original Pixel</small></button>
+              <button class="preset" data-template-option="classic-ins" type="button"><i class="swatch classic-ins"></i><b>原版 INS</b><small>Original INS</small></button>
+              <button class="preset" data-template-option="classic-luxury" type="button"><i class="swatch classic-luxury"></i><b>原版奢雅杂志</b><small>Original Luxury</small></button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title"><h3>配色与画幅</h3><span>CANVAS</span></div>
+            <label class="field"><span>配色</span><select data-field="palette"><option value="default">默认黑白</option><option value="jade">松石绿</option><option value="rose">旧玫瑰</option><option value="blue">午夜蓝</option><option value="ink">墨黑</option><option value="custom">自定义颜色</option></select></label>
+            <div class="custom-palette-panel" id="custom-palette-panel" hidden>
+              <div class="custom-palette-heading"><b>自定义颜色</b><button class="text-button" id="reset-custom-palette" type="button">恢复默认</button></div>
+              <div class="color-grid">
+                <label><span>画布背景</span><input type="color" data-custom-color="canvasBg"></label>
+                <label><span>面板颜色</span><input type="color" data-custom-color="surface"></label>
+                <label><span>主要文字</span><input type="color" data-custom-color="ink"></label>
+                <label><span>次要文字</span><input type="color" data-custom-color="muted"></label>
+                <label><span>主强调色</span><input type="color" data-custom-color="accent"></label>
+                <label><span>辅助强调</span><input type="color" data-custom-color="accent2"></label>
+              </div>
+            </div>
+            <label class="field"><span>画幅</span><select data-field="ratio"><option value="landscape">横版 3:2</option><option id="ratio-square-option" value="square">方形 1:1</option><option value="portrait">竖版 9:16</option></select></label>
+            <div class="switch-row lyrics-style-only"><span>显示节点时间</span><label class="switch"><input data-field="showTime" type="checkbox"><i></i></label></div>
+            <div class="switch-row lyrics-style-only"><span>显示译文 / 注释</span><label class="switch"><input data-field="showTranslation" type="checkbox"><i></i></label></div>
+          </div>
+          <div class="card lyrics-style-only">
+            <div class="card-title"><h3>封面取景</h3><span>IMAGE</span></div>
+            <label class="range-field"><span>图片缩放 <output id="zoom-output">100%</output></span><input data-field="coverZoom" type="range" min="1" max="3" step=".05"></label>
+            <label class="range-field"><span>水平位置 <output id="x-output">50%</output></span><input data-field="coverX" type="range" min="0" max="100"></label>
+            <label class="range-field"><span>垂直位置 <output id="y-output">50%</output></span><input data-field="coverY" type="range" min="0" max="100"></label>
+          </div>
+        </section>
+      </div>
+    </aside>
+  </main>
+
+  <nav class="mobile-dock" aria-label="手机快捷导航"><button data-jump="preview-panel" type="button">预览</button><button data-jump="editor-panel" type="button">编辑</button><button id="mobile-export-button" type="button">导出</button></nav>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <button class="focus-exit" id="focus-exit-button" type="button">退出专注预览</button>
+</body>
+</html>

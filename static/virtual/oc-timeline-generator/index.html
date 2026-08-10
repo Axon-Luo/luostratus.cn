@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="用于制作原创角色生平、世界观编年史与架空历史长图的本地时间轴编辑器。">
+    <title>时间线</title>
+    <link rel="stylesheet" href="./css/fonts.css">
+    <link rel="stylesheet" href="./zhaohua-title-a/result.css">
+    <link rel="stylesheet" href="./zhaohua-typewriter/zhaohua-typewriter/result.css">
+    <link rel="stylesheet" href="./css/reset.css">
+    <link rel="stylesheet" href="./css/variables.css">
+    <link rel="stylesheet" href="./css/layout.css">
+    <link rel="stylesheet" href="./css/components.css">
+    <link rel="stylesheet" href="./css/editor.css">
+    <link rel="stylesheet" href="./css/timeline.css?v=20260809-1">
+    <link rel="stylesheet" href="./css/themes.css">
+    <link rel="stylesheet" href="./css/responsive.css">
+    <link rel="stylesheet" href="./css/tutorial.css">
+    <link rel="stylesheet" href="./vendor/coloris/coloris.min.css">
+    <link rel="stylesheet" href="./css/color-picker.css?v=20260803-1">
+  </head>
+  <body>
+    <div id="app" class="app-shell" data-mobile-panel="content">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="时间线首页">
+          <span class="brand-mark" aria-hidden="true">时</span>
+          <span>
+            <strong>时间线</strong>
+            <small>OC TIMELINE</small>
+          </span>
+        </a>
+
+        <label class="project-name-field">
+          <span class="sr-only">项目名称</span>
+          <input id="project-name" type="text" maxlength="80" autocomplete="off">
+        </label>
+
+        <nav class="toolbar-actions" aria-label="项目操作">
+          <button id="new-project" class="button button-ghost" type="button">新建</button>
+          <button id="save-project" class="button button-ghost" type="button">保存</button>
+          <button id="export-json" class="button button-ghost" type="button">导出 JSON</button>
+          <button id="import-json" class="button button-ghost" type="button">导入 JSON</button>
+          <input id="import-json-input" type="file" accept=".json,application/json" hidden>
+          <span class="toolbar-divider" aria-hidden="true"></span>
+          <button id="undo" class="icon-button" type="button" title="撤销 (Ctrl+Z)" aria-label="撤销">↶</button>
+          <button id="redo" class="icon-button" type="button" title="重做 (Ctrl+Shift+Z)" aria-label="重做">↷</button>
+          <button id="open-tutorial" class="button button-ghost tutorial-help-button" type="button" title="使用教程" aria-label="打开使用教程">教程</button>
+          <button id="preview-mode" class="button button-ghost" type="button">专注预览</button>
+          <label class="scale-control">
+            <span>缩放</span>
+            <select id="canvas-scale" aria-label="画布缩放比例">
+              <option value="0.5">50%</option>
+              <option value="0.75">75%</option>
+              <option value="1">100%</option>
+            </select>
+          </label>
+          <button id="export-all" class="button button-primary" type="button">导出完整 PNG</button>
+        </nav>
+      </header>
+
+      <main class="workspace">
+        <aside class="panel left-panel" aria-label="内容编辑">
+          <div class="panel-heading">
+            <div>
+              <span class="eyebrow">CONTENT</span>
+              <h1>内容编排</h1>
+            </div>
+            <span id="autosave-status" class="status-pill">已保存</span>
+          </div>
+          <div id="main-tabs" class="main-tabs" role="tablist" aria-label="编辑区域">
+            <button class="tab-button is-active" type="button" role="tab" data-tab="header" aria-selected="true">头图</button>
+            <button class="tab-button" type="button" role="tab" data-tab="timeline" aria-selected="false">时间轴</button>
+            <button class="tab-button" type="button" role="tab" data-tab="footer" aria-selected="false">尾图</button>
+          </div>
+          <div class="panel-scroll">
+            <section id="header-editor" class="editor-section" data-panel="header"></section>
+            <section id="timeline-editor" class="editor-section" data-panel="timeline" hidden></section>
+            <section id="footer-editor" class="editor-section" data-panel="footer" hidden></section>
+          </div>
+        </aside>
+
+        <section class="preview-workspace" aria-label="画布预览">
+          <div class="preview-bar">
+            <div>
+              <span class="preview-dot"></span>
+              <span>实时画布</span>
+              <strong id="canvas-dimensions">800 × AUTO</strong>
+            </div>
+            <div class="section-export-actions" aria-label="分区导出">
+              <button id="export-header" class="mini-button" type="button">头图 PNG</button>
+              <button id="export-timeline" class="mini-button" type="button">时间轴 PNG</button>
+              <button id="export-footer" class="mini-button" type="button">尾图 PNG</button>
+            </div>
+          </div>
+          <div id="canvas-viewport" class="canvas-viewport">
+            <div id="canvas-stage" class="canvas-stage">
+              <article id="timeline-canvas" class="timeline-canvas">
+                <section id="header-preview" class="canvas-section header-preview"></section>
+                <section id="timeline-preview" class="canvas-section timeline-preview"></section>
+                <section id="footer-preview" class="canvas-section footer-preview"></section>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <div
+          id="mobile-preview-resizer"
+          class="mobile-preview-resizer"
+          role="separator"
+          aria-label="调整预览区域高度"
+          aria-orientation="horizontal"
+          aria-valuemin="20"
+          aria-valuemax="68"
+          aria-valuenow="40"
+          tabindex="0"
+        >
+          <span aria-hidden="true"></span>
+        </div>
+
+        <nav id="mobile-editor-tabs" class="mobile-editor-tabs" role="tablist" aria-label="手机编辑区域">
+          <button
+            class="is-active"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="header-editor"
+            data-mobile-panel="content"
+          >内容编辑</button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="style-editor"
+            data-mobile-panel="style"
+          >样式设置</button>
+        </nav>
+
+        <aside class="panel right-panel" aria-label="样式设置">
+          <div class="panel-heading">
+            <div>
+              <span class="eyebrow">APPEARANCE</span>
+              <h2>画面样式</h2>
+            </div>
+          </div>
+          <div id="style-editor" class="panel-scroll style-editor"></div>
+        </aside>
+      </main>
+    </div>
+
+    <div id="dialog-root"></div>
+    <div id="toast-root" class="toast-root" aria-live="polite" aria-atomic="true"></div>
+    <button id="exit-preview" class="button button-primary exit-preview" type="button">退出专注预览 · Esc</button>
+
+    <script src="./vendor/sortable.min.js"></script>
+    <script src="./vendor/html-to-image.min.js"></script>
+    <script src="./vendor/coloris/coloris.min.js" defer></script>
+    <script src="./js/color-picker.js?v=20260803-1" defer></script>
+    <script type="module" src="./js/app.js?v=20260809-1"></script>
+  </body>
+</html>
+
+
+
+
+
+
+

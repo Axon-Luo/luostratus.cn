@@ -1,0 +1,31 @@
+input[data-oc-color]{font-family:ui-monospace,"SFMono-Regular",Consolas,monospace!important;font-size:11px!important;text-transform:uppercase;cursor:pointer;caret-color:transparent}
+.clr-field{box-sizing:border-box;display:block;width:100%;min-width:86px}
+.clr-field input[data-oc-color]{box-sizing:border-box;width:100%!important;min-width:0!important;height:36px!important;min-height:36px!important;margin:0!important;padding:7px 38px 7px 9px!important;border:1px solid #d8ceca!important;border-radius:4px!important;background:#fff!important;color:#2d2725!important;letter-spacing:.02em;text-align:left!important}
+.color-field .clr-field,.color-control .clr-field{flex:0 0 100px;width:100px}
+.color-grid:has(.clr-field){grid-template-columns:1fr!important}
+.color-field:has(>.clr-field){grid-template-columns:minmax(0,1fr) minmax(100px,112px)!important}
+.clr-field button{width:34px!important;border-left:1px solid #d8ceca!important;border-radius:0 3px 3px 0!important}
+.clr-field button:after{left:6px!important;top:6px!important;width:22px!important;height:calc(100% - 12px)!important;border-radius:3px!important;box-shadow:inset 0 0 0 1px rgba(39,31,28,.18)!important}
+.clr-picker{z-index:10050!important;border:1px solid #d8ceca;border-radius:9px;font-family:"OC Noto Sans SC","Noto Sans SC","PingFang SC",sans-serif;box-shadow:0 16px 42px rgba(41,31,28,.2)}
+.clr-picker.clr-large{width:288px}
+.clr-large .clr-gradient{height:178px}
+.clr-picker input.clr-color{height:36px;border-color:#d8ceca;border-radius:4px;font:700 13px/1 ui-monospace,"SFMono-Regular",Consolas,monospace}
+.clr-picker input.clr-color:focus{border-color:#806862}
+.clr-picker .clr-close{min-width:64px;height:34px;border-radius:4px;background:#806862;font-size:12px;font-weight:800}
+.clr-picker .clr-preview,.clr-picker .clr-preview:after,.clr-picker .clr-preview:before,.clr-picker .clr-preview button{border-radius:4px}
+@media(max-width:640px){
+  .color-grid{grid-template-columns:1fr!important}
+  .color-field{min-height:52px!important;gap:8px;padding:8px 10px!important}
+  .color-field .clr-field,.color-control .clr-field{flex-basis:112px;width:112px}
+  .clr-picker.clr-large{position:fixed!important;left:max(10px,env(safe-area-inset-left))!important;right:max(10px,env(safe-area-inset-right))!important;top:auto!important;bottom:calc(10px + env(safe-area-inset-bottom))!important;width:auto!important;max-width:none;border-radius:14px;overscroll-behavior:contain;box-shadow:0 22px 70px rgba(26,19,17,.32)}
+  .clr-large .clr-gradient{height:min(34svh,220px);min-height:168px;border-radius:13px 13px 0 0}
+  .clr-picker .clr-hue{height:12px;margin-top:11px;margin-bottom:11px}
+  .clr-picker input.clr-color{height:42px;margin-top:13px;margin-bottom:14px;font-size:14px}
+  .clr-picker .clr-preview{width:42px;height:42px;margin-top:13px;margin-right:22px;margin-bottom:14px}
+  .clr-picker .clr-close{height:42px;margin-top:13px;margin-bottom:14px;padding-inline:24px}
+}
+
+
+/* Timeline color fields already provide their own label and grid. */
+#style-editor .color-field{display:block}
+#style-editor .color-field .clr-field{width:100%;min-width:0}

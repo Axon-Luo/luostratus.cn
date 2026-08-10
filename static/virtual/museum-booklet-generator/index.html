@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#806862">
+  <meta name="description" content="OC 小册：制作展览折页、藏品图录与虚构收藏导览。">
+  <title>OC 小册 · BOOKLET STUDIO</title>
+  <link rel="stylesheet" href="../shared/fonts/noto-sans-sc/result.css">
+  <link rel="stylesheet" href="../shared/fonts/noto-serif-sc/result.css">
+  <link rel="stylesheet" href="../player/FZG_CN/result.css">
+  <link rel="stylesheet" href="./fonts/huiwen-fangsong-v1/result.css">
+  <link rel="stylesheet" href="./fonts/huiwen-mincho/result.css">
+  <link rel="stylesheet" href="./fonts/huiwen-zhengkai-v1/result.css">
+  <link rel="stylesheet" href="../shared/vendor/coloris/coloris.min.css">
+  <link rel="stylesheet" href="./app.css?v=20260803-69">
+  <script src="../shared/browser-image-store.js"></script>
+  <script src="../shared/export-fonts.js"></script>
+  <script src="./fonts/bodoni-moda-export.js?v=20260801-29"></script>
+  <script src="./vendor/html-to-image.min.js"></script>
+  <script src="./vendor/simple-zip.js"></script>
+  <script src="../shared/vendor/coloris/coloris.min.js" defer></script>
+  <script src="./app.js?v=20260809-2" defer></script>
+</head>
+<body data-mobile-panel="content">
+  <header class="topbar">
+    <a class="brand" href="../" aria-label="返回 OC 桌面">
+      <span class="brand-mark" aria-hidden="true">册</span>
+      <span><b>OC 小册</b><small>BOOKLET STUDIO</small></span>
+    </a>
+    <label class="project-field"><span>项目</span><input id="project-name" value="夜航收藏展览小册"></label>
+    <div class="top-actions">
+      <button class="button desktop-action" id="undo" type="button" disabled>撤销</button>
+      <button class="button desktop-action" id="redo" type="button" disabled>重做</button>
+      <button class="button" id="new-project" type="button">新建</button>
+      <button class="button" id="start-tour" type="button">教程</button>
+      <button class="button" id="import-trigger" type="button">导入</button>
+      <button class="button desktop-action" id="save-json" type="button">保存 JSON</button>
+      <button class="button primary" id="export-continuous-top" type="button"><span class="desktop-label">连续导出</span><span class="mobile-label">导出</span></button>
+      <input id="import-json" type="file" accept=".json,application/json" hidden>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="editor-panel content-panel">
+      <header class="panel-heading"><span>01</span><div><h1>内容与页面</h1><p>建立小册结构、藏品与页面内容</p></div></header>
+      <div class="panel-scroll">
+        <section class="editor-card" id="booklet-card">
+          <div class="card-title"><div><h2>小册资料</h2><p>用于封面、页眉与封底。</p></div><span>BOOKLET</span></div>
+          <label class="field"><span>小册标题</span><input data-booklet-field="title"></label>
+          <label class="field"><span>副标题</span><input data-booklet-field="subtitle"></label>
+          <div class="field-grid two">
+            <label class="field"><span>机构名称</span><input data-booklet-field="institution"></label>
+            <label class="field"><span>策展人</span><input data-booklet-field="curator"></label>
+            <label class="field"><span>日期</span><input data-booklet-field="date"></label>
+            <label class="field"><span>馆址 / 地点</span><input data-booklet-field="location"></label>
+          </div>
+        </section>
+
+        <section class="editor-card" id="pages-card">
+          <div class="card-title"><div><h2>页面顺序</h2><p>普通导出按这里的顺序横向连接。</p></div><span>PAGES</span></div>
+          <div class="page-add-row">
+            <select id="new-page-type">
+              <option value="collection">藏品页</option>
+              <option value="intro">前言 / 引言</option>
+              <option value="contents">目录</option>
+              <option value="section">章节扉页</option>
+              <option value="feature">图文专题</option>
+              <option value="text">纯文字页</option>
+              <option value="blank">空白页</option>
+            </select>
+            <button class="small-button" id="add-page" type="button">＋ 添加页面</button>
+          </div>
+          <div class="page-list" id="page-list"></div>
+        </section>
+
+        <section class="editor-card" id="page-editor-card">
+          <div class="card-title"><div><h2 id="page-editor-title">当前页面</h2><p>字段随页面类型变化。</p></div><span>EDIT</span></div>
+          <div id="page-editor"></div>
+        </section>
+
+        <section class="editor-card" id="collection-card">
+          <div class="card-title"><div><h2>藏品库</h2><p>藏品资料只录入一次，再放入不同页面。</p></div><span>OBJECTS</span></div>
+          <button class="small-button block-button" id="add-collection" type="button">＋ 新建藏品</button>
+          <div class="collection-list" id="collection-list"></div>
+          <div id="collection-editor" class="collection-editor"></div>
+        </section>
+      </div>
+    </aside>
+
+    <section class="preview-panel">
+      <header class="preview-toolbar">
+        <div><span class="preview-dot"></span><strong id="preview-label">当前页面</strong><output id="preview-zoom-output">100%</output></div>
+        <div class="preview-actions">
+          <button id="preview-prev" type="button">上一页</button>
+          <button id="preview-next" type="button">下一页</button>
+          <button id="preview-zoom-out" type="button">－</button>
+          <button id="preview-zoom-in" type="button">＋</button>
+          <button id="fit-preview" type="button">适合</button>
+          <button id="focus-preview" type="button">专注</button>
+        </div>
+      </header>
+      <div class="preview-viewport" id="preview-viewport">
+        <div class="preview-stage" id="preview-stage"></div>
+      </div>
+    </section>
+
+    <button class="mobile-resizer" id="mobile-resizer" type="button" aria-label="调整预览和编辑区比例"><span></span></button>
+
+    <aside class="editor-panel style-panel">
+      <header class="panel-heading"><span>02</span><div><h1>样式与导出</h1><p>模板、配色、贴纸和输出方式</p></div></header>
+      <div class="panel-scroll">
+        <section class="editor-card" id="templates-card">
+          <div class="card-title"><div><h2>小册模板</h2><p>九套模板拥有不同版面结构。</p></div><span>STYLE</span></div>
+          <div class="template-grid">
+            <button class="template-button" data-template-option="modern" type="button"><i class="swatch-modern"></i><b>现代馆刊</b><small>INSTITUTIONAL</small></button>
+            <button class="template-button" data-template-option="classical" type="button"><i class="swatch-classical"></i><b>古典陈列柜</b><small>CABINET</small></button>
+            <button class="template-button" data-template-option="archive" type="button"><i class="swatch-archive"></i><b>研究档案</b><small>ARCHIVE</small></button>
+            <button class="template-button" data-template-option="editorial" type="button"><i class="swatch-editorial"></i><b>展览编辑部</b><small>EDITORIAL</small></button>
+            <button class="template-button" data-template-option="zine" type="button"><i class="swatch-zine"></i><b>黑白实验刊</b><small>CRITICAL ZINE</small></button>
+            <button class="template-button" data-template-option="swiss" type="button"><i class="swatch-swiss"></i><b>瑞士网格</b><small>SWISS GRID</small></button>
+            <button class="template-button" data-template-option="academia" type="button"><i class="swatch-academia"></i><b>深色学院</b><small>DARK ACADEMIA</small></button>
+            <button class="template-button" data-template-option="luxury" type="button"><i class="swatch-luxury"></i><b>极简奢华</b><small>LUXURY EDITION</small></button>
+            <button class="template-button" data-template-option="pixel" type="button"><i class="swatch-pixel"></i><b>像素博物志</b><small>PIXEL CATALOG</small></button>
+          </div>
+        </section>
+
+        <section class="editor-card" id="view-card">
+          <div class="card-title"><div><h2>预览方式</h2><p>页面尺寸固定为 99 × 210 mm。</p></div><span>VIEW</span></div>
+          <label class="field"><span>预览模式</span><select id="preview-mode">
+            <option value="single">当前单页</option>
+            <option value="continuous">连续展开</option>
+            <option value="fold-outside">折页外侧</option>
+            <option value="fold-inside">折页内侧</option>
+          </select></label>
+          <label class="range-field"><span>画布字号 <output id="font-scale-output">100%</output></span><input id="font-scale" type="range" min="90" max="115" value="100"></label>
+          <div class="check-grid">
+            <label><input id="show-page-numbers" type="checkbox" checked> 显示页码</label>
+            <label><input id="show-fiction" type="checkbox" checked> 虚构标记</label>
+            <label><input id="show-guides" type="checkbox"> 拼版折线</label>
+          </div>
+        </section>
+
+        <section class="editor-card" id="colors-card">
+          <div class="card-title"><div><h2>当前模板配色</h2><p>每套模板分别记住自己的颜色。</p></div><span>COLOR</span></div>
+          <div class="color-grid">
+            <label class="color-field"><span>重点色</span><input type="text" data-page-color="accent" data-oc-color aria-label="重点色" autocomplete="off" spellcheck="false" maxlength="7" readonly></label>
+            <label class="color-field"><span>辅助色</span><input type="text" data-page-color="accent2" data-oc-color aria-label="辅助色" autocomplete="off" spellcheck="false" maxlength="7" readonly></label>
+            <label class="color-field"><span>纸张色</span><input type="text" data-page-color="paper" data-oc-color aria-label="纸张色" autocomplete="off" spellcheck="false" maxlength="7" readonly></label>
+            <label class="color-field"><span>文字色</span><input type="text" data-page-color="ink" data-oc-color aria-label="文字色" autocomplete="off" spellcheck="false" maxlength="7" readonly></label>
+            <label class="color-field"><span>线框色</span><input type="text" data-page-color="line" data-oc-color aria-label="线框色" autocomplete="off" spellcheck="false" maxlength="7" readonly></label>
+          </div>
+          <button class="small-button block-button" id="reset-colors" type="button">恢复当前模板默认色</button>
+        </section>
+
+        <section class="editor-card" id="stickers-card">
+          <div class="card-title"><div><h2>贴纸图层</h2><p>可放在当前页，也可跨越连续页面。</p></div><span>LAYER</span></div>
+          <label class="field"><span>放置范围</span><select id="sticker-placement"><option value="page">当前页面</option><option value="spread">连续跨页</option><option value="fold-outside">折页外侧拼版</option><option value="fold-inside">折页内侧拼版</option></select></label>
+          <label class="field"><span>文字内容</span><textarea id="new-sticker-text" rows="2" placeholder="展览注记 / 私人收藏 / 编号"></textarea></label>
+          <div class="sticker-add-actions">
+            <button class="small-button" id="add-text-sticker" type="button">＋ 文字贴纸</button>
+            <label class="small-button file-button">＋ 图片贴纸<input id="sticker-image-input" type="file" accept="image/*"></label>
+          </div>
+          <p class="help-copy">跨页贴纸在连续展开中完整显示；如果成品确定要做折页，建议直接选择折页外侧或内侧，在对应拼版上完成跨页构图。</p>
+          <div class="sticker-list" id="sticker-list"></div>
+        </section>
+
+        <section class="editor-card" id="sticker-editor-card">
+          <div class="card-title"><div><h2>当前贴纸</h2><p>位置、尺寸、字体与独立颜色。</p></div><span>EDIT</span></div>
+          <div id="sticker-editor"><p class="empty-note">请选择或新建一个贴纸。</p></div>
+        </section>
+
+        <section class="editor-card" id="export-card">
+          <div class="card-title"><div><h2>导出图片</h2><p>当前页、连续展开或折页拼版。</p></div><span>PNG</span></div>
+          <label class="field"><span>导出倍率</span><select id="export-scale"><option value="2">2× 清晰</option><option value="3">3× 超清</option></select></label>
+          <div class="fold-print-settings">
+            <strong>折页印刷</strong>
+            <div class="check-grid">
+              <label><input id="fold-print-bleed" type="checkbox"> 折页拼版 3mm</label>
+            </div>
+            <p class="help-copy">只扩展折页拼版四周尺寸，不添加辅助线；开启后固定按约 300dpi 导出。</p>
+          </div>
+          <div class="export-grid">
+            <button class="button primary" id="export-selected" type="button">当前选中页</button>
+            <button class="button" id="export-continuous" type="button">连续展开</button>
+            <button class="button wide" id="export-fold" type="button">折页内外侧 ZIP</button>
+          </div>
+          <p class="help-copy">折页 ZIP 会自动生成 outside.png 与 inside.png；单页导出不会打包其他页面。</p>
+        </section>
+      </div>
+    </aside>
+
+    <nav class="mobile-main-tabs" aria-label="手机编辑区">
+      <button class="active" data-mobile-panel="content" type="button">内容</button>
+      <button data-mobile-panel="style" type="button">样式</button>
+    </nav>
+  </main>
+
+  <div class="crop-modal" id="crop-modal" hidden>
+    <div class="crop-backdrop" data-crop-close></div>
+    <section class="crop-dialog" role="dialog" aria-modal="true" aria-labelledby="crop-title">
+      <header><div><span>IMAGE CROP</span><h2 id="crop-title">裁切图片</h2></div><button type="button" data-crop-close aria-label="关闭">×</button></header>
+      <div class="crop-stage" id="crop-stage"><canvas id="crop-canvas" width="1000" height="1000"></canvas></div>
+      <label class="range-field"><span>缩放</span><input id="crop-zoom" type="range" min="1" max="4" value="1" step=".01"></label>
+      <p>裁切框会匹配当前版式中的真实图片比例，拖动画面可调整取景位置。</p>
+      <footer><button class="button" data-crop-close type="button">取消</button><button class="button primary" id="crop-apply" type="button">应用裁切</button></footer>
+    </section>
+  </div>
+
+  <div class="tour-overlay" id="tour-overlay" hidden>
+    <div class="tour-focus" id="tour-focus"></div>
+    <section class="tour-card" id="tour-card" role="dialog" aria-modal="true">
+      <header><span>使用教程</span><em id="tour-progress">1 / 7</em></header>
+      <h2 id="tour-title">建立小册资料</h2><p id="tour-copy"></p>
+      <footer><button class="text-button" id="tour-skip" type="button">跳过</button><div><button class="button" id="tour-prev" type="button">上一步</button><button class="button primary" id="tour-next" type="button">下一步</button></div></footer>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,28 @@
+:root {
+  color-scheme: light;
+  --app-bg: #e9ecef;
+  --panel-bg: #f8f8f6;
+  --panel-strong: #ffffff;
+  --chrome-text: #1d2429;
+  --chrome-muted: #707980;
+  --chrome-border: #d9dde0;
+  --chrome-primary: #244b42;
+  --chrome-primary-hover: #173a32;
+  --chrome-accent: #d26d45;
+  --shadow-sm: 0 1px 3px rgb(22 27 29 / 8%);
+  --shadow-lg: 0 18px 45px rgb(26 33 37 / 16%);
+
+  --primary-color: #294940;
+  --secondary-color: #9a7658;
+  --canvas-background: #fbfaf7;
+  --text-color: #343733;
+  --title-color: #16251f;
+  --border-color: #b8b6ae;
+  --base-font-size: 16px;
+  --canvas-radius: 0px;
+  --title-font: Georgia, "Times New Roman", "Source Han Serif SC", serif;
+  --body-font: Georgia, "Times New Roman", "Source Han Serif SC", serif;
+  --title-font-weight: 700;
+  --body-font-weight: 400;
+  --canvas-padding: 48px;
+}

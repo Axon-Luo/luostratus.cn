@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>OC 点评生成器</title>
+  <link rel="stylesheet" href="../shared/fonts/noto-serif-sc/result.css?v=20260729-1">
+  <link rel="stylesheet" href="./app.css?v=20260729-mobile-split5">
+  <link rel="stylesheet" href="../shared/vendor/coloris/coloris.min.css">
+  <link rel="stylesheet" href="../shared/oc-color-picker.css?v=20260803-1">
+</head>
+<body data-mobile-panel="content">
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">评</span><span><b>OC 点评</b><small>FICTIONAL REVIEW STUDIO</small></span></div>
+    <label class="project-field"><span>项目</span><input id="project-name" value="海风食堂点评档案"></label>
+    <div class="top-actions">
+      <button class="button desktop-action" id="undo" type="button">撤销</button>
+      <button class="button desktop-action" id="redo" type="button">重做</button>
+      <button class="button" id="start-tour" type="button"><span class="desktop-label">教程</span><span class="mobile-label">?</span></button>
+      <button class="button desktop-action" id="new-project" type="button">新建</button>
+      <label class="button file-button desktop-action">导入<input id="import-json" type="file" accept=".json,application/json"></label>
+      <button class="button" id="save-json" type="button"><span class="desktop-label">保存 JSON</span><span class="mobile-label">保存</span></button>
+      <button class="button primary" id="export-full" type="button">导出</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="editor-panel content-panel">
+      <nav class="mobile-main-tabs">
+        <button class="active" data-mobile-tab="content" type="button">内容</button>
+        <button data-mobile-tab="style" type="button">样式</button>
+      </nav>
+      <div class="panel-heading"><span>01</span><div><h1>内容编辑</h1><p>对象资料、评分与点评</p></div></div>
+      <div class="editor-scroll">
+        <section class="editor-card" id="review-object-card">
+          <div class="card-title"><div><h2>点评对象</h2><p>餐馆、菜品、商品或自定义对象。</p></div></div>
+          <label class="field"><span>页面名称 / 平台名</span><input data-item-field="platformName"></label>
+          <div class="field-grid">
+            <label class="field"><span>类型</span><select data-item-field="type" id="item-type">
+              <option value="restaurant">餐馆</option><option value="dish">菜品</option><option value="product">商品</option><option value="service">服务</option><option value="custom">自定义</option>
+            </select></label>
+            <label class="field"><span>分类</span><input data-item-field="category"></label>
+          </div>
+          <label class="field"><span>名称</span><input data-item-field="name"></label>
+          <label class="field"><span>副标题</span><input data-item-field="subtitle"></label>
+          <div class="field-grid">
+            <label class="field"><span>价格 / 人均</span><input data-item-field="price"></label>
+            <label class="field"><span>辅助信息</span><input data-item-field="meta"></label>
+          </div>
+          <div class="field-grid">
+            <label class="field"><span>地址 / 来源</span><input data-item-field="address"></label>
+            <label class="field"><span>营业时间 / 状态</span><input data-item-field="hours"></label>
+          </div>
+          <label class="field"><span>印象标签（顿号或逗号分隔）</span><input data-item-field="tags"></label>
+          <div class="image-editor">
+            <div class="image-preview cover-preview" id="cover-preview">封面</div>
+            <div>
+              <label class="button compact file-button">上传封面<input id="cover-input" type="file" accept="image/*"></label>
+              <button class="text-button" id="remove-cover" type="button">移除图片</button>
+              <label class="range-field compact-range"><span>图片焦点 <output id="cover-position-output">50%</output></span><input data-item-field="coverPosition" type="range" min="0" max="100"></label>
+            </div>
+          </div>
+        </section>
+
+        <section class="editor-card" id="rating-editor-card">
+          <div class="card-title"><div><h2>评分概览</h2><p>总分、评分人数与三个分项。</p></div></div>
+          <div class="field-grid">
+            <label class="field"><span>综合评分</span><input data-item-field="score" type="number" min="0" max="5" step="0.1"></label>
+            <label class="field"><span>点评数量</span><input data-item-field="reviewCount"></label>
+          </div>
+          <div id="metric-editor"></div>
+          <div class="distribution-editor" id="distribution-editor"></div>
+        </section>
+
+        <section class="editor-card" id="review-list-card">
+          <div class="card-title"><div><h2>点评列表</h2><p>选择条目后编辑详细内容。</p></div><button class="button compact" id="add-review" type="button">＋ 点评</button></div>
+          <div class="review-editor-list" id="review-editor-list"></div>
+        </section>
+
+        <section class="editor-card" id="selected-review-card">
+          <div class="card-title"><div><h2>当前点评</h2><p>作者、正文、配图与商家回复。</p></div></div>
+          <div id="selected-review-editor"></div>
+        </section>
+      </div>
+    </aside>
+
+    <section class="preview-panel">
+      <div class="preview-toolbar">
+        <div><span class="preview-dot"></span><strong>实时画布</strong></div>
+        <div class="section-actions">
+          <button data-export-section="hero" type="button">资料卡</button>
+          <button data-export-section="rating" type="button">评分</button>
+          <button data-export-section="review" type="button">当前点评</button>
+          <button data-export-section="fixed" type="button">固定屏幕</button>
+        </div>
+      </div>
+      <div class="preview-viewport" id="preview-viewport">
+        <div class="preview-stage" id="preview-stage">
+          <article class="review-canvas" id="review-canvas" data-device="phone" data-theme="city"></article>
+        </div>
+      </div>
+    </section>
+
+    <div class="mobile-resizer" id="mobile-resizer" role="separator" aria-orientation="horizontal" tabindex="0" aria-label="调整预览高度"><span></span></div>
+
+    <aside class="editor-panel style-panel">
+      <nav class="mobile-main-tabs">
+        <button data-mobile-tab="content" type="button">内容</button>
+        <button class="active" data-mobile-tab="style" type="button">样式</button>
+      </nav>
+      <div class="panel-heading"><span>02</span><div><h1>视觉样式</h1><p>模板、颜色与导出设置</p></div></div>
+      <div class="editor-scroll">
+        <section class="editor-card">
+          <div class="card-title"><div><h2>页面模板</h2><p>模板不会改变已填写内容。</p></div></div>
+          <div class="theme-grid" id="theme-grid"></div>
+        </section>
+        <section class="editor-card">
+          <div class="card-title"><div><h2>画布与排版</h2></div></div>
+          <label class="field"><span>设备</span><select data-style-field="device"><option value="phone">手机详情页</option><option value="desktop">桌面详情页</option></select></label>
+          <label class="range-field"><span>画布字号 <output id="font-scale-output"></output></span><input data-style-field="fontScale" type="range" min=".85" max="1.25" step=".01"></label>
+          <label class="range-field"><span>圆角 <output id="radius-output"></output></span><input data-style-field="radius" type="range" min="0" max="28" step="1"></label>
+          <label class="field"><span>内容密度</span><select data-style-field="density"><option value="compact">紧凑</option><option value="normal">标准</option><option value="relaxed">舒展</option></select></label>
+          <label class="check-field"><input data-style-field="showWatermark" type="checkbox"><span>显示虚构页面标记</span></label>
+        </section>
+        <section class="editor-card">
+          <div class="card-title"><div><h2>自定义颜色</h2></div><button class="text-button" id="reset-colors" type="button">恢复模板</button></div>
+          <div class="color-grid">
+            <label class="color-field"><span>主色</span><input data-color-field="accent" type="color"></label>
+            <label class="color-field"><span>背景</span><input data-color-field="background" type="color"></label>
+            <label class="color-field"><span>卡片</span><input data-color-field="surface" type="color"></label>
+            <label class="color-field"><span>正文</span><input data-color-field="ink" type="color"></label>
+            <label class="color-field"><span>弱文字</span><input data-color-field="muted" type="color"></label>
+            <label class="color-field"><span>评分</span><input data-color-field="rating" type="color"></label>
+          </div>
+        </section>
+        <section class="editor-card">
+          <div class="card-title"><div><h2>高清导出</h2><p>完整长页或画布部件。</p></div></div>
+          <label class="field"><span>导出倍率</span><select data-style-field="exportScale"><option value="2">2× 高清</option><option value="3">3× 超清</option></select></label>
+          <button class="button primary wide" id="export-long" type="button">导出完整长页 PNG</button>
+          <p class="field-help">固定屏幕会裁切为手机或桌面视口；完整长页包含全部点评。</p>
+        </section>
+      </div>
+    </aside>
+  </main>
+
+  <div class="image-crop-modal" id="image-crop-modal" hidden data-crop-type="cover">
+    <div class="image-crop-backdrop" data-close-image-crop></div>
+    <section class="image-crop-dialog" role="dialog" aria-modal="true" aria-labelledby="image-crop-title">
+      <header>
+        <div><span>IMAGE CROP</span><h2 id="image-crop-title">裁切图片</h2></div>
+        <button type="button" data-close-image-crop aria-label="关闭">×</button>
+      </header>
+      <div class="image-crop-stage" id="image-crop-stage"><img id="image-crop-image" alt="图片裁切预览"></div>
+      <p>拖动图片调整位置，使用滑杆缩放。<b id="image-crop-ratio">16:9 横向封面</b></p>
+      <label class="range-field"><span>图片缩放 <output id="image-crop-zoom-output">100%</output></span><input id="image-crop-zoom" type="range" min="1" max="3" step=".05" value="1"></label>
+      <footer>
+        <button class="button" type="button" data-close-image-crop>取消</button>
+        <button class="button primary" id="apply-image-crop" type="button">完成裁切</button>
+      </footer>
+    </section>
+  </div>
+  <div class="tour-overlay" id="tour-overlay" hidden>
+    <button class="tour-blocker" type="button" data-close-tour aria-label="退出使用教程"></button>
+    <div class="tour-focus" id="tour-focus" aria-hidden="true"></div>
+    <section class="tour-card" id="tour-card" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+      <header>
+        <span id="tour-progress">01 / 07</span>
+        <button type="button" data-close-tour aria-label="退出教程">×</button>
+      </header>
+      <h2 id="tour-title"></h2>
+      <p id="tour-copy"></p>
+      <footer>
+        <button class="button" id="tour-prev" type="button">上一步</button>
+        <button class="button primary" id="tour-next" type="button">下一步</button>
+      </footer>
+    </section>
+  </div>  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="./vendor/html-to-image.min.js"></script>
+  <script src="../shared/export-fonts.js?v=20260729-1"></script>
+  <script src="../shared/browser-image-store.js"></script>
+  <script src="../shared/vendor/coloris/coloris.min.js" defer></script>
+  <script src="../shared/oc-color-picker.js?v=20260803-1" defer></script>
+  <script src="./app.js?v=20260729-mobile-split5"></script>
+</body>
+</html>
+
+
+
+
+

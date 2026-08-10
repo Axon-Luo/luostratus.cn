@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#c79a24">
+  <meta name="description" content="OC 购物车：制作虚构购物车与结算页面。">
+  <title>OC 购物车 · CART STUDIO</title>
+  <link rel="stylesheet" href="../shared/fonts/noto-serif-sc/result.css?v=20260729-1">
+  <link rel="stylesheet" href="./app.css?v=20260729-mobile-split5">
+  <link rel="stylesheet" href="../shared/vendor/coloris/coloris.min.css">
+  <link rel="stylesheet" href="../shared/oc-color-picker.css?v=20260803-1">
+  <script src="./vendor/html-to-image.min.js" defer></script>
+  <script src="../shared/export-fonts.js?v=20260729-1" defer></script>
+  <script src="../shared/browser-image-store.js" defer></script>
+  <script src="../shared/vendor/coloris/coloris.min.js" defer></script>
+  <script src="../shared/oc-color-picker.js?v=20260803-1" defer></script>
+  <script src="./app.js?v=20260729-mobile-split5" defer></script>
+</head>
+<body data-mobile-panel="content">
+  <header class="topbar">
+    <a class="brand" href="../" aria-label="返回 OC 桌面">
+      <span class="brand-mark">购</span>
+      <span><b>OC 购物车</b><small>FICTIONAL CART STUDIO</small></span>
+    </a>
+    <label class="project-field"><span>项目</span><input id="project-name" value="秋日百货购物车"></label>
+    <div class="top-actions">
+      <button class="button quiet desktop-action" id="undo" type="button">撤销</button>
+      <button class="button quiet desktop-action" id="redo" type="button">重做</button>
+      <button class="button" id="start-tour" type="button"><span class="desktop-label">教程</span><span class="mobile-label">?</span></button>
+      <button class="button" id="new-project" type="button">新建</button>
+      <label class="button file-button">导入<input id="import-json" type="file" accept=".json,application/json"></label>
+      <button class="button desktop-action" id="save-json" type="button">保存 JSON</button>
+      <button class="button primary" id="export-full" type="button"><span class="desktop-label">导出完整页面</span><span class="mobile-label">导出</span></button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="editor-panel content-panel">
+      <nav class="mobile-main-tabs">
+        <button class="active" data-mobile-tab="content" type="button">内容</button>
+        <button data-mobile-tab="style" type="button">样式</button>
+      </nav>
+      <div class="panel-heading"><span>01</span><div><h1>内容编辑</h1><p>账户、商品与结算资料</p></div></div>
+      <div class="editor-scroll">
+        <section class="editor-card" id="account-editor-card">
+          <div class="card-title"><div><h2>账户信息</h2><p>购物账户与会员资料。</p></div></div>
+          <div class="profile-editor">
+            <div class="image-preview avatar-preview" id="account-avatar-preview">头像</div>
+            <div class="image-actions">
+              <label class="button compact file-button">上传头像<input id="account-avatar-input" type="file" accept="image/*"></label>
+              <button class="text-button" id="remove-account-avatar" type="button">移除</button>
+            </div>
+          </div>
+          <div class="field-grid">
+            <label class="field"><span>姓名</span><input data-account-field="name"></label>
+            <label class="field"><span>账户名</span><input data-account-field="handle"></label>
+          </div>
+          <label class="field"><span>邮箱 / 手机</span><input data-account-field="contact"></label>
+          <div class="field-grid">
+            <label class="field"><span>会员等级</span><input data-account-field="level"></label>
+            <label class="field"><span>积分</span><input data-account-field="points"></label>
+          </div>
+        </section>
+
+        <section class="editor-card" id="shipping-editor-card">
+          <div class="card-title"><div><h2>收货与配送</h2><p>结算页面中的地址信息。</p></div></div>
+          <div class="field-grid">
+            <label class="field"><span>收货人</span><input data-shipping-field="receiver"></label>
+            <label class="field"><span>联系电话</span><input data-shipping-field="phone"></label>
+          </div>
+          <label class="field"><span>地区</span><input data-shipping-field="region"></label>
+          <label class="field"><span>详细地址</span><textarea data-shipping-field="address" rows="2"></textarea></label>
+          <div class="field-grid">
+            <label class="field"><span>配送方式</span><input data-shipping-field="method"></label>
+            <label class="field"><span>预计送达</span><input data-shipping-field="arrival"></label>
+          </div>
+          <label class="field"><span>订单备注</span><input data-shipping-field="note"></label>
+        </section>
+
+        <section class="editor-card" id="cart-items-editor-card">
+          <div class="card-title"><div><h2>购物车商品</h2><p>选择商品后编辑详细内容。</p></div><button class="button compact" id="add-item" type="button">＋ 商品</button></div>
+          <div class="item-editor-list" id="item-editor-list"></div>
+        </section>
+
+        <section class="editor-card" id="selected-item-card">
+          <div class="card-title"><div><h2>当前商品</h2><p>图片、规格、价格和数量。</p></div></div>
+          <div id="selected-item-editor"></div>
+        </section>
+
+        <section class="editor-card" id="pricing-editor-card">
+          <div class="card-title"><div><h2>结算设置</h2><p>商品小计会自动计算。</p></div></div>
+          <div class="field-grid">
+            <label class="field"><span>货币符号</span><input data-pricing-field="currency"></label>
+            <label class="field"><span>按钮文字</span><input data-pricing-field="checkoutLabel"></label>
+          </div>
+          <div class="field-grid">
+            <label class="field"><span>店铺优惠</span><input data-pricing-field="discount" type="number" min="0" step=".01"></label>
+            <label class="field"><span>优惠券</span><input data-pricing-field="coupon" type="number" min="0" step=".01"></label>
+          </div>
+          <div class="field-grid">
+            <label class="field"><span>运费</span><input data-pricing-field="shipping" type="number" min="0" step=".01"></label>
+            <label class="field"><span>服务费</span><input data-pricing-field="service" type="number" min="0" step=".01"></label>
+          </div>
+          <label class="field"><span>税费</span><input data-pricing-field="tax" type="number" min="0" step=".01"></label>
+        </section>
+      </div>
+    </aside>
+
+    <section class="preview-panel">
+      <div class="preview-toolbar">
+        <div><span class="preview-dot"></span><strong>实时画布</strong></div>
+        <div class="section-actions">
+          <button data-export-section="account" type="button">账户</button>
+          <button data-export-section="items" type="button">商品</button>
+          <button data-export-section="summary" type="button">结算</button>
+          <button data-export-section="fixed" type="button">固定屏幕</button>
+        </div>
+      </div>
+      <div class="preview-viewport" id="preview-viewport">
+        <div class="preview-stage" id="preview-stage">
+          <article class="cart-canvas" id="cart-canvas" data-device="phone" data-theme="editorial"></article>
+        </div>
+      </div>
+    </section>
+
+    <div class="mobile-resizer" id="mobile-resizer" role="separator" aria-orientation="horizontal" tabindex="0" aria-label="调整预览高度"><span></span></div>
+
+    <aside class="editor-panel style-panel">
+      <nav class="mobile-main-tabs">
+        <button data-mobile-tab="content" type="button">内容</button>
+        <button class="active" data-mobile-tab="style" type="button">样式</button>
+      </nav>
+      <div class="panel-heading"><span>02</span><div><h1>视觉样式</h1><p>模板、颜色与导出设置</p></div></div>
+      <div class="editor-scroll">
+        <section class="editor-card">
+          <div class="card-title"><div><h2>页面模板</h2><p>五套购物与结算界面。</p></div></div>
+          <div class="theme-grid" id="theme-grid"></div>
+        </section>
+        <section class="editor-card">
+          <div class="card-title"><div><h2>画布与排版</h2></div></div>
+          <label class="field"><span>设备</span><select data-style-field="device"><option value="phone">手机购物车</option><option value="desktop">桌面结算页</option></select></label>
+          <label class="range-field"><span>画布字号 <output id="font-scale-output"></output></span><input data-style-field="fontScale" type="range" min=".86" max="1.24" step=".01"></label>
+          <label class="range-field"><span>圆角 <output id="radius-output"></output></span><input data-style-field="radius" type="range" min="0" max="28" step="1"></label>
+          <label class="field"><span>内容密度</span><select data-style-field="density"><option value="compact">紧凑</option><option value="normal">标准</option><option value="relaxed">舒展</option></select></label>
+          <label class="check-field"><input data-style-field="showOriginalPrice" type="checkbox"><span>显示商品原价</span></label>
+          <label class="check-field"><input data-style-field="showStock" type="checkbox"><span>显示库存与状态</span></label>
+          <label class="check-field"><input data-style-field="showMockup" type="checkbox"><span>显示虚构页面标记</span></label>
+        </section>
+        <section class="editor-card">
+          <div class="card-title"><div><h2>自定义颜色</h2></div><button class="text-button" id="reset-colors" type="button">恢复模板</button></div>
+          <div class="color-grid">
+            <label class="color-field"><span>主色</span><input data-color-field="accent" type="color"></label>
+            <label class="color-field"><span>背景</span><input data-color-field="background" type="color"></label>
+            <label class="color-field"><span>卡片</span><input data-color-field="surface" type="color"></label>
+            <label class="color-field"><span>正文</span><input data-color-field="ink" type="color"></label>
+            <label class="color-field"><span>弱文字</span><input data-color-field="muted" type="color"></label>
+            <label class="color-field"><span>分隔线</span><input data-color-field="line" type="color"></label>
+          </div>
+        </section>
+        <section class="editor-card">
+          <div class="card-title"><div><h2>高清导出</h2><p>完整长页或画布部件。</p></div></div>
+          <label class="field"><span>导出倍率</span><select data-style-field="exportScale"><option value="2">2× 高清</option><option value="3">3× 超清</option></select></label>
+          <button class="button primary wide" id="export-long" type="button">导出完整购物车 PNG</button>
+          <p class="field-help">固定屏幕保持设备视口；完整页面包含全部商品和结算信息。</p>
+        </section>
+      </div>
+    </aside>
+  </main>
+
+  <div class="image-crop-modal" id="image-crop-modal" hidden data-crop-type="product">
+    <div class="image-crop-backdrop" data-close-image-crop></div>
+    <section class="image-crop-dialog" role="dialog" aria-modal="true" aria-labelledby="image-crop-title">
+      <header>
+        <div><span>IMAGE CROP</span><h2 id="image-crop-title">裁切商品图片</h2></div>
+        <button type="button" data-close-image-crop aria-label="关闭">×</button>
+      </header>
+      <div class="image-crop-stage" id="image-crop-stage"><img id="image-crop-image" alt="图片裁切预览"></div>
+      <p>拖动图片调整位置，使用滑杆缩放。<b id="image-crop-ratio">1:1 方形图片</b></p>
+      <label class="range-field"><span>图片缩放 <output id="image-crop-zoom-output">100%</output></span><input id="image-crop-zoom" type="range" min="1" max="3" step=".05" value="1"></label>
+      <footer>
+        <button class="button" type="button" data-close-image-crop>取消</button>
+        <button class="button primary" id="apply-image-crop" type="button">完成裁切</button>
+      </footer>
+    </section>
+  </div>
+  <div class="tour-overlay" id="tour-overlay" hidden>
+    <button class="tour-blocker" type="button" data-close-tour aria-label="退出使用教程"></button>
+    <div class="tour-focus" id="tour-focus" aria-hidden="true"></div>
+    <section class="tour-card" id="tour-card" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+      <header>
+        <span id="tour-progress">01 / 07</span>
+        <button type="button" data-close-tour aria-label="退出教程">×</button>
+      </header>
+      <h2 id="tour-title"></h2>
+      <p id="tour-copy"></p>
+      <footer>
+        <button class="button" id="tour-prev" type="button">上一步</button>
+        <button class="button primary" id="tour-next" type="button">下一步</button>
+      </footer>
+    </section>
+  </div>  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
+
