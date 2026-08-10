@@ -1,0 +1,9 @@
+{{ define "main" }}
+{{- $target := .Params.target | default "/tools/" -}}
+<script>location.replace("{{ $target }}");</script>
+<meta http-equiv="refresh" content="0; url={{ $target }}">
+<div style="max-width: 680px; margin: 3rem auto; padding: 0 16px; text-align: center;">
+  <h1>{{ .Title }}</h1>
+  <p>正在跳转到工具页面，如果未自动跳转，请点击 <a href="{{ $target }}">这里</a>。</p>
+</div>
+{{ end }}
