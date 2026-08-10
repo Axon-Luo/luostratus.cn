@@ -85,6 +85,37 @@
 }
 .tools-section .section-title-row h2 { margin-bottom: 0; }
 .section-hint { color: var(--secondary); font-size: 0.8rem; }
+.section-hint-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.quick-theme-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.quick-theme-button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--entry);
+  color: var(--primary);
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.quick-theme-button:hover { border-color: var(--primary); }
+.quick-theme-button:active { transform: scale(0.95); }
+.quick-theme-button svg { width: 16px; height: 16px; display: block; }
+.quick-theme-button .quick-sun { display: none; }
+.quick-theme-button.is-dark .quick-sun { display: block; }
+.quick-theme-button.is-dark .quick-moon { display: none; }
+.quick-theme-label { color: var(--secondary); font-size: 0.78rem; cursor: pointer; }
 .tools-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -139,7 +170,16 @@
 <section class="tools-section">
   <div class="section-title-row">
     <h2>虚拟信息生成器</h2>
-    <span class="section-hint">使用以下功能时建议开启浅色模式</span>
+    <div class="section-hint-group">
+      <span class="section-hint">使用以下功能时建议开启浅色模式</span>
+      <span class="quick-theme-row">
+        <button id="tools-quick-theme" class="quick-theme-button" type="button" aria-label="切换明暗主题">
+          <svg class="quick-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="quick-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+        <span class="quick-theme-label" id="tools-quick-theme-label">点此快速切换</span>
+      </span>
+    </div>
   </div>
   <div class="tools-grid">
     {{ range $virtual }}
@@ -150,4 +190,30 @@
     {{ end }}
   </div>
 </section>
+<script>
+(function () {
+  var htmlEl = document.documentElement;
+  var btn = document.getElementById("tools-quick-theme");
+  var label = document.getElementById("tools-quick-theme-label");
+  if (!btn) return;
+  function sync() {
+    var dark = htmlEl.dataset.theme === "dark";
+    btn.classList.toggle("is-dark", dark);
+    btn.setAttribute("aria-label", dark ? "切换到明亮模式" : "切换到黑暗模式");
+    btn.title = dark ? "切换到明亮模式" : "切换到黑暗模式";
+  }
+  function toggle() {
+    var next = htmlEl.dataset.theme === "dark" ? "light" : "dark";
+    htmlEl.dataset.theme = next;
+    try { localStorage.setItem("pref-theme", next); } catch (e) {}
+    sync();
+  }
+  btn.addEventListener("click", toggle);
+  if (label) label.addEventListener("click", toggle);
+  if (window.MutationObserver) {
+    new MutationObserver(sync).observe(htmlEl, { attributes: true, attributeFilter: ["data-theme"] });
+  }
+  sync();
+})();
+</script>
 {{ end }}
