@@ -1,0 +1,234 @@
+/* Shared dark/light theme bridge for the mirrored OC tools.
+   The site chrome (toolbars, panels, forms) follows the main site theme;
+   the generated artwork canvases keep their designed colors. */
+
+html[data-site-theme="dark"] {
+  color-scheme: dark;
+
+  /* Generic app chrome variables used across most tools. */
+  --app-bg: #17181b;
+  --app-paper: #232529;
+  --app-panel: #232529;
+  --app-ink: #e4e5e7;
+  --app-muted: #a0a3a8;
+  --app-line: #3a3d42;
+  --app-line-strong: #4a4e55;
+  --app-alert: #ff6b6b;
+  --app-cream: #232529;
+  --app-accent-dark: color-mix(in srgb, var(--app-accent), #fff 22%);
+  --app-accent-soft: color-mix(in srgb, var(--app-accent), #17181b 76%);
+
+  /* Timeline generator chrome. */
+  --panel-bg: #232529;
+  --panel-strong: #2b2d31;
+  --chrome-text: #e4e5e7;
+  --chrome-muted: #a0a3a8;
+  --chrome-border: #3a3d42;
+  --chrome-primary-hover: color-mix(in srgb, var(--chrome-primary), #fff 12%);
+  --chrome-accent: color-mix(in srgb, var(--chrome-accent), #fff 14%);
+
+  /* Mail, player, social and other tools using short variable names. */
+  --panel: #232529;
+  --paper: #26282c;
+  --surface: #2b2d31;
+  --ink: #e4e5e7;
+  --muted: #a0a3a8;
+  --line: #3a3d42;
+  --active-bg: #2b2d31;
+  --button-bg: #2b2d31;
+  --button-ink: #e4e5e7;
+  --primary-hover: color-mix(in srgb, var(--primary), #fff 16%);
+  --primary-soft: color-mix(in srgb, var(--primary), #17181b 72%);
+  --decoration: #a0a3a8;
+  --danger: #ff6b6b;
+
+  /* OC card lab chrome. */
+  --ui-bg: #17181b;
+  --ui-panel: #232529;
+  --ui-card: #2b2d31;
+  --ui-text: #e4e5e7;
+  --ui-muted: #a0a3a8;
+  --ui-line: #3a3d42;
+  --ui-line-strong: #4a4e55;
+  --ui-accent-dark: color-mix(in srgb, var(--ui-accent), #fff 20%);
+  --ui-accent-soft: color-mix(in srgb, var(--ui-accent), #17181b 76%);
+
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 45%);
+  --shadow-lg: 0 18px 45px rgb(0 0 0 / 55%);
+  --shadow: 0 18px 50px rgb(0 0 0 / 55%);
+}
+
+html[data-site-theme="dark"] body {
+  background: var(--app-bg, #17181b);
+  color: var(--app-ink, var(--ink, #e4e5e7));
+}
+
+html[data-site-theme="dark"] .topbar {
+  background: rgb(23 24 27 / 96%);
+  border-color: var(--app-line, var(--line, #3a3d42));
+  box-shadow: 0 5px 22px rgb(0 0 0 / 35%);
+}
+
+html[data-site-theme="dark"] .panel-heading,
+html[data-site-theme="dark"] .preview-toolbar,
+html[data-site-theme="dark"] .preview-bar,
+html[data-site-theme="dark"] .page-heading,
+html[data-site-theme="dark"] .collection-heading,
+html[data-site-theme="dark"] .bag-heading,
+html[data-site-theme="dark"] .cover-panel,
+html[data-site-theme="dark"] .main-tabs,
+html[data-site-theme="dark"] .mobile-main-tabs,
+html[data-site-theme="dark"] .mobile-editor-tabs {
+  background: var(--app-panel, var(--panel, #232529));
+  border-color: var(--app-line, var(--line, #3a3d42));
+}
+
+html[data-site-theme="dark"] .editor-panel,
+html[data-site-theme="dark"] .style-panel,
+html[data-site-theme="dark"] .content-panel,
+html[data-site-theme="dark"] .panel,
+html[data-site-theme="dark"] .panel-scroll,
+html[data-site-theme="dark"] .editor-scroll,
+html[data-site-theme="dark"] .category-tabs {
+  background: var(--app-paper, var(--paper, var(--panel, #232529)));
+}
+
+html[data-site-theme="dark"] .workspace,
+html[data-site-theme="dark"] .preview-panel,
+html[data-site-theme="dark"] .preview-viewport,
+html[data-site-theme="dark"] .preview-workspace,
+html[data-site-theme="dark"] .canvas-viewport,
+html[data-site-theme="dark"] .canvas-stage {
+  background: #141517;
+}
+
+html[data-site-theme="dark"] .button,
+html[data-site-theme="dark"] .mini-button,
+html[data-site-theme="dark"] .icon-button,
+html[data-site-theme="dark"] .text-button,
+html[data-site-theme="dark"] .theme-button,
+html[data-site-theme="dark"] .color-field,
+html[data-site-theme="dark"] .check-field,
+html[data-site-theme="dark"] .editor-card,
+html[data-site-theme="dark"] .object-card,
+html[data-site-theme="dark"] .item-editor-row,
+html[data-site-theme="dark"] .contact-editor,
+html[data-site-theme="dark"] .tour-card,
+html[data-site-theme="dark"] .crop-dialog,
+html[data-site-theme="dark"] .toast,
+html[data-site-theme="dark"] .field input,
+html[data-site-theme="dark"] .field select,
+html[data-site-theme="dark"] .field textarea,
+html[data-site-theme="dark"] .project-field input,
+html[data-site-theme="dark"] .project-name-field input {
+  background: var(--app-card, var(--surface, var(--button-bg, #2b2d31)));
+  border-color: var(--app-line, var(--line, #3a3d42));
+  color: var(--app-ink, var(--ink, #e4e5e7));
+}
+
+html[data-site-theme="dark"] .button.primary,
+html[data-site-theme="dark"] .button.button-primary,
+html[data-site-theme="dark"] .mini-button.primary,
+html[data-site-theme="dark"] .button-primary {
+  background: var(--app-accent, var(--primary));
+  border-color: var(--app-accent, var(--primary));
+}
+
+html[data-site-theme="dark"] .text-button {
+  background: transparent;
+  border-color: transparent;
+  color: var(--app-accent-dark, var(--primary-hover, var(--primary)));
+}
+
+html[data-site-theme="dark"] .text-button.danger {
+  color: var(--danger, #ff6b6b);
+}
+
+html[data-site-theme="dark"] .field > span,
+html[data-site-theme="dark"] .range-field > span,
+html[data-site-theme="dark"] .field-help,
+html[data-site-theme="dark"] .card-title p,
+html[data-site-theme="dark"] .brand small,
+html[data-site-theme="dark"] .save-state,
+html[data-site-theme="dark"] .panel-heading > span,
+html[data-site-theme="dark"] .selected-item-empty {
+  color: var(--app-muted, var(--muted, #a0a3a8));
+}
+
+html[data-site-theme="dark"] .card-title {
+  border-color: var(--app-line, var(--line, #3a3d42));
+}
+
+html[data-site-theme="dark"] .item-editor-row.active {
+  background: var(--app-accent-soft, var(--primary-soft, #2b2d31));
+}
+
+html[data-site-theme="dark"] .mobile-main-tabs button,
+html[data-site-theme="dark"] .mobile-editor-tabs button,
+html[data-site-theme="dark"] .main-tabs .tab-button {
+  color: var(--app-muted, var(--muted, #a0a3a8));
+}
+
+html[data-site-theme="dark"] .mobile-main-tabs button.is-active,
+html[data-site-theme="dark"] .mobile-editor-tabs button.is-active,
+html[data-site-theme="dark"] .main-tabs .tab-button.is-active {
+  color: var(--app-ink, var(--ink, #e4e5e7));
+  border-color: var(--app-accent, var(--primary, #c79a24));
+}
+
+html[data-site-theme="dark"] select option {
+  background: #232529;
+  color: #e4e5e7;
+}
+
+html[data-site-theme="dark"] * {
+  scrollbar-color: #4a4e55 #232529;
+}
+
+html[data-site-theme="dark"] input,
+html[data-site-theme="dark"] select,
+html[data-site-theme="dark"] textarea {
+  color-scheme: dark;
+}
+
+/* The floating theme toggle shared by all mirrored tools. */
+.site-theme-toggle {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 9999;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--app-line, var(--line, #d7cfbd));
+  border-radius: 50%;
+  background: var(--app-paper, var(--paper, var(--surface, var(--panel, #ffffff))));
+  box-shadow: 0 6px 18px rgb(0 0 0 / 20%);
+  color: var(--app-ink, var(--ink, #29271f));
+  cursor: pointer;
+}
+
+.site-theme-toggle:hover {
+  border-color: var(--app-accent, var(--primary, #c79a24));
+  color: var(--app-accent, var(--primary, #c79a24));
+}
+
+.site-theme-toggle svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.site-theme-toggle .theme-sun {
+  display: none;
+}
+
+html[data-site-theme="dark"] .site-theme-toggle .theme-sun {
+  display: block;
+}
+
+html[data-site-theme="dark"] .site-theme-toggle .theme-moon {
+  display: none;
+}
