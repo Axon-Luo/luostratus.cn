@@ -71,9 +71,12 @@ menu:
     - name: 小功能
       url: /tools/
       weight: 5
+    - name: 放映厅
+      url: /cinema/
+      weight: 6
     - name: 搜索
       url: /search/
-      weight: 6
+      weight: 7
     - name: 关于
       url: /about/
-      weight: 7
+      weight: 8

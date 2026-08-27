@@ -1,0 +1,38 @@
+{{ define "main" }}
+{{ $cover := .Resources.GetMatch "cover.*" }}
+<article class="cinema-detail">
+  <header class="deck-header">
+    <div class="deck-meta">
+      <a href="{{ .Parent.RelPermalink }}">返回放映厅</a>
+      <span>{{ .Date.Format "2006-01-02" }} · {{ .Params.slides | default "?" }} 页</span>
+    </div>
+    <h1>{{ .Title }}</h1>
+    {{ with .Description }}<p class="deck-summary">{{ . }}</p>{{ end }}
+  </header>
+  {{ with $cover }}
+    <figure class="deck-cover"><img src="{{ .RelPermalink }}" alt="{{ $.Title }}"></figure>
+  {{ end }}
+  <section class="deck-body">{{ .Content }}</section>
+  <footer class="deck-actions">
+    <a class="start-show" href="{{ .Params.target | default "/cinema/" }}" target="_blank" rel="noopener">开始放映<span aria-hidden="true"> ↗</span></a>
+  </footer>
+</article>
+
+<style>
+.main { max-width: min(920px, 82vw); }
+.post-content { max-width: min(920px, 82vw); }
+.cinema-detail { margin-top: 16px; }
+.deck-header { margin-bottom: 28px; }
+.deck-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; color: var(--secondary); font-size: .88rem; }
+.deck-meta a { color: var(--secondary); text-decoration: none; }
+.deck-meta a:hover { color: var(--primary); }
+.deck-summary { margin: 12px auto 0; color: var(--secondary); font-size: 1.08rem; line-height: 1.7; }
+.deck-cover { margin: 0 0 32px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: #fafaf8; }
+.deck-cover img { display: block; width: 100%; height: auto; }
+.deck-body { margin-bottom: 44px; line-height: 1.85; }
+.deck-actions { display: flex; justify-content: center; padding: 24px 0 12px; border-top: 1px solid var(--border); }
+.start-show { display: inline-flex; align-items: center; gap: 6px; min-height: 48px; padding: 13px 26px; border-radius: 3px; background: var(--theme); color: var(--theme-invert, #fff) !important; font-weight: 600; text-decoration: none !important; transition: opacity .2s ease, transform .2s ease; }
+.start-show:hover { transform: translateY(-2px); opacity: .92; }
+@media (max-width: 480px) { .main { max-width: calc(100vw - 32px); } .deck-meta { flex-direction: column; align-items: flex-start; } .start-show { width: 100%; justify-content: center; } }
+</style>
+{{ end }}
