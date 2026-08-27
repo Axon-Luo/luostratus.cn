@@ -7,18 +7,23 @@
       <span>{{ .Date.Format "2006-01-02" }} · {{ .Params.slides | default "?" }} 页</span>
     </div>
     <h1>{{ .Title }}</h1>
-    {{ with .Description }}<p class="deck-summary">{{ . }}</p>{{ end }}
   </header>
   {{ with $cover }}
     <figure class="deck-cover"><img src="{{ .RelPermalink }}" alt="{{ $.Title }}"></figure>
   {{ end }}
-  <section class="deck-body">{{ .Content }}</section>
-  <footer class="deck-actions">
+  <div class="deck-actions start-now">
     <a class="start-show" href="{{ .Params.target | default "/cinema/" }}" target="_blank" rel="noopener">
       <span class="play-icon" aria-hidden="true"></span>
       开始放映
     </a>
-  </footer>
+  </div>
+  <section class="deck-body">{{ .Content }}</section>
+
+  {{ with .Description }}
+    <section class="deck-intro">
+      <p>{{ . }}</p>
+    </section>
+  {{ end }}
 </article>
 
 <style>
@@ -29,9 +34,11 @@
 .deck-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; color: var(--secondary); font-size: .88rem; }
 .deck-meta a { color: var(--secondary); text-decoration: none; }
 .deck-meta a:hover { color: var(--primary); }
-.deck-summary { margin: 12px auto 0; color: var(--secondary); font-size: 1.08rem; line-height: 1.7; }
 .deck-cover { margin: 0 0 32px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: #fafaf8; }
 .deck-cover img { display: block; width: 100%; height: auto; }
+.start-now { margin-bottom: 40px; padding-top: 0; border-top: 0; }
+.deck-intro { margin-bottom: 48px; color: var(--secondary); font-size: 1.08rem; line-height: 1.7; }
+.deck-intro p { margin: 0; }
 .deck-body { margin-bottom: 44px; line-height: 1.85; }
 .deck-actions { display: flex; justify-content: center; padding: 44px 0 12px; border-top: 1px solid var(--border); }
 .start-show { display: inline-flex; align-items: center; gap: 16px; min-height: 64px; padding: 14px 42px 14px 26px; border-radius: 8px; background: linear-gradient(135deg, #2143E0 0%, #4E86FF 100%); color: #fff !important; font-size: 1.18rem; font-weight: 700; letter-spacing: .05em; text-decoration: none !important; box-shadow: 0 8px 28px rgba(66,106,255,.48); transition: transform .25s ease, box-shadow .25s ease; animation: cinema-pulse 2.6s ease-in-out infinite; }
