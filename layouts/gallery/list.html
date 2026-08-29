@@ -7,6 +7,8 @@
 {{ $images := .Resources.ByType "image" }}
 {{ if $images }}
 
+{{ $galleryThumbWidth := 800 }}
+
 {{/* 固定首位的图片 */}}
 {{ $pinned := .Resources.GetMatch "00-校色卡*" }}
 
@@ -57,10 +59,23 @@
 
 <div class="gallery-masonry">
   {{/* 固定首位的图片 */}}
-  {{ if $pinned }}
+{{ if $pinned }}
   {{ $pf := path.Base $pinned.Name }}
+  {{ $pinnedThumb := $pinned }}
+  {{ if gt $pinned.Width $galleryThumbWidth }}
+    {{ $pinnedThumb = $pinned.Resize (printf "%dx webp q78" $galleryThumbWidth) }}
+  {{ end }}
   <figure class="gallery-item">
-    <img src="{{ $pinned.RelPermalink }}" alt="{{ $pf }}" loading="lazy" onclick="this.classList.toggle('zoomed')">
+    <img
+      src="{{ $pinnedThumb.RelPermalink }}"
+      data-full="{{ $pinned.RelPermalink }}"
+      width="{{ $pinnedThumb.Width }}"
+      height="{{ $pinnedThumb.Height }}"
+      alt="{{ $pf }}"
+      loading="eager"
+      fetchpriority="high"
+      decoding="async"
+      onclick="if (this.classList.toggle('zoomed')) { if (!this.dataset.thumb) this.dataset.thumb = this.src; this.src = this.dataset.full || this.src; } else { this.src = this.dataset.thumb || this.src; }">
     <figcaption><time>校色卡</time></figcaption>
   </figure>
   {{ end }}
@@ -84,16 +99,40 @@
       {{ $.Scratch.Set "ui" (add $ui 1) }}
       {{ $.Scratch.Set "slot" (add $slot (add $gap 1)) }}
       {{ $fname := path.Base $img.Name }}
+      {{ $thumb := $img }}
+      {{ if gt $img.Width $galleryThumbWidth }}
+        {{ $thumb = $img.Resize (printf "%dx webp q78" $galleryThumbWidth) }}
+      {{ end }}
       <figure class="gallery-item">
-        <img src="{{ $img.RelPermalink }}" alt="{{ $fname }}" loading="lazy" onclick="this.classList.toggle('zoomed')">
+        <img
+          src="{{ $thumb.RelPermalink }}"
+          data-full="{{ $img.RelPermalink }}"
+          width="{{ $thumb.Width }}"
+          height="{{ $thumb.Height }}"
+          alt="{{ $fname }}"
+          loading="lazy"
+          decoding="async"
+          onclick="if (this.classList.toggle('zoomed')) { if (!this.dataset.thumb) this.dataset.thumb = this.src; this.src = this.dataset.full || this.src; } else { this.src = this.dataset.thumb || this.src; }">
         <figcaption><time>—</time></figcaption>
       </figure>
     {{ else if lt $di $dt }}
       {{ $entry := index $dated $di }}
       {{ $.Scratch.Set "di" (add $di 1) }}
       {{ $fname := path.Base $entry.r.Name }}
+      {{ $thumb := $entry.r }}
+      {{ if gt $entry.r.Width $galleryThumbWidth }}
+        {{ $thumb = $entry.r.Resize (printf "%dx webp q78" $galleryThumbWidth) }}
+      {{ end }}
       <figure class="gallery-item">
-        <img src="{{ $entry.r.RelPermalink }}" alt="{{ $fname }}" loading="lazy" onclick="this.classList.toggle('zoomed')">
+        <img
+          src="{{ $thumb.RelPermalink }}"
+          data-full="{{ $entry.r.RelPermalink }}"
+          width="{{ $thumb.Width }}"
+          height="{{ $thumb.Height }}"
+          alt="{{ $fname }}"
+          loading="lazy"
+          decoding="async"
+          onclick="if (this.classList.toggle('zoomed')) { if (!this.dataset.thumb) this.dataset.thumb = this.src; this.src = this.dataset.full || this.src; } else { this.src = this.dataset.thumb || this.src; }">
         <figcaption><time>{{ $entry.d }}</time></figcaption>
       </figure>
     {{ end }}

@@ -15,8 +15,20 @@
   {{ if gt (len $images) 0 }}
   <div class="gallery-post-grid">
     {{ range $images }}
+    {{ $thumb := . }}
+    {{ if gt .Width 800 }}
+      {{ $thumb = .Resize "800x webp q78" }}
+    {{ end }}
     <figure class="gallery-figure">
-      <img src="{{ .RelPermalink }}" alt="{{ $.Title }}" loading="lazy" data-src="{{ .RelPermalink }}" onclick="this.classList.toggle('zoomed')">
+      <img
+        src="{{ $thumb.RelPermalink }}"
+        data-full="{{ .RelPermalink }}"
+        width="{{ $thumb.Width }}"
+        height="{{ $thumb.Height }}"
+        alt="{{ $.Title }}"
+        loading="lazy"
+        decoding="async"
+        onclick="if (this.classList.toggle('zoomed')) { if (!this.dataset.thumb) this.dataset.thumb = this.src; this.src = this.dataset.full || this.src; } else { this.src = this.dataset.thumb || this.src; }">
       {{ with .Title }}
       <figcaption>{{ . }}</figcaption>
       {{ end }}
