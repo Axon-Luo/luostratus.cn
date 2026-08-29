@@ -7,6 +7,9 @@
 # Node modules（如果你以后用到）
 node_modules/
 
+# Law extraction workspace
+.laws-work/
+
 # 操作系统文件
 .DS_Store
 Thumbs.db
