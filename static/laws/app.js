@@ -198,25 +198,9 @@
     </div>`;
   }
 
-  function renderLibrary() {
+  function buildLibraryList() {
     const fams = sortFamilies(filterFamilies());
     const q = S.q.trim();
-    const catsPresent = [...new Set(S.index.families.map(f => f.c))]
-      .sort((a, b) => CAT_ORDER.indexOf(a) - CAT_ORDER.indexOf(b));
-    const catChips = [`<button class="law-chip${S.cat === 0 ? ' active' : ''}" data-act="cat" data-v="0">全部</button>`]
-      .concat(catsPresent.map(c => `<button class="law-chip${S.cat === c ? ' active' : ''}" data-act="cat" data-v="${c}">${esc(catName(c))}</button>`)).join('');
-    const statusChips = [3, 4, 2, 1].map(s =>
-      `<button class="law-chip${S.status.includes(s) ? ' active' : ''}" data-act="status" data-v="${s}">${STATUS[s]}</button>`).join('');
-    const ys = yearsRange();
-    const yearOpts = ys.map(y => `<option value="${y}">${y}</option>`).join('');
-    const agOpts = agencyOptions().map(a => `<option value="${esc(a)}"${S.agency === a ? ' selected' : ''}>${esc(a)}</option>`).join('');
-    const sortOpts = `
-      <option value="lx"${S.sort === 'lx' ? ' selected' : ''}>按施行日期 新→旧</option>
-      <option value="gd"${S.sort === 'gd' ? ' selected' : ''}>按公布日期 新→旧</option>
-      <option value="ga"${S.sort === 'ga' ? ' selected' : ''}>按公布日期 旧→新</option>
-      <option value="tt"${S.sort === 'tt' ? ' selected' : ''}>按标题</option>`;
-    const recentChips = S.recent.slice(0, 8).map(r =>
-      `<a class="law-chip" href="#/law/${r.b}" title="${esc(r.t)}">${esc(r.t.length > 14 ? r.t.slice(0, 14) + '…' : r.t)}</a>`).join('');
     let listPart = '';
     if (q && S.ft && S.ft.length) {
       const titleHits = fams.slice(0, 8);
@@ -244,12 +228,43 @@
       listPart = `${shown.map(famCard).join('')}
         ${fams.length > shown.length ? `<div class="law-more"><button data-act="more">加载更多（已显示 ${shown.length} / ${fams.length}）</button></div>` : ''}`;
     }
+    return listPart;
+  }
+
+  function renderLibrary(options = {}) {
+    if (options.resultsOnly) {
+      const results = document.getElementById('law-results');
+      if (results) {
+        results.innerHTML = buildLibraryList();
+        return;
+      }
+    }
+
+    const listPart = buildLibraryList();
+    const fams = sortFamilies(filterFamilies());
+    const q = S.q.trim();
+    const catsPresent = [...new Set(S.index.families.map(f => f.c))]
+      .sort((a, b) => CAT_ORDER.indexOf(a) - CAT_ORDER.indexOf(b));
+    const catChips = [`<button class="law-chip${S.cat === 0 ? ' active' : ''}" data-act="cat" data-v="0">全部</button>`]
+      .concat(catsPresent.map(c => `<button class="law-chip${S.cat === c ? ' active' : ''}" data-act="cat" data-v="${c}">${esc(catName(c))}</button>`)).join('');
+    const statusChips = [3, 4, 2, 1].map(s =>
+      `<button class="law-chip${S.status.includes(s) ? ' active' : ''}" data-act="status" data-v="${s}">${STATUS[s]}</button>`).join('');
+    const ys = yearsRange();
+    const yearOpts = ys.map(y => `<option value="${y}">${y}</option>`).join('');
+    const agOpts = agencyOptions().map(a => `<option value="${esc(a)}"${S.agency === a ? ' selected' : ''}>${esc(a)}</option>`).join('');
+    const sortOpts = `
+      <option value="lx"${S.sort === 'lx' ? ' selected' : ''}>按施行日期 新→旧</option>
+      <option value="gd"${S.sort === 'gd' ? ' selected' : ''}>按公布日期 新→旧</option>
+      <option value="ga"${S.sort === 'ga' ? ' selected' : ''}>按公布日期 旧→新</option>
+      <option value="tt"${S.sort === 'tt' ? ' selected' : ''}>按标题</option>`;
+    const recentChips = S.recent.slice(0, 8).map(r =>
+      `<a class="law-chip" href="#/law/${r.b}" title="${esc(r.t)}">${esc(r.t.length > 14 ? r.t.slice(0, 14) + '…' : r.t)}</a>`).join('');
 
     app().innerHTML = `
       <div class="law-toolbar">
         <div class="law-searchbox">
-          <input id="law-q" type="text" placeholder="搜索法律名称或条文内容，回车执行全文检索" value="${esc(S.q)}">
-          ${q ? '<button class="law-clear" data-act="clearq" title="清空">✕</button>' : ''}
+          <input id="law-q" type="text" autocomplete="off" enterkeyhint="search" placeholder="搜索法律名称或条文内容，回车执行全文检索" value="${esc(S.q)}">
+          <button class="law-clear" data-act="clearq" title="清空"${q ? '' : ' hidden'}>✕</button>
         </div>
         <div class="law-view-toggle">
           <button class="${S.view === 'list' ? 'active' : ''}" data-act="viewlist">列表</button>
@@ -268,7 +283,7 @@
         </div>
       </div>
       ${recentChips ? `<div class="law-recent-row"><span class="law-filter-label">最近浏览</span>${recentChips}</div>` : ''}
-      ${S.view === 'list' ? listPart : renderTimeline(fams)}
+      ${S.view === 'list' ? `<div id="law-results">${listPart}</div>` : `<div id="law-results">${renderTimeline(fams)}</div>`}
     `;
 
     const yf = document.getElementById('law-yf');
@@ -277,8 +292,21 @@
     if (yt) yt.value = S.yearTo;
     const inp = document.getElementById('law-q');
     if (inp) {
+      inp.addEventListener('compositionstart', () => {
+        isComposing = true;
+        clearTimeout(searchTimer);
+      });
+      inp.addEventListener('compositionend', e => {
+        isComposing = false;
+        S.q = e.target.value;
+        if (S.q.trim().length >= 2) runSearch(S.q);
+        else { S.ft = null; renderLibrary({ resultsOnly: true }); }
+      });
       inp.addEventListener('input', onSearchInput);
-      inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runSearch(inp.value); } });
+      inp.addEventListener('keydown', e => {
+        if (e.isComposing || isComposing) return;
+        if (e.key === 'Enter') { e.preventDefault(); runSearch(inp.value); }
+      });
       if (q) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
     }
   }
@@ -304,13 +332,18 @@
   }
 
   let searchTimer = null;
+  let isComposing = false;
+
   function onSearchInput(e) {
     const val = e.target.value;
+    S.q = val;
+    const clearBtn = document.querySelector('.law-clear');
+    if (clearBtn) clearBtn.hidden = !val;
+    if (isComposing || e.isComposing) return;
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
-      S.q = val;
       if (val.trim().length >= 2) runSearch(val);
-      else { S.ft = null; renderLibrary(); }
+      else { S.ft = null; renderLibrary({ resultsOnly: true }); }
     }, 350);
   }
 
@@ -320,7 +353,7 @@
     if (S.ftBusy) return;
     S.ftBusy = true;
     try { await fullTextSearch(val.trim()); } finally { S.ftBusy = false; }
-    renderLibrary();
+    renderLibrary({ resultsOnly: true });
   }
 
   async function fetchLaw(bbbs) {
