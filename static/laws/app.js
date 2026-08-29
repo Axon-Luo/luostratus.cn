@@ -436,6 +436,32 @@
       </div>`;
     const toc = document.getElementById('law-toc');
     const tocToggle = toc?.querySelector('button');
+    const tocLinks = toc?.querySelector('.law-toc-links');
+    const measureTocLinks = () => {
+      if (!tocLinks) return 0;
+      const previous = tocLinks.style.maxHeight;
+      tocLinks.style.maxHeight = 'none';
+      const height = tocLinks.scrollHeight;
+      tocLinks.style.maxHeight = previous;
+      return height;
+    };
+    const animateTocLinks = () => {
+      if (!tocLinks) return;
+      if (toc.classList.contains('collapsed')) {
+        tocLinks.style.maxHeight = `${measureTocLinks()}px`;
+        void tocLinks.offsetHeight;
+        tocLinks.style.maxHeight = '0px';
+      } else {
+        const height = measureTocLinks();
+        tocLinks.style.maxHeight = `${height}px`;
+        if (typeof tocLinks.animate === 'function') {
+          tocLinks.animate(
+            [{ maxHeight: '0px' }, { maxHeight: `${height}px` }],
+            { duration: 350, easing: 'ease' }
+          );
+        }
+      }
+    };
     const syncTocToggle = () => {
       if (!toc || !tocToggle) return;
       const collapsed = toc.classList.contains('collapsed');
@@ -447,6 +473,12 @@
       if (localStorage.getItem('lawTocCollapsed') === '1') toc.classList.add('collapsed');
     } catch (e) {}
     syncTocToggle();
+    tocToggle?.addEventListener('click', event => {
+      event.preventDefault();
+      toc.classList.toggle('collapsed');
+      animateTocLinks();
+      syncTocToggle();
+    });
     toc.classList.add('visible');
     applyPrefs();
     bindTocHighlight();
@@ -586,14 +618,6 @@
     } else if (act === 'tocfab') {
       const toc = document.getElementById('law-toc');
       if (toc) toc.classList.toggle('open');
-    } else if (act === 'tocfold') {
-      const toc = document.getElementById('law-toc');
-      if (toc) {
-        toc.classList.toggle('collapsed');
-        btn.textContent = toc.classList.contains('collapsed') ? '展开' : '收起';
-        btn.setAttribute('aria-label', toc.classList.contains('collapsed') ? '展开目录' : '收起目录');
-        try { localStorage.setItem('lawTocCollapsed', toc.classList.contains('collapsed') ? '1' : '0'); } catch (e) {}
-      }
     }
   });
 
