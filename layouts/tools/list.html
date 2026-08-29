@@ -124,10 +124,16 @@
   margin-bottom: 32px;
 }
 @media (min-width: 1280px) {
+  .page-header,
+  .tools-section {
+    width: 1088px;
+    max-width: none;
+    margin-inline: calc(50% - 544px);
+  }
   .tools-grid {
     grid-template-columns: repeat(3, 352px);
-    width: 1088px;
-    margin-inline: calc(50% - 544px);
+    width: 100%;
+    margin-inline: 0;
   }
 }
 .tool-card {
