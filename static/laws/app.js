@@ -396,7 +396,6 @@
         ${fam.v.length > 1 ? `<div class="law-vswitch">${vchips}</div>` : ''}
         <div class="law-reader-actions">
           <button class="law-abtn${starOn ? ' on' : ''}" data-act="fav" data-fam="${fam.id}">★ 收藏</button>
-          <button class="law-abtn" data-act="tocfab">☰ 目录</button>
           <button class="law-abtn" data-act="fsdown">A−</button>
           <button class="law-abtn" data-act="fsup">A+</button>
           <button class="law-abtn" data-act="lh">行距</button>
@@ -409,6 +408,20 @@
         </nav>
         <div class="law-doc">${renderBlocks(law)}</div>
       </div>`;
+    const toc = document.getElementById('law-toc');
+    const tocToggle = toc?.querySelector('button');
+    const syncTocToggle = () => {
+      if (!toc || !tocToggle) return;
+      const collapsed = toc.classList.contains('collapsed');
+      tocToggle.textContent = collapsed ? '展开' : '收起';
+      tocToggle.setAttribute('aria-label', collapsed ? '展开目录' : '收起目录');
+      try { localStorage.setItem('lawTocCollapsed', collapsed ? '1' : '0'); } catch (e) {}
+    };
+    try {
+      if (localStorage.getItem('lawTocCollapsed') === '1') toc.classList.add('collapsed');
+    } catch (e) {}
+    syncTocToggle();
+    toc.classList.add('visible');
     applyPrefs();
     bindTocHighlight();
 
@@ -546,7 +559,12 @@
       if (toc) toc.classList.toggle('open');
     } else if (act === 'tocfold') {
       const toc = document.getElementById('law-toc');
-      if (toc) { toc.classList.toggle('collapsed'); btn.textContent = toc.classList.contains('collapsed') ? '展开' : '收起'; }
+      if (toc) {
+        toc.classList.toggle('collapsed');
+        btn.textContent = toc.classList.contains('collapsed') ? '展开' : '收起';
+        btn.setAttribute('aria-label', toc.classList.contains('collapsed') ? '展开目录' : '收起目录');
+        try { localStorage.setItem('lawTocCollapsed', toc.classList.contains('collapsed') ? '1' : '0'); } catch (e) {}
+      }
     }
   });
 
