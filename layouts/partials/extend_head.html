@@ -71,27 +71,6 @@ a:hover:not(.gallery-card-link) {
 #menu a.active {
   font-weight: 600;
 }
-#menu a[aria-current="page"]::after,
-#menu li a.active::after,
-.nav a.active::after,
-.menu a.active::after,
-#menu a.active::after {
-  content: '';
-  position: absolute;
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 18px;
-  height: 3px;
-  border-radius: 2px;
-  background: var(--primary);
-  transition: width 0.3s ease;
-}
-#menu a[aria-current="page"]:hover::after,
-.nav a.active:hover::after {
-  width: 28px;
-}
-
 /* 点击波纹 */
 #menu a:active, .nav a:active, .menu a:active {
   transform: scale(0.95);
