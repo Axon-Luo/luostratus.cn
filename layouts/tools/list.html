@@ -119,9 +119,16 @@
 .quick-theme-label { color: var(--secondary); font-size: 0.78rem; cursor: pointer; }
 .tools-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
   margin-bottom: 32px;
+}
+@media (min-width: 1280px) {
+  .tools-grid {
+    grid-template-columns: repeat(3, 352px);
+    width: 1088px;
+    margin-inline: calc(50% - 544px);
+  }
 }
 .tool-card {
   display: block;
