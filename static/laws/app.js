@@ -22,15 +22,15 @@
     yearFrom: '', yearTo: '',
     agency: '',
     sort: 'lx',
-    favOnly: false,
     page: 1,
     expanded: new Set(),
-    favs: JSON.parse(localStorage.getItem('law-favs') || '{}'),
     recent: JSON.parse(localStorage.getItem('law-recent') || '[]'),
     prefs: JSON.parse(localStorage.getItem('law-prefs') || '{"fs":1,"lh":1}'),
   };
 
   const app = () => document.getElementById('law-app');
+
+  try { localStorage.removeItem('law-favs'); } catch (e) {}
 
   const esc = s => String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -133,7 +133,6 @@
     const yf = parseInt(S.yearFrom, 10) || 0;
     const yt = parseInt(S.yearTo, 10) || 9999;
     return S.index.families.filter(f => {
-      if (S.favOnly && !S.favs[f.id]) return false;
       if (S.cat && f.c !== S.cat) return false;
       if (!versionMatch(f).length) return false;
       if (S.agency && !f.v.some(v => v.o === S.agency)) return false;
@@ -175,7 +174,6 @@
 
   function famCard(f) {
     const pv = primaryVersion(f) || f.v[f.v.length - 1];
-    const starOn = !!S.favs[f.id];
     const expanded = S.expanded.has(f.id);
     const nver = f.v.length;
     let versions = '';
@@ -188,7 +186,6 @@
     return `<div class="law-card" data-fam="${f.id}">
       <div class="law-card-head">
         <div class="law-card-title"><a href="#/law/${pv.b}">${esc(f.t)}</a> <span class="law-cat-badge">${esc(catName(f.c))}</span></div>
-        <button class="law-star${starOn ? ' on' : ''}" data-act="fav" data-fam="${f.id}" title="收藏">★</button>
       </div>
       <div class="law-card-meta">
         ${statusBadge(pv.s)}
@@ -220,8 +217,6 @@
       <option value="tt"${S.sort === 'tt' ? ' selected' : ''}>按标题</option>`;
     const recentChips = S.recent.slice(0, 8).map(r =>
       `<a class="law-chip" href="#/law/${r.b}" title="${esc(r.t)}">${esc(r.t.length > 14 ? r.t.slice(0, 14) + '…' : r.t)}</a>`).join('');
-    const favCount = Object.keys(S.favs).length;
-
     let listPart = '';
     if (q && S.ft && S.ft.length) {
       const titleHits = fams.slice(0, 8);
@@ -265,7 +260,6 @@
       <div class="law-filters">
         <div class="law-filter-row"><span class="law-filter-label">分类</span>${catChips}</div>
         <div class="law-filter-row"><span class="law-filter-label">状态</span>${statusChips}
-          <button class="law-chip${S.favOnly ? ' active' : ''}" data-act="favonly">★ 收藏${favCount ? ' ' + favCount : ''}</button>
           <span class="law-filter-label" style="margin-left:8px">公布年份</span>
           <select class="law-select" id="law-yf"><option value="">从</option>${yearOpts}</select>
           <select class="law-select" id="law-yt"><option value="">至</option>${yearOpts}</select>
@@ -378,7 +372,6 @@
       .concat(S.recent.filter(r => r.f !== fam.id)).slice(0, 12);
     saveLS('law-recent', S.recent);
 
-    const starOn = !!S.favs[fam.id];
     const vchips = fam.v.slice().reverse().map(v =>
       `<a class="law-vchip${v.b === bbbs ? ' active' : ''}" href="#/law/${v.b}" title="${esc(v.o || '')}"><span class="law-vdot s${v.s}"></span>${STATUS[v.s]} ${esc(v.g || '')}</a>`).join('');
 
@@ -395,7 +388,6 @@
         </div>
         ${fam.v.length > 1 ? `<div class="law-vswitch">${vchips}</div>` : ''}
         <div class="law-reader-actions">
-          <button class="law-abtn${starOn ? ' on' : ''}" data-act="fav" data-fam="${fam.id}">★ 收藏</button>
           <button class="law-abtn" data-act="fsdown">A−</button>
           <button class="law-abtn" data-act="fsup">A+</button>
           <button class="law-abtn" data-act="lh">行距</button>
@@ -466,14 +458,6 @@
     tocHandler();
   }
 
-  function toggleFav(famId) {
-    const fam = S.famById.get(famId);
-    if (!fam) return;
-    if (S.favs[famId]) delete S.favs[famId];
-    else S.favs[famId] = { t: fam.t, b: fam.lb, ts: Date.now() };
-    saveLS('law-favs', S.favs);
-  }
-
   function copyText(text) {
     const done = () => {
       const tip = document.createElement('div');
@@ -512,12 +496,7 @@
     const btn = e.target.closest('[data-act]');
     if (!btn) return;
     const act = btn.dataset.act;
-    if (act === 'fav') {
-      e.preventDefault();
-      toggleFav(btn.dataset.fam);
-      btn.classList.toggle('on', !!S.favs[btn.dataset.fam]);
-      if (S.favOnly) renderLibrary();
-    } else if (act === 'vexp') {
+    if (act === 'vexp') {
       e.preventDefault();
       const id = btn.dataset.fam;
       if (S.expanded.has(id)) S.expanded.delete(id); else S.expanded.add(id);
@@ -532,8 +511,6 @@
       if (i >= 0) { if (S.status.length > 1) S.status.splice(i, 1); }
       else S.status.push(v);
       saveLS('law-status', S.status); S.page = 1; renderLibrary();
-    } else if (act === 'favonly') {
-      S.favOnly = !S.favOnly; S.page = 1; renderLibrary();
     } else if (act === 'viewlist') {
       S.view = 'list'; renderLibrary();
     } else if (act === 'viewtl') {
