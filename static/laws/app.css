@@ -138,7 +138,7 @@
 }
 .law-toc-title button:hover { color: var(--primary); border-color: var(--primary); background: color-mix(in srgb, var(--primary) 6%, transparent); }
 .law-toc-links {
-  display: block; overflow: hidden; max-height: 1200px; opacity: 1; transform: translateY(0);
+  display: block; overflow: hidden; max-height: none; opacity: 1; transform: translateY(0);
   transition: max-height .35s ease, opacity .25s ease, transform .3s ease;
 }
 .law-toc.collapsed .law-toc-links { max-height: 0; opacity: 0; transform: translateY(-6px); }

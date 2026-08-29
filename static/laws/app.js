@@ -232,6 +232,7 @@
   }
 
   function renderLibrary(options = {}) {
+    if (tocObserver) tocObserver.disconnect();
     if (options.resultsOnly) {
       const results = document.getElementById('law-results');
       if (results) {
@@ -471,24 +472,42 @@
     el.style.setProperty('--law-lh', LH_STEPS[S.prefs.lh]);
   }
 
-  let tocHandler = null;
+  let tocObserver = null;
   function bindTocHighlight() {
-    if (tocHandler) window.removeEventListener('scroll', tocHandler);
+    if (tocObserver) tocObserver.disconnect();
+    const toc = document.getElementById('law-toc');
     const links = [...document.querySelectorAll('#law-toc a[data-blk]')];
     if (!links.length) return;
-    tocHandler = () => {
-      let active = links[0];
-      for (const a of links) {
-        const el = document.getElementById('blk-' + a.dataset.blk);
-        if (el && el.getBoundingClientRect().top < 130) active = a;
-      }
-      links.forEach(a => a.classList.toggle('active', a === active));
-      if (active && active.getBoundingClientRect().top < 0 || active.getBoundingClientRect().bottom > innerHeight) {
-        active.scrollIntoView({ block: 'nearest' });
+
+    const setActive = link => {
+      if (!link || link.classList.contains('active')) return;
+      links.forEach(item => item.classList.toggle('active', item === link));
+      const top = link.offsetTop;
+      const bottom = top + link.offsetHeight;
+      if (top < toc.scrollTop + 48 || bottom > toc.scrollTop + toc.clientHeight - 48) {
+        toc.scrollTop = Math.max(0, top - toc.clientHeight * 0.35);
       }
     };
-    window.addEventListener('scroll', tocHandler, { passive: true });
-    tocHandler();
+
+    const linkByBlock = new Map(links.map(link => [link.dataset.blk, link]));
+    tocObserver = new IntersectionObserver(entries => {
+      const visible = entries
+        .filter(entry => entry.isIntersecting)
+        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      if (!visible.length) return;
+      const active = linkByBlock.get(String(parseInt(visible[0].target.dataset.blk, 10)));
+      setActive(active);
+    }, { rootMargin: '-80px 0px -60% 0px', threshold: 0 });
+
+    links.forEach(link => {
+      const target = document.getElementById('blk-' + link.dataset.blk);
+      if (target) {
+        target.dataset.blk = link.dataset.blk;
+        tocObserver.observe(target);
+      }
+    });
+
+    setActive(links[0]);
   }
 
   function copyText(text) {
