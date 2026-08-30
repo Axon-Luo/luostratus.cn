@@ -1,5 +1,4 @@
 ---
 title: "番茄钟"
-layout: redirect
-target: "/tools/pomodoro-timer/"
+description: "专注与休息循环计时，声音提醒。"
 ---

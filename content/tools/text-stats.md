@@ -1,5 +1,4 @@
 ---
 title: "文本统计"
-layout: redirect
-target: "/tools/character-counter/"
+description: "实时统计字数、汉字、行数与句子。"
 ---

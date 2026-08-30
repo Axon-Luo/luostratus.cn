@@ -4,7 +4,7 @@
   {{ with .Description }}<p class="page-description">{{ . }}</p>{{ end }}
 </header>
 
-{{ $hidden := slice "click-speed" "reaction-test" "typing-test" "unit-converter" "bmi-calculator" "morse-code" "random-generator" "password-generator" "pomodoro" "stopwatch-timer" "text-stats" "json-formatter" "color-converter" "spin-wheel" "markdown-preview" "metronome" "white-noise" }}
+{{ $hidden := slice }}
 
 {{ $games := slice
   (dict "slug" "snake" "icon" "🐍" "name" "贪吃蛇" "desc" "经典街机游戏，控制蛇吃掉食物不断变长。多种难度和自定义选项。")

@@ -1,6 +1,4 @@
 ---
 title: "单位换算"
-description: "常用单位换算"
-layout: toolkit-single
-tool_id: "unit-converter"
+description: "速度、重量、时间、长度、面积、体积、温度全涵盖，公制英制双向即时转换。"
 ---

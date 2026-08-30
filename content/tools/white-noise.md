@@ -1,5 +1,4 @@
 ---
 title: "白噪音"
-layout: redirect
-target: "/tools/noise-generator/"
+description: "雨声、海浪、风扇等环境音。"
 ---

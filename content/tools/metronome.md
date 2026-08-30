@@ -1,6 +1,4 @@
 ---
 title: "节拍器"
-description: "可调速度节拍"
-layout: toolkit-single
-tool_id: "metronome"
+description: "调节 BPM 与拍数，练习节奏。"
 ---

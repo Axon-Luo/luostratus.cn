@@ -1,5 +1,4 @@
 ---
 title: "Markdown实时预览"
-layout: redirect
-target: "/tools/markdown-editor/"
+description: "边写边预览 Markdown 效果。"
 ---

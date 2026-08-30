@@ -1,5 +1,4 @@
 ---
 title: "随机数生成"
-layout: redirect
-target: "/tools/random-spinner/"
+description: "自定义范围、数量和精度生成随机数，支持不重复模式和一键复制。"
 ---

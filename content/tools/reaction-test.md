@@ -1,5 +1,4 @@
 ---
 title: "反应训练"
-layout: redirect
-target: "/tools/reaction-time-test/"
+description: "等待变绿后立刻点击，测反应速度。"
 ---
