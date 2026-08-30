@@ -165,7 +165,7 @@ function buildTextColorPicker() {
   const switches = document.querySelector('.logo-switches');
   if (!switches || document.getElementById('text-color-toggle')) return;
 
-  const STORE_KEY = 'pref-menu-text';
+  const STORE_KEY = 'pref-text-color';
   const PALETTE_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"></circle><circle cx="17.5" cy="10.5" r=".5"></circle><circle cx="8.5" cy="7.5" r=".5"></circle><circle cx="6.5" cy="12.5" r=".5"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg>';
   const PRESETS = [
     ['星蓝', '#4a90d9'],
@@ -190,7 +190,7 @@ function buildTextColorPicker() {
   const pop = document.createElement('div');
   pop.id = 'text-color-pop';
   pop.className = 'text-color-pop';
-  pop.innerHTML = '<div class="tcp-title">导航文字颜色</div><div class="tcp-swatches"></div><div class="tcp-custom"><input type="color" id="tcp-custom-input" value="#4a90d9" aria-label="自定义颜色"><label for="tcp-custom-input">自定义</label></div><button type="button" class="tcp-reset">恢复默认</button>';
+  pop.innerHTML = '<div class="tcp-title">文字颜色</div><div class="tcp-swatches"></div><div class="tcp-custom"><input type="color" id="tcp-custom-input" value="#4a90d9" aria-label="自定义颜色"><label for="tcp-custom-input">自定义</label></div><button type="button" class="tcp-reset">恢复默认</button>';
 
   wrap.append(toggle, pop);
   switches.appendChild(wrap);
@@ -205,7 +205,11 @@ function buildTextColorPicker() {
   };
   const applyColor = color => {
     if (!color) return;
-    document.documentElement.style.setProperty('--menu-text', color);
+    const bg = getComputedStyle(document.documentElement).getPropertyValue('--theme').trim();
+    const adjusted = window.__textColorAdjust ? window.__textColorAdjust(color, bg) : color;
+    document.documentElement.style.setProperty('--primary', adjusted);
+    document.documentElement.style.setProperty('--secondary', adjusted);
+    document.documentElement.style.setProperty('--content', adjusted);
     try { localStorage.setItem(STORE_KEY, color); } catch (e) {}
     customInput.value = color;
     swatchBox.querySelectorAll('.tcp-swatch').forEach(b => {
@@ -220,15 +224,20 @@ function buildTextColorPicker() {
     b.style.background = color;
     b.dataset.color = color;
     b.title = name;
-    b.setAttribute('aria-label', '导航文字颜色：' + name);
+    b.setAttribute('aria-label', '文字颜色：' + name);
     b.addEventListener('click', () => applyColor(color));
     swatchBox.appendChild(b);
   });
 
   customInput.addEventListener('input', () => applyColor(customInput.value));
   resetButton.addEventListener('click', () => {
-    document.documentElement.style.removeProperty('--menu-text');
-    try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+    document.documentElement.style.removeProperty('--primary');
+    document.documentElement.style.removeProperty('--secondary');
+    document.documentElement.style.removeProperty('--content');
+    try {
+      localStorage.removeItem(STORE_KEY);
+      localStorage.removeItem('pref-menu-text');
+    } catch (e) {}
     customInput.value = '#4a90d9';
     swatchBox.querySelectorAll('.tcp-swatch').forEach(b => b.classList.remove('active'));
   });
@@ -245,6 +254,13 @@ function buildTextColorPicker() {
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closePop();
   });
+
+  new MutationObserver(() => {
+    try {
+      const saved = localStorage.getItem(STORE_KEY) || localStorage.getItem('pref-menu-text');
+      if (saved) applyColor(saved);
+    } catch (e) {}
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
   try {
     const saved = localStorage.getItem(STORE_KEY);
