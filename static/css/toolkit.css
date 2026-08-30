@@ -27,3 +27,20 @@
 .toolkit-mark{background:#f9d67a;color:#222}
 .toolkit-alert{padding:12px;border-left:4px solid #d33;background:rgba(221,51,51,.08)}
 @media(max-width:900px){.toolkit-app{grid-template-columns:1fr}.toolkit-side{position:static}.toolkit-list{max-height:280px}}
+.toolkit-single{width:100%;max-width:100%;margin-inline:auto;padding-block:14px}
+.toolkit-head{margin-bottom:18px}
+.toolkit-head h1{font-size:2.1rem;line-height:1.15;letter-spacing:0;margin-bottom:6px}
+.toolkit-head p{margin:0;color:var(--secondary);font-size:.95rem}
+.toolkit-stage-single{display:flex;flex-direction:column;gap:18px;padding:26px;border-radius:18px;border:1px solid var(--border);background:var(--entry);box-shadow:0 14px 34px rgba(0,0,0,.07)}
+.toolkit-stage-single>.toolkit-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.toolkit-stage-single input,.toolkit-stage-single select,.toolkit-stage-single textarea{padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--code-bg);color:var(--primary);box-shadow:inset 0 1px 2px rgba(0,0,0,.04)}
+.toolkit-stage-single input[type=file]{padding:10px;border-radius:12px}
+.toolkit-stage-single input[type=file]::file-selector-button{margin-right:12px;padding:8px 12px;border:1px solid var(--border);border-radius:9px;background:var(--entry);color:var(--primary);cursor:pointer}
+.toolkit-stage-single button{border-radius:12px;padding:11px 18px;font-weight:650;transition:transform .15s ease,box-shadow .2s ease,background .2s ease,color .2s ease,border-color .2s ease}
+.toolkit-stage-single button:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,0,0,.08)}
+.toolkit-stage-single button:active{transform:translateY(0);box-shadow:none}
+.toolkit-stage-single button.primary{box-shadow:0 8px 22px rgba(0,0,0,.12)}
+.toolkit-stage-single>.toolkit-output{border-radius:14px;padding:18px;background:var(--code-bg)}
+.toolkit-stage-single>canvas,.toolkit-stage-single>video{width:100%;max-width:100%;border-radius:14px;background:#111}
+.toolkit-grid>*{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--code-bg)}
+@media(max-width:640px){.toolkit-head h1{font-size:1.75rem}.toolkit-stage-single{padding:20px}}

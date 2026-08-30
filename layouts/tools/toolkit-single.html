@@ -1,6 +1,12 @@
 {{ define "main" }}
-<div id="toolkit-app" class="toolkit-single" data-tool="{{ .Params.tool_id }}" aria-live="polite">
-  <section id="toolkit-stage" class="toolkit-stage toolkit-stage-single"></section>
+<div class="toolkit-single">
+  <header class="toolkit-head">
+    <h1>{{ .Title }}</h1>
+    {{ with .Description }}<p>{{ . }}</p>{{ end }}
+  </header>
+  <div id="toolkit-app" data-tool="{{ .Params.tool_id }}" aria-live="polite">
+    <section id="toolkit-stage" class="toolkit-stage toolkit-stage-single"></section>
+  </div>
 </div>
 <link rel="stylesheet" href="/css/toolkit.css">
 <script type="module" src="/js/toolkit.js"></script>

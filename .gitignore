@@ -10,6 +10,11 @@ node_modules/
 # Law extraction workspace
 .laws-work/
 
+# 本地备份与临时文件
+/backup/
+/.guizang-ppt-skill/
+/长征十号乙-瑞士风PPT/
+
 # 操作系统文件
 .DS_Store
 Thumbs.db
