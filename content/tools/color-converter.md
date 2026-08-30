@@ -1,4 +1,5 @@
 ---
 title: "颜色转换器"
-description: "HEX/RGB/HSL 互转，随机取色。"
+layout: redirect
+target: "/tools/toolkit/#/tool/color-picker"
 ---

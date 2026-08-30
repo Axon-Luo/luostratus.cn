@@ -4,6 +4,8 @@
   {{ with .Description }}<p class="page-description">{{ . }}</p>{{ end }}
 </header>
 
+{{ $hidden := slice "click-speed" "reaction-test" "typing-test" "unit-converter" "bmi-calculator" "morse-code" "random-generator" "password-generator" "pomodoro" "stopwatch-timer" "text-stats" "json-formatter" "color-converter" "spin-wheel" "markdown-preview" "metronome" "white-noise" }}
+
 {{ $games := slice
   (dict "slug" "snake" "icon" "🐍" "name" "贪吃蛇" "desc" "经典街机游戏，控制蛇吃掉食物不断变长。多种难度和自定义选项。")
   (dict "slug" "tetris" "icon" "🧱" "name" "俄罗斯方块" "desc" "消除下落方块获取高分。SRS旋转系统，速度随等级提升。")
@@ -33,6 +35,7 @@
 }}
 
 {{ $utils := slice
+  (dict "slug" "toolkit" "icon" "🧰" "name" "工具集" "desc" "89 项浏览器端工具：PDF、图片、视频、音频、文本、计算、时间、创意与 AI。")
   (dict "slug" "law-search" "icon" "⚖️" "name" "法律查阅" "desc" "国家法律法规数据库镜像：宪法与法律全量查阅、全文检索、多版本切换、生效时间轴。")
   (dict "slug" "unit-converter" "icon" "📏" "name" "单位换算" "desc" "速度、重量、时间、长度、面积、体积、温度全涵盖，公制英制双向即时转换。")
   (dict "slug" "number-converter" "icon" "🔣" "name" "进制与数字转换" "desc" "二进制/八进制/十进制/十六进制互转，中文大写数字和罗马数字转换。")
@@ -166,7 +169,7 @@
 <section class="tools-section">
   <h2>实用工具</h2>
   <div class="tools-grid">
-    {{ range $utils }}
+    {{ range where $utils "slug" "not in" $hidden }}
     <a href="/tools/{{ .slug }}/" class="tool-card">
       <div class="tool-name">{{ .name }}</div>
       <div class="tool-desc">{{ .desc }}</div>
@@ -178,7 +181,7 @@
 <section class="tools-section">
   <h2>游戏</h2>
   <div class="tools-grid">
-    {{ range $games }}
+    {{ range where $games "slug" "not in" $hidden }}
     <a href="/tools/{{ .slug }}/" class="tool-card">
       <div class="tool-name">{{ .name }}</div>
       <div class="tool-desc">{{ .desc }}</div>

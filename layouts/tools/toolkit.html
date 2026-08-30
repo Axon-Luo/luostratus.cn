@@ -1,0 +1,15 @@
+{{ define "main" }}
+<header class="page-header">
+  <h1>工具集</h1>
+  <p class="page-description">89 项浏览器端工具：文件在本机处理，AI 工具仅在填写个人 API Key 后调用模型服务。</p>
+</header>
+<div id="toolkit-app" class="toolkit-app" aria-live="polite">
+  <aside class="toolkit-side">
+    <input id="toolkit-search" class="toolkit-search" type="search" placeholder="搜索工具..." autocomplete="off">
+    <nav id="toolkit-list" class="toolkit-list" aria-label="工具列表"></nav>
+  </aside>
+  <section id="toolkit-stage" class="toolkit-stage"></section>
+</div>
+<link rel="stylesheet" href="/css/toolkit.css">
+<script type="module" src="/js/toolkit.js"></script>
+{{ end }}
