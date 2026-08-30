@@ -24,7 +24,6 @@
     { "id": "silk-screen", "title": "丝网半调滤镜", "desc": "纯 JS 半调网点" },
     { "id": "compress-video", "title": "压缩视频", "desc": "浏览器录制压缩" },
     { "id": "video-to-gif", "title": "视频转 GIF", "desc": "视频片段转动画" },
-    { "id": "video-screenshot", "title": "视频截图", "desc": "捕捉高清帧" },
     { "id": "video-to-audio", "title": "视频提取音频", "desc": "导出 WAV" },
     { "id": "mp3-to-wav", "title": "MP3 转 WAV", "desc": "无损 PCM 输出" },
     { "id": "wav-to-mp3", "title": "WAV 转 MP3", "desc": "可选码率" },
@@ -52,7 +51,6 @@
     { "id": "timestamp-converter", "title": "时间戳转换", "desc": "双向转换" },
     { "id": "whiteboard", "title": "白板涂鸦", "desc": "手绘标注" },
     { "id": "ask-fate", "title": "命运问答", "desc": "随机答案" },
-    { "id": "keyboard-tester", "title": "键盘测试", "desc": "检查卡键" },
     { "id": "random-spinner", "title": "随机转盘", "desc": "自定义选项" },
     { "id": "reaction-time-test", "title": "反应测试", "desc": "毫秒精度" },
     { "id": "cps-test", "title": "CPS 点击测试", "desc": "每秒点击" },
@@ -64,7 +62,6 @@
     { "id": "gradient-generator", "title": "渐变生成", "desc": "线性/径向 CSS" },
     { "id": "chart-maker", "title": "CSV 图表", "desc": "粘贴数据导出" },
     { "id": "ascii-art", "title": "图片转 ASCII", "desc": "图像字符画" },
-    { "id": "ascii-banner", "title": "ASCII Banner", "desc": "文字大字报" },
-    { "id": "midi-keyboard", "title": "MIDI 键盘", "desc": "演奏录制导出" }
+    { "id": "ascii-banner", "title": "ASCII Banner", "desc": "文字大字报" }
   ]
 }
