@@ -174,12 +174,6 @@
       <div class="tool-desc">{{ .desc }}</div>
     </a>
     {{ end }}
-  </div>
-</section>
-
-<section class="tools-section">
-  <h2>浏览器工具</h2>
-  <div class="tools-grid">
     {{ range .Site.Data.toolkit.items }}
     <a href="/tools/toolkit/#/tool/{{ .id }}" class="tool-card">
       <div class="tool-name">{{ .title }}</div>
