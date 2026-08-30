@@ -1,5 +1,5 @@
 ---
 title: "转盘抽奖"
 layout: redirect
-target: "/tools/toolkit/#/tool/random-spinner"
+target: "/tools/random-spinner/"
 ---

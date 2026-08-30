@@ -1,0 +1,7 @@
+{{ define "main" }}
+<div id="toolkit-app" class="toolkit-single" data-tool="{{ .Params.tool_id }}" aria-live="polite">
+  <section id="toolkit-stage" class="toolkit-stage toolkit-stage-single"></section>
+</div>
+<link rel="stylesheet" href="/css/toolkit.css">
+<script type="module" src="/js/toolkit.js"></script>
+{{ end }}

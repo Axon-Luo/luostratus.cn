@@ -1,5 +1,6 @@
 ---
 title: "节拍器"
-layout: redirect
-target: "/tools/toolkit/#/tool/metronome"
+description: "可调速度节拍"
+layout: toolkit-single
+tool_id: "metronome"
 ---

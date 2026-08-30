@@ -1,5 +1,6 @@
 ---
 title: "密码生成器"
-layout: redirect
-target: "/tools/toolkit/#/tool/password-generator"
+description: "安全随机"
+layout: toolkit-single
+tool_id: "password-generator"
 ---

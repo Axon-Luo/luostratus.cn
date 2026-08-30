@@ -1,4 +1,6 @@
 .toolkit-app{display:grid;grid-template-columns:280px minmax(0,1fr);gap:20px;align-items:start}
+.toolkit-single{width:100%;max-width:1000px;margin-inline:auto}
+.toolkit-stage-single{border:0;background:transparent;padding:0;min-height:auto}
 .toolkit-side{position:sticky;top:96px}
 .toolkit-search,.toolkit-stage input,.toolkit-stage select,.toolkit-stage textarea{width:100%;box-sizing:border-box;margin-bottom:10px;padding:11px 12px;border:1px solid var(--border);border-radius:8px;background:var(--entry);color:var(--primary)}
 .toolkit-search:focus,.toolkit-stage input:focus,.toolkit-stage select:focus,.toolkit-stage textarea:focus{outline:2px solid var(--primary);outline-offset:2px}
