@@ -4,8 +4,6 @@
   {{ with .Description }}<p class="page-description">{{ . }}</p>{{ end }}
 </header>
 
-{{ $hidden := slice }}
-
 {{ $games := slice
   (dict "slug" "snake" "icon" "🐍" "name" "贪吃蛇" "desc" "经典街机游戏，控制蛇吃掉食物不断变长。多种难度和自定义选项。")
   (dict "slug" "tetris" "icon" "🧱" "name" "俄罗斯方块" "desc" "消除下落方块获取高分。SRS旋转系统，速度随等级提升。")
@@ -168,15 +166,9 @@
 <section class="tools-section">
   <h2>实用工具</h2>
   <div class="tools-grid">
-    {{ range where $utils "slug" "not in" $hidden }}
+    {{ range $utils }}
     <a href="/tools/{{ .slug }}/" class="tool-card">
       <div class="tool-name">{{ .name }}</div>
-      <div class="tool-desc">{{ .desc }}</div>
-    </a>
-    {{ end }}
-    {{ range .Site.Data.toolkit.items }}
-    <a href="/tools/{{ .id }}/" class="tool-card">
-      <div class="tool-name">{{ .title }}</div>
       <div class="tool-desc">{{ .desc }}</div>
     </a>
     {{ end }}
@@ -186,7 +178,7 @@
 <section class="tools-section">
   <h2>游戏</h2>
   <div class="tools-grid">
-    {{ range where $games "slug" "not in" $hidden }}
+    {{ range $games }}
     <a href="/tools/{{ .slug }}/" class="tool-card">
       <div class="tool-name">{{ .name }}</div>
       <div class="tool-desc">{{ .desc }}</div>
