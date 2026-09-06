@@ -206,10 +206,14 @@ function buildTextColorPicker() {
   const applyColor = color => {
     if (!color) return;
     const bg = getComputedStyle(document.documentElement).getPropertyValue('--theme').trim();
-    const adjusted = window.__textColorAdjust ? window.__textColorAdjust(color, bg) : color;
-    document.documentElement.style.setProperty('--primary', adjusted);
-    document.documentElement.style.setProperty('--secondary', adjusted);
-    document.documentElement.style.setProperty('--content', adjusted);
+    const palette = window.__textColorPalette
+      ? window.__textColorPalette(color, bg)
+      : { primary: color, secondary: color, content: color };
+    if (palette) {
+      document.documentElement.style.setProperty('--primary', palette.primary);
+      document.documentElement.style.setProperty('--secondary', palette.secondary);
+      document.documentElement.style.setProperty('--content', palette.content);
+    }
     try { localStorage.setItem(STORE_KEY, color); } catch (e) {}
     customInput.value = color;
     swatchBox.querySelectorAll('.tcp-swatch').forEach(b => {
