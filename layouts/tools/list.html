@@ -5,6 +5,7 @@
 </header>
 
 {{ $games := slice
+  (dict "slug" "minecraft" "icon" "🟩" "name" "网页版 Minecraft" "desc" "浏览器单机体素沙盒，支持生存/创造模式、挖掘建造、合成装备与自动存档。")
   (dict "slug" "snake" "icon" "🐍" "name" "贪吃蛇" "desc" "经典街机游戏，控制蛇吃掉食物不断变长。多种难度和自定义选项。")
   (dict "slug" "tetris" "icon" "🧱" "name" "俄罗斯方块" "desc" "消除下落方块获取高分。SRS旋转系统，速度随等级提升。")
   (dict "slug" "breakout" "icon" "🎯" "name" "打砖块" "desc" "控制挡板反弹小球击碎砖块。生命系统 + 连击加分。")
@@ -30,7 +31,6 @@
   (dict "slug" "typing-test" "icon" "⌨️" "name" "打字速度测试" "desc" "对照原文打字，统计速度和正确率。")
   (dict "slug" "tank-battle" "icon" "🪖" "name" "坦克大战" "desc" "驾驶坦克消灭敌人，守住防线。")
   (dict "slug" "space-shooter" "icon" "🚀" "name" "太空射击" "desc" "驾驶飞船迎击敌机，争取高分。")
-  (dict "slug" "minecraft" "icon" "🟩" "name" "网页版 Minecraft" "desc" "浏览器单机体素沙盒，支持生存/创造模式、挖掘建造、合成装备与自动存档。")
 }}
 
 {{ $utils := slice
