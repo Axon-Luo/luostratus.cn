@@ -345,7 +345,8 @@ body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea
   #side-nav a { min-width: 48px; height: 32px; padding: 0 10px; font-size: 0.75rem; }
 }
 
-/* === 导航文字颜色选择器 === */
+/* === 外观设置面板 === */
+#theme-toggle { display: none !important; }
 .text-color-wrap {
   position: relative;
   display: inline-flex;
@@ -378,7 +379,11 @@ body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea
   left: 50%;
   transform: translateX(-50%) translateY(-6px);
   z-index: 120;
-  min-width: 188px;
+  width: min(290px, calc(100vw - 32px));
+  min-width: 0;
+  max-height: min(76vh, 620px);
+  overflow: auto;
+  overscroll-behavior: contain;
   padding: 14px;
   background: var(--entry);
   border: 1px solid var(--border);
@@ -394,20 +399,97 @@ body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea
   transform: translateX(-50%) translateY(0);
 }
 .tcp-title {
-  font-size: 0.8rem;
+  font-size: .94rem;
+  font-weight: 700;
+  color: var(--secondary);
+  margin-bottom: 12px;
+}
+.tcp-preview {
+  height: 72px;
+  margin-bottom: 12px;
+  padding: 9px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--theme);
+}
+.tcp-preview-card {
+  height: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--entry);
+  overflow: hidden;
+}
+.tcp-preview-title {
+  display: block;
+  width: 72px;
+  height: 7px;
+  border-radius: 4px;
+  background: var(--primary);
+}
+.tcp-preview-line {
+  display: block;
+  width: 112px;
+  height: 5px;
+  margin-top: 7px;
+  border-radius: 3px;
+  background: var(--secondary);
+}
+.tcp-group-label {
+  margin: 0 0 6px;
+  font-size: .72rem;
   font-weight: 600;
   color: var(--secondary);
-  margin-bottom: 10px;
+  letter-spacing: .02em;
+}
+.tcp-mode,
+.tcp-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  margin-bottom: 12px;
+  padding: 0 0 2px;
+}
+.tcp-mode button,
+.tcp-tab {
+  display: grid;
+  place-items: center;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--secondary);
+  font-size: .78rem;
+  cursor: pointer;
+  transition: color .2s ease, background .2s ease;
+}
+.tcp-mode button.active,
+.tcp-tab.active {
+  background: transparent;
+  color: var(--primary) !important;
+  border-bottom-color: var(--primary);
+  font-weight: 650;
+  box-shadow: none;
+}
+.tcp-panel {
+  display: none;
+}
+.tcp-panel.active {
+  display: block;
 }
 .tcp-swatches {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 8px;
   margin-bottom: 12px;
 }
 .tcp-swatch {
-  width: 26px;
-  height: 26px;
+  width: 100%;
+  aspect-ratio: 1;
   padding: 0;
+  border: 1px solid rgba(127,127,127,.35);
   border-radius: 50%;
   border: 2px solid transparent;
   outline: 2px solid transparent;
@@ -419,13 +501,17 @@ body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea
   transform: scale(1.12);
 }
 .tcp-swatch.active {
+  border-color: var(--primary);
   outline-color: var(--secondary);
+}
+.tcp-swatch.is-default {
+  background: linear-gradient(135deg, #ffffff 48%, #1d1e20 52%) !important;
 }
 .tcp-custom {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 14px;
 }
 .tcp-custom input[type="color"] {
   width: 34px;
@@ -437,18 +523,18 @@ body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea
   cursor: pointer;
 }
 .tcp-custom label {
-  font-size: 0.8rem;
+  font-size: .78rem;
   color: var(--secondary);
   cursor: pointer;
 }
 .tcp-reset {
   width: 100%;
-  padding: 7px 0;
-  font-size: 0.8rem;
+  padding: 8px 0;
+  font-size: .78rem;
   border: 1px solid var(--border);
   border-radius: 9px;
-  background: var(--code-bg);
-  color: var(--secondary);
+  background: color-mix(in srgb, var(--primary) 6%, var(--theme));
+  color: var(--primary);
   cursor: pointer;
   transition: color 0.2s ease, border-color 0.2s ease;
 }
@@ -458,12 +544,15 @@ body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea
 }
 @media (max-width: 768px) {
   .text-color-pop {
-    left: auto;
-    right: 0;
-    transform: translateY(-6px);
+    position: fixed;
+    left: 12px !important;
+    right: 12px !important;
+    top: 68px;
+    width: auto;
+    transform: none;
   }
   .text-color-pop.open {
-    transform: translateY(0);
+    transform: none;
   }
 }
 </style>
@@ -542,17 +631,87 @@ body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea
     var secondary = parseColor(window.__textColorAdjust(toHex(mixColors(primary, bgRgb, 0.28)), bg, 3.2));
     return { primary: toHex(primary), content: toHex(content), secondary: toHex(secondary) };
   };
-  try {
-    var raw = localStorage.getItem('pref-text-color') || localStorage.getItem('pref-menu-text');
-    if (raw) {
-      var bg = getComputedStyle(document.documentElement).getPropertyValue('--theme');
-      var palette = window.__textColorPalette(raw, bg);
-      if (palette) {
-        document.documentElement.style.setProperty('--primary', palette.primary);
-        document.documentElement.style.setProperty('--secondary', palette.secondary);
-        document.documentElement.style.setProperty('--content', palette.content);
-      }
+  window.__normalizeColor = function (color) {
+    var rgb = parseColor(color);
+    return rgb ? toHex(rgb) : '';
+  };
+  window.__surfacePalette = function (background, card) {
+    var bgRgb = parseColor(background) || [255, 255, 255];
+    var cardRgb = parseColor(card) || bgRgb;
+    var bgLum = luminance(bgRgb);
+    var balanced = cardRgb;
+    for (var i = 0; i <= 20; i++) {
+      balanced = mixColors(cardRgb, bgRgb, i / 20);
+      if (Math.abs(luminance(balanced) - bgLum) <= 0.18) break;
     }
+    var dark = bgLum < 0.25;
+    var edge = dark ? [255, 255, 255] : [16, 18, 22];
+    return {
+      theme: toHex(bgRgb),
+      entry: toHex(balanced),
+      codeBg: toHex(mixColors(balanced, bgRgb, 0.28)),
+      border: toHex(mixColors(balanced, edge, dark ? 0.17 : 0.13))
+    };
+  };
+  window.__appearanceDefault = function (name) {
+    var root = document.documentElement;
+    var previous = root.style.getPropertyValue(name);
+    root.style.removeProperty(name);
+    var value = getComputedStyle(root).getPropertyValue(name).trim();
+    if (previous) root.style.setProperty(name, previous);
+    return value;
+  };
+  window.__readAppearancePrefs = function () {
+    var prefs = {};
+    try {
+      var raw = JSON.parse(localStorage.getItem('pref-appearance-v2') || 'null');
+      if (raw && typeof raw === 'object') {
+        ['text', 'background', 'card'].forEach(function (key) {
+          if (typeof raw[key] === 'string' && raw[key]) prefs[key] = raw[key];
+        });
+      }
+    } catch (e) {}
+    if (!prefs.text) {
+      var legacy = localStorage.getItem('pref-text-color') || localStorage.getItem('pref-menu-text');
+      if (legacy) prefs.text = legacy;
+    }
+    return prefs;
+  };
+  window.__applyAppearance = function (prefs) {
+    prefs = prefs || {};
+    var root = document.documentElement;
+    var theme = prefs.background || window.__appearanceDefault('--theme');
+    var entry = prefs.card || window.__appearanceDefault('--entry');
+    var surfaces = window.__surfacePalette(theme, entry);
+    if (prefs.background || prefs.card) {
+      root.style.setProperty('--theme', surfaces.theme);
+      root.style.setProperty('--entry', surfaces.entry);
+      root.style.setProperty('--code-bg', surfaces.codeBg);
+      root.style.setProperty('--border', surfaces.border);
+      root.style.setProperty('--tertiary', surfaces.border);
+      root.style.colorScheme = luminance(parseColor(surfaces.theme)) < 0.25 ? 'dark' : 'light';
+    } else {
+      ['--theme', '--entry', '--code-bg', '--border', '--tertiary'].forEach(function (name) {
+        root.style.removeProperty(name);
+      });
+      root.style.removeProperty('color-scheme');
+    }
+    var textColor = prefs.text || (prefs.background ? (luminance(parseColor(surfaces.theme)) < 0.25 ? '#dadadb' : '#1f2328') : '');
+    if (textColor) {
+      var palette = window.__textColorPalette(textColor, surfaces.theme);
+      if (palette) {
+        root.style.setProperty('--primary', palette.primary);
+        root.style.setProperty('--secondary', palette.secondary);
+        root.style.setProperty('--content', palette.content);
+      }
+    } else {
+      ['--primary', '--secondary', '--content'].forEach(function (name) {
+        root.style.removeProperty(name);
+      });
+    }
+  };
+  try {
+    window.__applyAppearance(window.__readAppearancePrefs());
   } catch (e) {}
 })();
 </script>

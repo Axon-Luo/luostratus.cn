@@ -165,14 +165,19 @@ function buildTextColorPicker() {
   const switches = document.querySelector('.logo-switches');
   if (!switches || document.getElementById('text-color-toggle')) return;
 
-  const STORE_KEY = 'pref-text-color';
+  const STORE_KEY = 'pref-appearance-v2';
   const PALETTE_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"></circle><circle cx="17.5" cy="10.5" r=".5"></circle><circle cx="8.5" cy="7.5" r=".5"></circle><circle cx="6.5" cy="12.5" r=".5"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg>';
-  const PRESETS = [
-    ['星蓝', '#4a90d9'],
-    ['青碧', '#2aa198'],
-    ['暖金', '#d9a441'],
-    ['玫粉', '#d9608f'],
-    ['紫藤', '#8e7cc3']
+  const TEXT_PRESETS = [
+    ['星蓝', '#4a90d9'], ['青碧', '#2aa198'], ['暖金', '#d9a441'],
+    ['玫粉', '#d9608f'], ['紫藤', '#8e7cc3'], ['墨黑', '#1f2328']
+  ];
+  const BACKGROUND_PRESETS = [
+    ['象牙白', '#f7f4ee'], ['暖砂', '#efe3d2'], ['雾蓝', '#e7edf6'],
+    ['青竹', '#e8f2ec'], ['墨岩', '#23262b'], ['碳黑', '#151719']
+  ];
+  const CARD_PRESETS = [
+    ['纯白', '#ffffff'], ['米白', '#fdf9f2'], ['雾蓝', '#f4f7fb'],
+    ['暖灰', '#eeeae3'], ['墨灰', '#30343b'], ['碳黑', '#1d2024']
   ];
 
   const wrap = document.createElement('span');
@@ -182,68 +187,141 @@ function buildTextColorPicker() {
   toggle.id = 'text-color-toggle';
   toggle.className = 'text-color-toggle';
   toggle.type = 'button';
-  toggle.title = '文字颜色';
-  toggle.setAttribute('aria-label', '文字颜色');
+  toggle.title = '外观设置';
+  toggle.setAttribute('aria-label', '外观设置');
   toggle.setAttribute('aria-expanded', 'false');
   toggle.innerHTML = PALETTE_ICON;
 
   const pop = document.createElement('div');
   pop.id = 'text-color-pop';
   pop.className = 'text-color-pop';
-  pop.innerHTML = '<div class="tcp-title">文字颜色</div><div class="tcp-swatches"></div><div class="tcp-custom"><input type="color" id="tcp-custom-input" value="#4a90d9" aria-label="自定义颜色"><label for="tcp-custom-input">自定义</label></div><button type="button" class="tcp-reset">恢复默认</button>';
+  pop.innerHTML = [
+    '<div class="tcp-title">外观设置</div>',
+    '<div class="tcp-preview"><div class="tcp-preview-card"><span class="tcp-preview-title"></span><span class="tcp-preview-line"></span></div></div>',
+    '<div class="tcp-mode">',
+    '<button type="button" data-mode="auto">自动</button>',
+    '<button type="button" data-mode="light">浅色</button>',
+    '<button type="button" data-mode="dark">深色</button>',
+    '</div>',
+    '<div class="tcp-tabs">',
+    '<button type="button" class="tcp-tab active" data-panel="text">文字</button>',
+    '<button type="button" class="tcp-tab" data-panel="background">背景</button>',
+    '<button type="button" class="tcp-tab" data-panel="card">卡片</button>',
+    '</div>',
+    '<section class="tcp-panel active" data-panel="text"><p class="tcp-group-label">文字颜色</p><div class="tcp-swatches" data-kind="text"></div><div class="tcp-custom"><input type="color" data-kind-input="text" value="#4a90d9" aria-label="自定义文字颜色"><label>自定义文字</label></div></section>',
+    '<section class="tcp-panel" data-panel="background"><p class="tcp-group-label">网页背景</p><div class="tcp-swatches" data-kind="background"></div><div class="tcp-custom"><input type="color" data-kind-input="background" value="#f7f4ee" aria-label="自定义网页背景"><label>自定义背景</label></div></section>',
+    '<section class="tcp-panel" data-panel="card"><p class="tcp-group-label">卡片颜色</p><div class="tcp-swatches" data-kind="card"></div><div class="tcp-custom"><input type="color" data-kind-input="card" value="#ffffff" aria-label="自定义卡片颜色"><label>自定义卡片</label></div></section>',
+    '<button type="button" class="tcp-reset">全部恢复默认</button>'
+  ].join('');
 
   wrap.append(toggle, pop);
   switches.appendChild(wrap);
 
-  const swatchBox = pop.querySelector('.tcp-swatches');
-  const customInput = pop.querySelector('#tcp-custom-input');
+  const swatchBoxes = [...pop.querySelectorAll('.tcp-swatches')];
+  const customInputs = [...pop.querySelectorAll('[data-kind-input]')];
+  const modeButtons = [...pop.querySelectorAll('[data-mode]')];
+  const tabButtons = [...pop.querySelectorAll('.tcp-tab')];
+  const panels = [...pop.querySelectorAll('.tcp-panel')];
   const resetButton = pop.querySelector('.tcp-reset');
+  const DEFAULT_COLORS = { text: '#4a90d9', background: '#f7f4ee', card: '#ffffff' };
+  const PRESET_GROUPS = { text: TEXT_PRESETS, background: BACKGROUND_PRESETS, card: CARD_PRESETS };
 
   const closePop = () => {
     pop.classList.remove('open');
     toggle.setAttribute('aria-expanded', 'false');
   };
-  const applyColor = color => {
-    if (!color) return;
-    const bg = getComputedStyle(document.documentElement).getPropertyValue('--theme').trim();
-    const palette = window.__textColorPalette
-      ? window.__textColorPalette(color, bg)
-      : { primary: color, secondary: color, content: color };
-    if (palette) {
-      document.documentElement.style.setProperty('--primary', palette.primary);
-      document.documentElement.style.setProperty('--secondary', palette.secondary);
-      document.documentElement.style.setProperty('--content', palette.content);
-    }
-    try { localStorage.setItem(STORE_KEY, color); } catch (e) {}
-    customInput.value = color;
-    swatchBox.querySelectorAll('.tcp-swatch').forEach(b => {
-      b.classList.toggle('active', b.dataset.color.toLowerCase() === color.toLowerCase());
+  const readPrefs = () => window.__readAppearancePrefs ? window.__readAppearancePrefs() : {};
+  const savePrefs = prefs => {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(prefs)); } catch (e) {}
+  };
+  const syncMode = () => {
+    let mode;
+    try { mode = localStorage.getItem('pref-theme'); } catch (e) {}
+    mode = mode === 'light' || mode === 'dark' ? mode : 'auto';
+    modeButtons.forEach(button => button.classList.toggle('active', button.dataset.mode === mode));
+  };
+  const sync = prefs => {
+    syncMode();
+    swatchBoxes.forEach(box => {
+      const kind = box.dataset.kind;
+      const value = (prefs[kind] || '').toLowerCase();
+      box.querySelectorAll('.tcp-swatch').forEach(button => {
+        const active = value
+          ? button.dataset.color.toLowerCase() === value
+          : button.classList.contains('default-color');
+        button.classList.toggle('active', active);
+      });
+    });
+    customInputs.forEach(input => {
+      input.value = prefs[input.dataset.kindInput] || DEFAULT_COLORS[input.dataset.kindInput];
     });
   };
+  const applyPrefs = (prefs, persist = true) => {
+    const clean = {};
+    ['text', 'background', 'card'].forEach(kind => {
+      const color = window.__normalizeColor ? window.__normalizeColor(prefs[kind]) : prefs[kind];
+      if (color) clean[kind] = color;
+    });
+    if (window.__applyAppearance) window.__applyAppearance(clean);
+    if (persist) savePrefs(clean);
+    sync(clean);
+  };
 
-  PRESETS.forEach(([name, color]) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'tcp-swatch';
-    b.style.background = color;
-    b.dataset.color = color;
-    b.title = name;
-    b.setAttribute('aria-label', '文字颜色：' + name);
-    b.addEventListener('click', () => applyColor(color));
-    swatchBox.appendChild(b);
+  Object.entries(PRESET_GROUPS).forEach(([kind, presets]) => {
+    const box = pop.querySelector(`.tcp-swatches[data-kind="${kind}"]`);
+    const defaultButton = document.createElement('button');
+    defaultButton.type = 'button';
+    defaultButton.className = 'tcp-swatch is-default default-color';
+    defaultButton.dataset.color = '';
+    defaultButton.title = '默认';
+    defaultButton.setAttribute('aria-label', kind + '使用默认颜色');
+    defaultButton.addEventListener('click', () => {
+      const prefs = readPrefs();
+      delete prefs[kind];
+      applyPrefs(prefs);
+    });
+    box.appendChild(defaultButton);
+
+    presets.forEach(([name, color]) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'tcp-swatch';
+      button.style.background = color;
+      button.dataset.color = color;
+      button.title = name;
+      button.setAttribute('aria-label', kind + '颜色：' + name);
+      button.addEventListener('click', () => applyPrefs({ ...readPrefs(), [kind]: color }));
+      box.appendChild(button);
+    });
   });
 
-  customInput.addEventListener('input', () => applyColor(customInput.value));
+  customInputs.forEach(input => {
+    input.addEventListener('input', () => applyPrefs({ ...readPrefs(), [input.dataset.kindInput]: input.value }));
+  });
+
+  modeButtons.forEach(button => button.addEventListener('click', () => {
+    const mode = button.dataset.mode;
+    try {
+      if (mode === 'auto') localStorage.removeItem('pref-theme');
+      else localStorage.setItem('pref-theme', mode);
+    } catch (e) {}
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.dataset.theme = mode === 'auto' ? (systemDark ? 'dark' : 'light') : mode;
+    applyPrefs(readPrefs(), false);
+  }));
+
+  tabButtons.forEach(button => button.addEventListener('click', () => {
+    tabButtons.forEach(item => item.classList.toggle('active', item === button));
+    panels.forEach(panel => panel.classList.toggle('active', panel.dataset.panel === button.dataset.panel));
+  }));
+
   resetButton.addEventListener('click', () => {
-    document.documentElement.style.removeProperty('--primary');
-    document.documentElement.style.removeProperty('--secondary');
-    document.documentElement.style.removeProperty('--content');
     try {
       localStorage.removeItem(STORE_KEY);
+      localStorage.removeItem('pref-text-color');
       localStorage.removeItem('pref-menu-text');
     } catch (e) {}
-    customInput.value = '#4a90d9';
-    swatchBox.querySelectorAll('.tcp-swatch').forEach(b => b.classList.remove('active'));
+    applyPrefs({});
   });
 
   toggle.addEventListener('click', e => {
@@ -261,19 +339,17 @@ function buildTextColorPicker() {
 
   new MutationObserver(() => {
     try {
-      const saved = localStorage.getItem(STORE_KEY) || localStorage.getItem('pref-menu-text');
-      if (saved) applyColor(saved);
+      applyPrefs(readPrefs(), false);
     } catch (e) {}
   }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
-  try {
-    const saved = localStorage.getItem(STORE_KEY);
-    if (saved) {
-      customInput.value = saved;
-      swatchBox.querySelectorAll('.tcp-swatch').forEach(b => {
-        b.classList.toggle('active', b.dataset.color.toLowerCase() === saved.toLowerCase());
-      });
-    }
-  } catch (e) {}
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+    let mode;
+    try { mode = localStorage.getItem('pref-theme'); } catch (e) {}
+    if (mode === 'light' || mode === 'dark') return;
+    document.documentElement.dataset.theme = event.matches ? 'dark' : 'light';
+    applyPrefs(readPrefs(), false);
+  });
+  sync(readPrefs());
 }
 </script>
