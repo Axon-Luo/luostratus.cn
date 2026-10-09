@@ -104,10 +104,12 @@
   padding: 0;
   display: inline-grid;
   place-items: center;
-  border: 1px solid var(--border);
-  transition: transform 0.15s ease, border-color 0.2s ease, color 0.2s ease;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  transition: transform 0.15s ease, color 0.2s ease;
 }
-.quick-theme-button:hover { border-color: var(--primary); }
+.quick-theme-button:hover { color: var(--primary); }
 .quick-theme-button:active { transform: scale(0.95); }
 .quick-theme-button svg { width: 16px; height: 16px; display: block; }
 .quick-theme-button .quick-sun { display: none; }
