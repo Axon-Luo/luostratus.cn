@@ -1,80 +1,197 @@
 <style>
-.mt-wrap { max-width: 480px; margin: 0 auto; text-align: center; }
-.mt-display { font-size: 3.4rem; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; margin: 10px 0; }
-.mt-beat { font-size: 1rem; color: var(--secondary); min-height: 24px; }
-.mt-bar { display: flex; justify-content: center; gap: 18px; margin: 12px 0; align-items: center; color: var(--secondary); font-size: 0.9rem; flex-wrap: wrap; }
-.mt-bar input { width: 70px; padding: 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); }
-.mt-bar input[type="range"] { width: 200px; }
-.mt-btn { padding: 12px 34px; border-radius: 10px; border: none; background: var(--primary); color: var(--theme); font-size: 1.05rem; font-weight: 700; cursor: pointer; }
-.mt-pend { width: 60px; height: 60px; border-radius: 50%; border: 4px solid var(--border); margin: 0 auto; transition: background 0.08s, transform 0.08s; }
-.mt-pend.active { background: var(--primary); transform: scale(1.08); }
+#mtWrap { max-width: 480px; margin: 0 auto; text-align: center; }
+.mt-panel {
+  background: var(--entry); border-radius: 16px; padding: 22px 20px 24px;
+  border: 1px solid color-mix(in srgb, var(--primary) 14%, transparent);
+}
+.mt-display { font-size: 3.2rem; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.mt-unit { font-size: 0.8rem; font-weight: 400; color: var(--secondary); letter-spacing: 0.12em; margin-left: 6px; }
+.mt-dots { display: flex; justify-content: center; gap: 8px; margin: 14px 0 16px; min-height: 14px; flex-wrap: wrap; }
+.mt-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent);
+  background: transparent; transition: background 0.1s, transform 0.1s, border-color 0.1s;
+}
+.mt-dot.is-on { background: var(--primary); border-color: var(--primary); transform: scale(1.25); }
+.mt-dot.is-accent { border-color: color-mix(in srgb, var(--primary) 60%, transparent); }
+.mt-pend {
+  width: 62px; height: 62px; border-radius: 50%; margin: 0 auto 10px;
+  border: 3px solid color-mix(in srgb, var(--primary) 28%, transparent);
+  transition: background 0.08s, transform 0.08s, border-color 0.08s;
+}
+.mt-pend.active { background: var(--primary); border-color: var(--primary); transform: scale(1.08); }
+.mt-beat { font-size: 0.92rem; color: var(--secondary); min-height: 26px; margin-bottom: 14px; font-variant-numeric: tabular-nums; }
+.mt-controls { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; text-align: left; }
+.mt-field { display: grid; grid-template-columns: 72px minmax(0, 1fr) 62px; gap: 10px; align-items: center; font-size: 0.86rem; color: var(--secondary); }
+.mt-field.is-wide { grid-template-columns: 96px 68px; justify-content: start; }
+.mt-field span { white-space: nowrap; }
+.mt-field input[type="number"] {
+  width: 100%; padding: 6px 8px; border-radius: 8px; text-align: center; font-size: 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
+  background: var(--code-bg); color: var(--primary);
+}
+.mt-field input[type="number"]:focus { outline: none; border-color: var(--primary); }
+.mt-field input[type="range"] { width: 100%; accent-color: var(--primary); margin: 0; }
+.mt-btn {
+  display: block; width: 100%; padding: 12px 20px; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--primary); background: var(--primary); color: var(--theme);
+  font-size: 1rem; font-weight: 700; transition: opacity 0.15s;
+}
+.mt-btn:hover { opacity: 0.88; }
+.mt-btn.is-running { background: var(--entry); color: var(--primary); border-color: color-mix(in srgb, var(--primary) 30%, transparent); }
+.mt-hint { margin-top: 10px; font-size: 0.76rem; color: var(--secondary); }
+@media (max-width: 480px) {
+  .mt-display { font-size: 2.6rem; }
+  .mt-field { grid-template-columns: 64px minmax(0, 1fr) 56px; gap: 8px; }
+}
 </style>
 
-<div class="mt-wrap">
-  <div class="mt-display" id="mtBpm">120</div>
-  <div class="mt-bar">
-    <label>BPM <input type="range" id="mtRange" min="40" max="220" value="120"></label>
-    <input type="number" id="mtNum" min="40" max="220" value="120">
-    <label>拍数 <input type="number" id="mtBeats" min="1" max="12" value="4"></label>
+<div id="mtWrap" class="mt-wrap">
+  <div class="mt-panel">
+    <div class="mt-display"><span id="mtBpm">120</span><span class="mt-unit">BPM</span></div>
+    <div class="mt-dots" id="mtDots"></div>
+    <div class="mt-pend" id="mtPend"></div>
+    <div class="mt-beat" id="mtBeat">未开始</div>
+    <div class="mt-controls">
+      <div class="mt-field">
+        <span>速度</span>
+        <input type="range" id="mtRange" min="40" max="220" value="120" aria-label="BPM 滑块">
+        <input type="number" id="mtNum" min="40" max="220" value="120" aria-label="BPM 数值">
+      </div>
+      <div class="mt-field is-wide">
+        <span>每小节拍数</span>
+        <input type="number" id="mtBeats" min="1" max="12" value="4" aria-label="每小节拍数">
+      </div>
+    </div>
+    <button class="mt-btn" id="mtToggle" type="button">▶ 开始</button>
+    <div class="mt-hint">空格键也可以开始 / 停止</div>
   </div>
-  <div class="mt-pend" id="mtPend"></div>
-  <div class="mt-beat" id="mtBeat">—</div>
-  <button class="mt-btn" id="mtToggle">▶ 开始</button>
 </div>
 
 <script>
 (()=>{
+  const root=document.getElementById('mtWrap');
+  if(!root) return;
   const bpmEl=document.getElementById('mtBpm');
   const range=document.getElementById('mtRange');
   const num=document.getElementById('mtNum');
+  const beatsEl=document.getElementById('mtBeats');
   const pend=document.getElementById('mtPend');
   const beatEl=document.getElementById('mtBeat');
+  const dotsEl=document.getElementById('mtDots');
+  const btn=document.getElementById('mtToggle');
   let running=false, timer=null, current=0, audioCtx=null;
 
-  function bpm(){ return +num.value||120; }
+  function clamp(v,lo,hi){ return Math.max(lo,Math.min(hi,v)); }
+  function bpm(){
+    let v=parseInt(num.value,10);
+    if(!isFinite(v)) v=120;
+    return clamp(v,40,220);
+  }
+  function beats(){
+    let v=parseInt(beatsEl.value,10);
+    if(!isFinite(v)) v=4;
+    return clamp(v,1,12);
+  }
+
+  function buildDots(){
+    const n=beats();
+    dotsEl.innerHTML='';
+    for(let i=0;i<n;i++){
+      const d=document.createElement('span');
+      d.className='mt-dot'+(i===0?' is-accent':'');
+      dotsEl.appendChild(d);
+    }
+  }
 
   function click(accent){
-    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
-    o.frequency.value=accent?1200:800;
-    o.type='square'; g.gain.value=accent?0.35:0.2;
-    o.connect(g); g.connect(audioCtx.destination);
-    o.start(); o.stop(audioCtx.currentTime+0.06);
+    try{
+      const AC=window.AudioContext||window.webkitAudioContext;
+      if(!AC) return;
+      if(!audioCtx) audioCtx=new AC();
+      if(audioCtx.state==='suspended'&&audioCtx.resume) audioCtx.resume();
+      const t=audioCtx.currentTime;
+      const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+      o.frequency.value=accent?1200:800;
+      o.type='square';
+      g.gain.setValueAtTime(accent?0.32:0.18,t);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.06);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t); o.stop(t+0.07);
+    }catch(e){ /* 无音频环境时静默，节拍仍按视觉走 */ }
   }
 
   function tick(){
-    const beats=+document.getElementById('mtBeats').value||4;
-    current=(current%beats)+1;
+    const n=beats();
+    current=(current%n)+1;
     click(current===1);
-    beatEl.textContent='第 '+current+' / '+beats+' 拍';
+    beatEl.textContent='第 '+current+' / '+n+' 拍';
+    [...dotsEl.children].forEach((d,i)=>d.classList.toggle('is-on',i===current-1));
     pend.classList.remove('active');
     requestAnimationFrame(()=>pend.classList.add('active'));
+  }
+
+  function schedule(){
+    clearTimeout(timer);
+    timer=setTimeout(()=>{
+      if(!running) return;
+      tick();
+      schedule();
+    }, 60000/bpm());
   }
 
   function start(){
     if(running) return;
     running=true;
-    document.getElementById('mtToggle').textContent='⏸ 停止';
+    btn.textContent='⏸ 停止';
+    btn.classList.add('is-running');
     current=0;
+    buildDots();
     tick();
-    timer=setInterval(tick,60000/bpm());
+    schedule();
   }
-
   function stop(){
     running=false;
-    clearInterval(timer);
-    document.getElementById('mtToggle').textContent='▶ 开始';
+    clearTimeout(timer); timer=null;
+    btn.textContent='▶ 开始';
+    btn.classList.remove('is-running');
     pend.classList.remove('active');
-    beatEl.textContent='—';
+    beatEl.textContent='未开始';
+    [...dotsEl.children].forEach(d=>d.classList.remove('is-on'));
+  }
+  function toggle(){ running?stop():start(); }
+
+  function syncBpm(fromRange){
+    if(fromRange) num.value=range.value;
+    const v=bpm();
+    range.value=v;
+    if(!fromRange) num.value=v;
+    bpmEl.textContent=v;
+    if(running) schedule();   // 运行中调速即时生效
+  }
+  function syncBeats(){
+    const v=beats();
+    beatsEl.value=v;
+    buildDots();
+    if(current>v) current=0;
+    if(running){
+      if(current>0) beatEl.textContent='第 '+current+' / '+v+' 拍';
+      schedule();
+    }
   }
 
-  function sync(){
-    const v=bpm();
-    range.value=v; bpmEl.textContent=v;
-  }
-  range.oninput=()=>{ num.value=range.value; sync(); };
-  num.oninput=sync;
-  document.getElementById('mtToggle').onclick=()=>running?stop():start();
-  sync();
+  range.addEventListener('input',()=>syncBpm(true));
+  num.addEventListener('input',()=>syncBpm(false));
+  num.addEventListener('change',()=>syncBpm(false));
+  beatsEl.addEventListener('input',syncBeats);
+  beatsEl.addEventListener('change',syncBeats);
+  btn.addEventListener('click',toggle);
+  document.addEventListener('keydown',e=>{
+    if(e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.code==='Space'||e.key===' '){ e.preventDefault(); toggle(); }
+  });
+
+  buildDots();
+  syncBpm(false);
 })();
 </script>

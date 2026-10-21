@@ -1,14 +1,55 @@
 <style>
-.ts-wrap { max-width: 680px; margin: 0 auto; }
-.ts-input { width: 100%; min-height: 200px; padding: 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 1rem; resize: vertical; }
-.ts-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap: 10px; margin-top: 14px; }
-.ts-item { background: var(--entry); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
-.ts-item strong { display: block; font-size: 1.6rem; color: var(--primary); }
+.ts-wrap {
+  --ts-line: color-mix(in srgb, var(--primary) 22%, transparent);
+  --ts-card-line: color-mix(in srgb, var(--primary) 14%, transparent);
+  max-width: 680px;
+  margin: 0 auto;
+}
+.ts-input {
+  width: 100%;
+  min-height: 220px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--ts-line);
+  background: var(--code-bg);
+  color: var(--primary);
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.65;
+  resize: vertical;
+}
+.main .ts-wrap .ts-input { min-height: 220px; font-size: 1rem; }
+.ts-input:focus { border-color: var(--primary); }
+.ts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.ts-item {
+  background: var(--entry);
+  border: 1px solid var(--ts-card-line);
+  border-radius: 10px;
+  padding: 14px 12px;
+  text-align: center;
+}
+.ts-item strong {
+  display: block;
+  font-size: 1.55rem;
+  line-height: 1.25;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+  word-break: break-all;
+}
 .ts-item span { font-size: 0.82rem; color: var(--secondary); }
+.ts-wrap textarea:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--primary) 55%, transparent);
+  outline-offset: 2px;
+}
 </style>
 
 <div class="ts-wrap">
-  <textarea class="ts-input" id="tsText" placeholder="在此粘贴或输入文本…"></textarea>
+  <textarea class="ts-input" id="tsText" aria-label="用于统计的文本" placeholder="在此粘贴或输入文本…"></textarea>
   <div class="ts-grid">
     <div class="ts-item"><strong id="tsChars">0</strong><span>总字符</span></div>
     <div class="ts-item"><strong id="tsNoSpace">0</strong><span>不含空格</span></div>
@@ -22,15 +63,35 @@
 <script>
 (()=>{
   const input=document.getElementById('tsText');
+  const out={
+    chars:document.getElementById('tsChars'),
+    noSpace:document.getElementById('tsNoSpace'),
+    han:document.getElementById('tsHan'),
+    words:document.getElementById('tsWords'),
+    lines:document.getElementById('tsLines'),
+    sent:document.getElementById('tsSent')
+  };
+
+  function countSentences(t){
+    const s=t.trim();
+    if(!s) return 0;
+    const marks=(s.match(/[。！？!?]+|\.(?=\s|$)/g)||[]).length;
+    const ended=/[。！？!?]$/.test(s)||/\.$/.test(s);
+    return marks+(ended?0:1);
+  }
+
   function update(){
     const t=input.value;
-    document.getElementById('tsChars').textContent=t.length;
-    document.getElementById('tsNoSpace').textContent=t.replace(/\s/g,'').length;
-    document.getElementById('tsHan').textContent=(t.match(/[\u4e00-\u9fa5]/g)||[]).length;
-    document.getElementById('tsWords').textContent=(t.match(/[A-Za-z0-9]+/g)||[]).length;
-    document.getElementById('tsLines').textContent=t?t.split(/\r?\n/).length:0;
-    document.getElementById('tsSent').textContent=(t.match(/[^。！？!?]+[。！？!?]/g)||[]).length;
+    const chars=Array.from(t).length;
+    const noSpace=Array.from(t.replace(/\s/g,'')).length;
+    out.chars.textContent=chars;
+    out.noSpace.textContent=noSpace;
+    out.han.textContent=(t.match(/[\u3400-\u4dbf\u4e00-\u9fa5]/g)||[]).length;
+    out.words.textContent=(t.match(/[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*/g)||[]).length;
+    out.lines.textContent=t?t.split(/\r\n|\r|\n/).length:0;
+    out.sent.textContent=countSentences(t);
   }
+
   input.addEventListener('input',update);
   update();
 })();

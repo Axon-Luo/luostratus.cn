@@ -1,22 +1,85 @@
 <style>
-.ue-wrap { max-width: 680px; margin: 0 auto; }
-.ue-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.95rem; }
-.ue-btns { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
-.ue-btns button { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
-.ue-out { background: var(--code-bg); border-radius: 10px; padding: 14px; min-height: 80px; color: var(--primary); word-break: break-all; }
-.ue-msg { color: #e74c3c; font-size: 0.85rem; margin-top: 8px; min-height: 18px; }
+.ue-wrap {
+  --ue-line: color-mix(in srgb, var(--primary) 22%, transparent);
+  --ue-card-line: color-mix(in srgb, var(--primary) 14%, transparent);
+  max-width: 680px;
+  margin: 0 auto;
+}
+.ue-card {
+  background: var(--entry);
+  border: 1px solid var(--ue-card-line);
+  border-radius: 12px;
+  padding: 18px;
+}
+.ue-input {
+  width: 100%;
+  min-height: 96px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--ue-line);
+  background: var(--code-bg);
+  color: var(--primary);
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+.main .ue-wrap .ue-input { min-height: 96px; font-size: 0.95rem; }
+.ue-input:focus { border-color: var(--primary); }
+.ue-btns { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; align-items: center; }
+.ue-btns button {
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--ue-line);
+  background: var(--code-bg);
+  color: var(--primary);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, opacity .15s ease;
+}
+.ue-btns button:hover { border-color: var(--primary); }
+.ue-btns .ue-primary { background: var(--primary); border-color: var(--primary); color: var(--theme); }
+.ue-btns .ue-primary:hover { opacity: .88; }
+.ue-out {
+  background: var(--code-bg);
+  border: 1px solid color-mix(in srgb, var(--primary) 8%, transparent);
+  border-radius: 10px;
+  padding: 14px;
+  min-height: 92px;
+  color: var(--primary);
+  font-size: 0.9rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.ue-msg { font-size: 0.82rem; margin-top: 8px; min-height: 18px; line-height: 1.4; color: var(--secondary); }
+.ue-msg.err { color: #d93025; }
+[data-theme="dark"] .ue-msg.err { color: #ff8a80; }
+.ue-wrap button:focus-visible,
+.ue-wrap textarea:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--primary) 55%, transparent);
+  outline-offset: 2px;
+}
 </style>
 
 <div class="ue-wrap">
-  <input class="ue-input" id="ueInput" placeholder="输入 URL 或文本…">
-  <div class="ue-btns">
-    <button id="ueComp">🔗 encodeURIComponent</button>
-    <button id="ueUri">🌐 encodeURI</button>
-    <button id="ueDec">🔓 decodeURIComponent</button>
-    <button id="ueCopy">📋 复制</button>
+  <div class="ue-card">
+    <textarea class="ue-input" id="ueInput" aria-label="要编码或解码的 URL / 文本" placeholder="输入 URL 或文本…"></textarea>
+    <div class="ue-btns">
+      <button type="button" class="ue-primary" id="ueComp">🔗 encodeURIComponent</button>
+      <button type="button" id="ueUri">🌐 encodeURI</button>
+      <button type="button" id="ueDec">🔓 decodeURIComponent</button>
+      <button type="button" id="ueDecUri">↩️ decodeURI</button>
+      <button type="button" id="ueCopy">📋 复制</button>
+    </div>
+    <div class="ue-out" id="ueOut" aria-live="polite">结果</div>
+    <div class="ue-msg" id="ueMsg" aria-live="polite"></div>
   </div>
-  <div class="ue-out" id="ueOut">结果</div>
-  <div class="ue-msg" id="ueMsg"></div>
 </div>
 
 <script>
@@ -24,13 +87,57 @@
   const input=document.getElementById('ueInput');
   const out=document.getElementById('ueOut');
   const msg=document.getElementById('ueMsg');
-  function run(fn){
-    try{ out.textContent=fn(input.value); msg.textContent=''; }
-    catch(e){ msg.textContent='处理失败：'+e.message; }
+  let hasResult=false;
+
+  function setMsg(text, ok){
+    msg.textContent=text;
+    msg.classList.toggle('err',!ok);
   }
-  document.getElementById('ueComp').onclick=()=>run(v=>encodeURIComponent(v));
-  document.getElementById('ueUri').onclick=()=>run(v=>encodeURI(v));
-  document.getElementById('ueDec').onclick=()=>run(v=>decodeURIComponent(v));
-  document.getElementById('ueCopy').onclick=()=>navigator.clipboard.writeText(out.textContent);
+  function fail(text, ok){
+    out.textContent='';
+    hasResult=false;
+    setMsg(text, ok===true);
+  }
+  function run(fn, okText){
+    const value=input.value;
+    if(!value){ fail('请先输入要处理的内容',true); return; }
+    try{
+      out.textContent=fn(value);
+      hasResult=true;
+      setMsg(okText+((input.value!==out.textContent)?'':'（内容无变化）'),true);
+    }catch(e){
+      fail('处理失败：'+(/malformed|URI/i.test((e&&e.message)||'')?'存在非法的百分号编码（如 %ZZ、%E4）':((e&&e.message)||'未知错误')));
+    }
+  }
+
+  async function copyText(text){
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      try{ await navigator.clipboard.writeText(text); return true; }catch(e){}
+    }
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=text;
+      ta.setAttribute('readonly','');
+      ta.style.position='fixed';
+      ta.style.top='-1000px';
+      ta.style.opacity='0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok=document.execCommand('copy');
+      ta.remove();
+      return ok;
+    }catch(e){ return false; }
+  }
+
+  document.getElementById('ueComp').onclick=()=>run(v=>encodeURIComponent(v),'encodeURIComponent 完成');
+  document.getElementById('ueUri').onclick=()=>run(v=>encodeURI(v),'encodeURI 完成');
+  document.getElementById('ueDec').onclick=()=>run(v=>decodeURIComponent(v),'decodeURIComponent 完成');
+  document.getElementById('ueDecUri').onclick=()=>run(v=>decodeURI(v),'decodeURI 完成');
+  document.getElementById('ueCopy').onclick=async()=>{
+    if(!hasResult){ setMsg('没有可复制的结果',true); return; }
+    const ok=await copyText(out.textContent);
+    setMsg(ok?'已复制到剪贴板':'复制失败，请手动选择文本',ok);
+  };
+  input.addEventListener('input',()=>{ setMsg('',true); });
 })();
 </script>

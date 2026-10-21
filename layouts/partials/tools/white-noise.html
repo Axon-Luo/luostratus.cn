@@ -1,45 +1,96 @@
 <style>
-.wn-wrap { max-width: 480px; margin: 0 auto; text-align: center; }
-.wn-btns { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 14px; }
-.wn-btns button { padding: 18px 10px; border-radius: 12px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 1.1rem; cursor: pointer; }
-.wn-btns button.active { background: var(--primary); color: var(--theme); border-color: var(--primary); }
-.wn-vol { color: var(--secondary); font-size: 0.9rem; }
-.wn-vol input { width: 240px; }
+#wnWrap { max-width: 480px; margin: 0 auto; text-align: center; }
+.wn-panel {
+  background: var(--entry); border-radius: 16px; padding: 20px;
+  border: 1px solid color-mix(in srgb, var(--primary) 14%, transparent);
+}
+.wn-btns { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 18px; }
+.wn-btns button {
+  position: relative; padding: 20px 10px; border-radius: 12px; cursor: pointer;
+  font-size: 1.02rem; color: var(--primary); background: var(--code-bg);
+  border: 1px solid color-mix(in srgb, var(--primary) 16%, transparent);
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.wn-btns button:hover { border-color: var(--primary); }
+.wn-btns button.active {
+  background: var(--primary); color: var(--theme); border-color: var(--primary); font-weight: 600;
+}
+.wn-btns button.active::after {
+  content: ""; position: absolute; top: 8px; right: 8px; width: 7px; height: 7px;
+  border-radius: 50%; background: currentColor; opacity: 0.55;
+  animation: wnPulse 1.4s ease-in-out infinite;
+}
+@keyframes wnPulse { 0%, 100% { opacity: 0.25; } 50% { opacity: 0.9; } }
+.wn-vol-row {
+  display: grid; grid-template-columns: 42px minmax(0, 1fr) 48px; gap: 10px;
+  align-items: center; text-align: left; font-size: 0.86rem; color: var(--secondary);
+}
+.wn-vol-row input[type="range"] { width: 100%; accent-color: var(--primary); margin: 0; }
+#wnVolVal { text-align: right; font-variant-numeric: tabular-nums; }
+.wn-status {
+  margin-top: 14px; font-size: 0.84rem; color: var(--secondary); min-height: 22px;
+  padding-top: 12px; border-top: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
+}
+.wn-status.is-on { color: var(--primary); font-weight: 600; }
 </style>
 
-<div class="wn-wrap">
-  <div class="wn-btns">
-    <button data-type="white">⚪ 白噪音</button>
-    <button data-type="rain">🌧 雨声</button>
-    <button data-type="waves">🌊 海浪</button>
-    <button data-type="fan">🌀 风扇</button>
+<div id="wnWrap" class="wn-wrap">
+  <div class="wn-panel">
+    <div class="wn-btns">
+      <button type="button" data-type="white">⚪ 白噪音</button>
+      <button type="button" data-type="rain">🌧 雨声</button>
+      <button type="button" data-type="waves">🌊 海浪</button>
+      <button type="button" data-type="fan">🌀 风扇</button>
+    </div>
+    <div class="wn-vol-row">
+      <span>音量</span>
+      <input type="range" id="wnVol" min="0" max="100" value="40" aria-label="音量">
+      <span id="wnVolVal">40%</span>
+    </div>
+    <div class="wn-status" id="wnStatus">点击按钮开始播放，再次点击停止</div>
   </div>
-  <div class="wn-vol">音量 <input type="range" id="wnVol" min="0" max="100" value="40"></div>
-  <p id="wnStatus" style="color:var(--secondary);font-size:0.85rem;margin-top:10px">点击按钮播放，再次点击停止</p>
 </div>
 
 <script>
 (()=>{
-  const buttons=document.querySelectorAll('.wn-btns button');
+  const root=document.getElementById('wnWrap');
+  if(!root) return;
+  const buttons=[...document.querySelectorAll('.wn-btns button')];
   const status=document.getElementById('wnStatus');
-  let ctx=null, active=null, activeType='', gain=null, lfo=null;
+  const volEl=document.getElementById('wnVol');
+  const volVal=document.getElementById('wnVolVal');
+  const LABEL={white:'白噪音',rain:'雨声',waves:'海浪',fan:'风扇'};
+  let ctx=null, active=null, activeType='', gain=null, lfo=null, lfoGain=null;
+
+  function ensureCtx(){
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC) return null;
+    if(!ctx) ctx=new AC();
+    if(ctx.state==='suspended'&&ctx.resume) ctx.resume();
+    return ctx;
+  }
 
   function noiseBuffer(seconds){
-    const buffer=ctx.createBuffer(1,ctx.sampleRate*seconds,ctx.sampleRate);
+    const buffer=ctx.createBuffer(1,Math.max(1,Math.floor(ctx.sampleRate*seconds)),ctx.sampleRate);
     const data=buffer.getChannelData(0);
     for(let i=0;i<data.length;i++) data[i]=Math.random()*2-1;
     return buffer;
   }
 
+  function setStatus(t,on){
+    status.textContent=t;
+    status.classList.toggle('is-on',!!on);
+  }
+
   function start(type){
     stop();
-    if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)();
+    if(!ensureCtx()){ setStatus('当前浏览器不支持音频播放'); return; }
     const src=ctx.createBufferSource();
     src.buffer=noiseBuffer(2);
     src.loop=true;
     const filter=ctx.createBiquadFilter();
     gain=ctx.createGain();
-    gain.gain.value=+document.getElementById('wnVol').value/100;
+    gain.gain.value=(+volEl.value||0)/100;
     filter.type='lowpass';
     if(type==='rain'){ filter.frequency.value=1400; filter.Q.value=0.6; }
     else if(type==='waves'){ filter.frequency.value=420; filter.Q.value=1.2; }
@@ -50,24 +101,34 @@
     active=src; activeType=type;
     if(type==='waves'){
       lfo=ctx.createOscillator(); lfo.frequency.value=0.08;
-      const g=ctx.createGain(); g.gain.value=0.25;
-      lfo.connect(g); g.connect(gain.gain); lfo.start();
+      lfoGain=ctx.createGain(); lfoGain.gain.value=0.25;
+      lfo.connect(lfoGain); lfoGain.connect(gain.gain); lfo.start();
     }
     buttons.forEach(b=>b.classList.toggle('active',b.dataset.type===type));
-    status.textContent='正在播放：'+type;
+    setStatus('正在播放：'+(LABEL[type]||type),true);
   }
 
   function stop(){
     if(active){ try{ active.stop(); }catch(e){} active=null; }
     if(lfo){ try{ lfo.stop(); }catch(e){} lfo=null; }
+    lfoGain=null;
+    activeType='';                       // 关键：清空后同一个音效可以再次播放
     buttons.forEach(b=>b.classList.remove('active'));
-    status.textContent='已停止';
+    setStatus('已停止',false);
   }
 
-  buttons.forEach(b=>b.onclick=()=>{
-    if(activeType===b.dataset.type) stop();
-    else start(b.dataset.type);
+  buttons.forEach(b=>{
+    b.addEventListener('click',()=>{
+      if(activeType===b.dataset.type) stop();
+      else start(b.dataset.type);
+    });
   });
-  document.getElementById('wnVol').oninput=()=>{ if(gain) gain.gain.value=+document.getElementById('wnVol').value/100; };
+
+  volEl.addEventListener('input',()=>{
+    const v=+volEl.value||0;
+    volVal.textContent=v+'%';
+    if(gain) gain.gain.value=v/100;
+  });
+  volVal.textContent=(+volEl.value||0)+'%';
 })();
 </script>

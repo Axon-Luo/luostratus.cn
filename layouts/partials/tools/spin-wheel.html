@@ -1,158 +1,241 @@
 <style>
-.sp-wrap { max-width: 640px; margin: 0 auto; }
-.sp-editor { background: var(--entry); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
-.sp-editor-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 10px; }
-.sp-editor-head h4 { margin: 0; color: var(--primary); font-size: 0.95rem; }
-.sp-editor-head button { padding: 7px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; font-size: 0.85rem; }
+#spWrap { max-width: 640px; margin: 0 auto; }
+.sp-editor {
+  background: var(--entry); border-radius: 14px; padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--primary) 14%, transparent);
+  margin-bottom: 18px;
+}
+.sp-editor-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 10px; flex-wrap: wrap; }
+.sp-editor-head h4 { margin: 0; color: var(--primary); font-size: 0.95rem; font-weight: 600; }
+.sp-editor-head button {
+  padding: 7px 14px; border-radius: 9px; cursor: pointer; font-size: 0.82rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+  background: transparent; color: var(--primary);
+}
+.sp-editor-head button:hover { border-color: var(--primary); }
 .sp-rows { display: flex; flex-direction: column; gap: 8px; }
-.sp-row { display: grid; grid-template-columns: 16px minmax(0,1fr) 64px 84px 46px 28px 28px 28px; gap: 8px; align-items: center; background: var(--code-bg); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; }
-.sp-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--primary); justify-self: center; }
-.sp-row input[type="text"] { width: 100%; padding: 7px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.9rem; }
-.sp-row input[type="number"] { width: 100%; padding: 7px 8px; border-radius: 7px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.9rem; }
-.sp-bar { height: 7px; border-radius: 4px; background: var(--entry); overflow: hidden; }
+.sp-row {
+  display: grid; grid-template-columns: 14px minmax(0, 1fr) 76px 90px 46px 96px;
+  gap: 8px; align-items: center; padding: 8px 10px; border-radius: 10px;
+  background: var(--code-bg);
+  border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
+}
+.sp-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--primary); justify-self: center; }
+.sp-row input[type="text"], .sp-row input[type="number"] {
+  width: 100%; min-width: 0; padding: 7px 9px; border-radius: 8px; font-size: 0.88rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 16%, transparent);
+  background: var(--entry); color: var(--primary);
+}
+.sp-row input[type="text"]:focus, .sp-row input[type="number"]:focus { outline: none; border-color: var(--primary); }
+.sp-bar { display: block; height: 7px; border-radius: 4px; background: color-mix(in srgb, var(--primary) 12%, transparent); overflow: hidden; }
 .sp-bar i { display: block; height: 100%; width: 0; background: var(--primary); border-radius: 4px; transition: width 0.2s; }
-.sp-pct { font-size: 0.78rem; color: var(--secondary); text-align: right; }
-.sp-row button { border: none; background: transparent; color: var(--secondary); cursor: pointer; font-size: 1rem; padding: 2px; }
-.sp-row button:hover { color: var(--primary); }
-.sp-tools { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-.sp-tools button { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; font-size: 0.85rem; }
-.sp-total { color: var(--secondary); font-size: 0.8rem; margin-top: 9px; }
-.sp-area { display: flex; gap: 16px; align-items: center; justify-content: center; flex-wrap: wrap; }
-#spCanvas { max-width: 100%; }
-.sp-result { font-size: 1.2rem; color: var(--primary); margin: 10px 0; min-height: 28px; text-align: center; }
-.sp-btns { text-align: center; }
-.sp-btns button { padding: 9px 20px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; font-weight: 600; margin: 4px; }
+.sp-pct { font-size: 0.76rem; color: var(--secondary); text-align: right; }
+.sp-acts { display: flex; gap: 4px; justify-content: flex-end; }
+#spRows .sp-acts button {
+  width: 30px; height: 30px; min-height: 30px; padding: 0; border-radius: 8px; cursor: pointer; font-size: 0.85rem;
+  line-height: 1; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--primary) 16%, transparent);
+  background: transparent; color: var(--secondary);
+  transition: color 0.15s, border-color 0.15s;
+}
+.sp-acts button:hover { color: var(--primary); border-color: var(--primary); }
+.sp-acts button.sp-del:hover { color: #e0533d; border-color: #e0533d; }
+.sp-tools { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.sp-tools button {
+  padding: 7px 14px; border-radius: 9px; cursor: pointer; font-size: 0.82rem; color: var(--primary);
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+  background: transparent;
+}
+.sp-tools button:hover { border-color: var(--primary); }
+.sp-total { color: var(--secondary); font-size: 0.78rem; margin-top: 10px; }
+.sp-area { display: flex; gap: 20px; align-items: center; justify-content: center; flex-wrap: wrap; }
+#spCanvas { width: 360px; max-width: 100%; height: auto; display: block; }
+.sp-side { min-width: 150px; text-align: center; }
+.sp-result { font-size: 1.15rem; color: var(--primary); margin: 4px 0 12px; min-height: 30px; font-weight: 600; word-break: break-word; }
+.sp-result.is-hint { font-size: 0.85rem; font-weight: 400; color: var(--secondary); }
+#spSpin {
+  padding: 11px 26px; border-radius: 10px; cursor: pointer; font-size: 0.95rem; font-weight: 600;
+  background: var(--primary); color: var(--theme); border: 1px solid var(--primary);
+  transition: opacity 0.15s, transform 0.1s;
+}
+#spSpin:hover { opacity: 0.88; }
+#spSpin:disabled { opacity: 0.55; cursor: default; }
 @media (max-width: 560px) {
-  .sp-row { grid-template-columns: 16px 1fr 64px; }
-  .sp-bar, .sp-pct { grid-column: 2 / 4; }
-  .sp-row button { grid-column: auto; }
+  .sp-row { grid-template-columns: 14px minmax(0, 1fr) 76px; row-gap: 8px; }
+  .sp-row .sp-bar { grid-column: 2; grid-row: 2; }
+  .sp-row .sp-pct { grid-column: 3; grid-row: 2; }
+  .sp-row .sp-acts { grid-column: 1 / 4; grid-row: 3; }
+  #spRows .sp-acts button { width: 32px; height: 32px; min-height: 32px; }
+  #spCanvas { width: 300px; flex: 0 0 auto; }
+  .sp-area { gap: 12px; flex-direction: column; }
+  .sp-side { min-width: 0; width: 100%; }
 }
 </style>
 
-<div class="sp-wrap">
+<div id="spWrap" class="sp-wrap">
   <div class="sp-editor">
     <div class="sp-editor-head">
       <h4>🎯 选项设置</h4>
-      <button id="spAdd">➕ 添加选项</button>
+      <button id="spAdd" type="button">➕ 添加选项</button>
     </div>
     <div class="sp-rows" id="spRows"></div>
     <div class="sp-tools">
-      <button id="spSample">✨ 示例</button>
-      <button id="spClear">🗑 清空</button>
+      <button id="spSample" type="button">✨ 示例</button>
+      <button id="spClear" type="button">🗑 清空</button>
     </div>
     <div class="sp-total" id="spTotal"></div>
   </div>
   <div class="sp-area">
     <canvas id="spCanvas" width="360" height="360"></canvas>
-    <div>
-      <div class="sp-result" id="spResult">点击转动</div>
-      <div class="sp-btns"><button id="spSpin">🎡 转动</button></div>
+    <div class="sp-side">
+      <div class="sp-result is-hint" id="spResult">填写选项后点击转动</div>
+      <button id="spSpin" type="button">🎡 转动</button>
     </div>
   </div>
 </div>
 
 <script>
 (()=>{
+  const root=document.getElementById('spWrap');
+  if(!root) return;
   const canvas=document.getElementById('spCanvas');
   const ctx=canvas.getContext('2d');
   const rowsEl=document.getElementById('spRows');
   const totalEl=document.getElementById('spTotal');
   const resultEl=document.getElementById('spResult');
-  const COLORS=['#e74c3c','#3498db','#27ae60','#f1c40f','#8e44ad','#e67e22','#16a085','#c0392b','#2980b9','#2ecc71'];
+  const spinBtn=document.getElementById('spSpin');
+  const COLORS=['#e74c3c','#3498db','#27ae60','#e5a50a','#8e44ad','#e67e22','#16a085','#c0392b','#2980b9','#2ecc71'];
   const TWO_PI=Math.PI*2;
   let rows=[
     {label:'吃饭',weight:5},
     {label:'睡觉',weight:3},
     {label:'写代码',weight:2}
   ];
-  let rotation=0, spinning=false, options=[], totalWeight=0;
+  let rotation=0, spinning=false;
 
+  function safeWeight(v){
+    const n=parseFloat(v);
+    return isFinite(n)&&n>0?n:1;
+  }
+  function normalizeRows(){
+    if(!Array.isArray(rows)) rows=[];
+    rows=rows.filter(r=>r&&typeof r==='object').map(r=>({
+      label:String(r.label==null?'':r.label),
+      weight:safeWeight(r.weight)
+    }));
+    if(rows.length<2){
+      while(rows.length<2) rows.push({label:'',weight:1});
+    }
+  }
   function getOptions(){
-    const parsed=rows.map(r=>({label:String(r.label||'').trim(),weight:Math.max(0.01,parseFloat(r.weight)||1)})).filter(o=>o.label);
-    return parsed.length>=2?parsed:[{label:'选项A',weight:1},{label:'选项B',weight:1}];
+    const parsed=rows
+      .map(r=>({label:String(r.label||'').trim(),weight:safeWeight(r.weight)}))
+      .filter(o=>o.label);
+    return parsed;
+  }
+  function refresh(){
+    const total=rows.reduce((s,r)=>s+safeWeight(r.weight),0)||1;
+    totalEl.textContent='总权重：'+total.toFixed(1)+' · 输入名称和权重，转盘实时更新';
+    [...rowsEl.children].forEach((div,i)=>{
+      const row=rows[i];
+      if(!row) return;
+      const w=safeWeight(row.weight);
+      const dot=div.querySelector('.sp-dot');
+      const bar=div.querySelector('.sp-bar i');
+      const pct=div.querySelector('.sp-pct');
+      if(dot) dot.style.background=COLORS[i%COLORS.length];
+      if(bar) bar.style.width=(w/total*100)+'%';
+      if(pct) pct.textContent=Math.round(w/total*100)+'%';
+    });
+    drawWheel();
+  }
+
+  function rowFromEvent(e){
+    const rowEl=e.target.closest('.sp-row');
+    if(!rowEl||!rowsEl.contains(rowEl)) return -1;
+    const i=[...rowsEl.children].indexOf(rowEl);
+    return (i>=0&&rows[i])?i:-1;
   }
 
   function renderEditor(){
+    normalizeRows();
     rowsEl.innerHTML='';
     rows.forEach((row,i)=>{
       const div=document.createElement('div');
       div.className='sp-row';
       div.innerHTML='<span class="sp-dot"></span>'+
-        '<input type="text" class="sp-name" placeholder="选项名称">'+
-        '<input type="number" class="sp-weight" min="0.1" step="0.5">'+
+        '<input type="text" class="sp-name" placeholder="选项名称" autocomplete="off">'+
+        '<input type="number" class="sp-weight" min="0.1" step="0.5" inputmode="decimal">'+
         '<span class="sp-bar"><i></i></span>'+
         '<span class="sp-pct">0%</span>'+
-        '<button class="sp-up" title="上移">↑</button>'+
-        '<button class="sp-down" title="下移">↓</button>'+
-        '<button class="sp-del" title="删除">✕</button>';
-      const name=div.querySelector('.sp-name');
-      const weight=div.querySelector('.sp-weight');
-      name.value=row.label;
-      weight.value=row.weight;
-      name.oninput=()=>{ rows[i].label=name.value; refresh(); };
-      weight.oninput=()=>{ rows[i].weight=Math.max(0.1,parseFloat(weight.value)||1); refresh(); };
-      div.querySelector('.sp-up').onclick=()=>{ if(i>0){ [rows[i-1],rows[i]]=[rows[i],rows[i-1]]; renderEditor(); } };
-      div.querySelector('.sp-down').onclick=()=>{ if(i<rows.length-1){ [rows[i+1],rows[i]]=[rows[i],rows[i+1]]; renderEditor(); } };
-      div.querySelector('.sp-del').onclick=()=>{
-        rows.splice(i,1);
-        if(rows.length<1) rows=[{label:'',weight:1},{label:'',weight:1}];
-        renderEditor();
-      };
+        '<div class="sp-acts">'+
+        '<button class="sp-up" type="button" title="上移" aria-label="上移">↑</button>'+
+        '<button class="sp-down" type="button" title="下移" aria-label="下移">↓</button>'+
+        '<button class="sp-del" type="button" title="删除" aria-label="删除">✕</button>'+
+        '</div>';
+      div.querySelector('.sp-name').value=row.label;
+      div.querySelector('.sp-weight').value=row.weight;
       rowsEl.appendChild(div);
     });
     refresh();
   }
 
-  function refresh(){
-    const rawTotal=rows.reduce((s,r)=>s+Math.max(0.01,parseFloat(r.weight)||1),0);
-    totalEl.textContent='总权重：'+rawTotal.toFixed(1)+' · 输入名称和权重，转盘实时更新';
-    [...rowsEl.children].forEach((div,i)=>{
-      const weight=Math.max(0.01,parseFloat(rows[i].weight)||1);
-      div.querySelector('.sp-dot').style.background=COLORS[i%COLORS.length];
-      div.querySelector('.sp-bar i').style.width=(weight/rawTotal*100)+'%';
-      div.querySelector('.sp-pct').textContent=Math.round(weight/rawTotal*100)+'%';
-    });
-    draw();
-  }
-
   function computeSlices(){
-    options=getOptions();
-    totalWeight=options.reduce((s,o)=>s+o.weight,0);
+    const options=getOptions();
+    const total=options.reduce((s,o)=>s+o.weight,0);
     let acc=0;
     return options.map(o=>{
       const start=acc;
-      acc+=o.weight/totalWeight*TWO_PI;
-      return {label:o.label,start,end:acc,weight:o.weight};
+      acc+=o.weight/total*TWO_PI;
+      return {label:o.label,start:start,end:acc,weight:o.weight};
     });
   }
 
-  function draw(){
+  function drawWheel(){
     const slices=computeSlices();
     const cx=180, cy=180, r=170;
     ctx.clearRect(0,0,360,360);
-    ctx.save();
-    ctx.translate(cx,cy);
-    ctx.rotate(rotation);
-    for(let i=0;i<slices.length;i++){
-      const start=slices[i].start-Math.PI/2;
-      const end=slices[i].end-Math.PI/2;
-      ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,r,start,end); ctx.closePath();
-      ctx.fillStyle=COLORS[i%COLORS.length]; ctx.fill();
-      ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
-      ctx.save(); ctx.rotate(start+(end-start)/2);
-      ctx.fillStyle='#fff'; ctx.font='bold 15px sans-serif'; ctx.textAlign='right';
-      ctx.fillText(slices[i].label.length>6?slices[i].label.slice(0,6)+'…':slices[i].label,r-10,5);
+    if(!slices.length){
+      ctx.beginPath(); ctx.arc(cx,cy,r,0,TWO_PI);
+      ctx.fillStyle='rgba(128,128,128,0.18)'; ctx.fill();
+    }else{
+      ctx.save();
+      ctx.translate(cx,cy);
+      ctx.rotate(rotation);
+      for(let i=0;i<slices.length;i++){
+        const start=slices[i].start-Math.PI/2;
+        const end=slices[i].end-Math.PI/2;
+        ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,r,start,end); ctx.closePath();
+        ctx.fillStyle=COLORS[i%COLORS.length]; ctx.fill();
+        ctx.strokeStyle='rgba(255,255,255,0.65)'; ctx.lineWidth=2; ctx.stroke();
+        const mid=start+(end-start)/2;
+        ctx.save();
+        ctx.rotate(mid);
+        const flip=Math.cos(mid)<0;
+        if(flip) ctx.rotate(Math.PI);
+        ctx.fillStyle='#fff';
+        ctx.font='bold 15px ui-sans-serif, system-ui, sans-serif';
+        ctx.textAlign=flip?'left':'right';
+        ctx.textBaseline='middle';
+        const label=slices[i].label.length>6?slices[i].label.slice(0,6)+'…':slices[i].label;
+        ctx.fillText(label,flip?-(r-12):(r-12),0);
+        ctx.restore();
+      }
       ctx.restore();
     }
-    ctx.restore();
-    ctx.fillStyle='#fff'; ctx.strokeStyle='var(--border)';
-    ctx.beginPath(); ctx.moveTo(cx,20); ctx.lineTo(cx-12,50); ctx.lineTo(cx+12,50); ctx.closePath(); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx,cy,8,0,Math.PI*2); ctx.fillStyle='#fff'; ctx.fill();
+    // 顶部指针
+    ctx.beginPath(); ctx.moveTo(cx,14); ctx.lineTo(cx-13,46); ctx.lineTo(cx+13,46); ctx.closePath();
+    ctx.fillStyle='#fff'; ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.28)'; ctx.lineWidth=1.5; ctx.stroke();
+    // 中心圆
+    ctx.beginPath(); ctx.arc(cx,cy,9,0,TWO_PI);
+    ctx.fillStyle='#fff'; ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.28)'; ctx.stroke();
   }
 
-  function pickIndex(){
-    const r=Math.random()*totalWeight;
-    let acc=0;
+  function pickIndex(options){
+    const total=options.reduce((s,o)=>s+o.weight,0);
+    let r=Math.random()*total, acc=0;
     for(let i=0;i<options.length;i++){
       acc+=options[i].weight;
       if(r<acc) return i;
@@ -162,40 +245,89 @@
 
   function spin(){
     if(spinning) return;
-    spinning=true;
+    const options=getOptions();
+    if(options.length<2){
+      resultEl.classList.add('is-hint');
+      resultEl.textContent='至少填写 2 个有名称的选项';
+      return;
+    }
     const slices=computeSlices();
-    const idx=pickIndex();
+    const idx=Math.min(pickIndex(options),slices.length-1);
+    const targetLabel=options[idx]?options[idx].label:'';
+    if(!slices[idx]) return;
     const slice=slices[idx];
     const targetRel=slice.start+(slice.end-slice.start)*(0.25+Math.random()*0.5);
     const base=rotation-(rotation%TWO_PI);
     const spins=6+Math.floor(Math.random()*4);
     const target=base+spins*TWO_PI+(TWO_PI-targetRel);
-    const startRot=rotation, duration=4000, t0=performance.now();
+    const startRot=rotation, duration=3600, t0=performance.now();
+
+    spinning=true;
+    spinBtn.disabled=true;
+    spinBtn.textContent='🎡 转动中…';
+    resultEl.classList.remove('is-hint');
+    resultEl.textContent='…';
 
     function frame(t){
       const p=Math.min(1,(t-t0)/duration);
       const ease=1-Math.pow(1-p,3);
       rotation=startRot+(target-startRot)*ease;
-      draw();
-      if(p<1) requestAnimationFrame(frame);
-      else {
+      drawWheel();
+      if(p<1){ requestAnimationFrame(frame); }
+      else{
         spinning=false;
-        resultEl.textContent='🎉 '+options[idx].label;
+        spinBtn.disabled=false;
+        spinBtn.textContent='🎡 转动';
+        resultEl.textContent='🎉 '+targetLabel;
       }
     }
     requestAnimationFrame(frame);
   }
 
-  document.getElementById('spAdd').onclick=()=>{ rows.push({label:'',weight:1}); renderEditor(); };
-  document.getElementById('spSample').onclick=()=>{
+  // 事件委托：即使按钮已被新的渲染替换掉，也不会抛出异常
+  rowsEl.addEventListener('click',e=>{
+    const btn=e.target.closest('button');
+    if(!btn) return;
+    const i=rowFromEvent(e);
+    if(i<0) return;
+    if(btn.classList.contains('sp-up')){
+      if(i>0){ const t=rows[i-1]; rows[i-1]=rows[i]; rows[i]=t; renderEditor(); }
+    }else if(btn.classList.contains('sp-down')){
+      if(i<rows.length-1){ const t=rows[i+1]; rows[i+1]=rows[i]; rows[i]=t; renderEditor(); }
+    }else if(btn.classList.contains('sp-del')){
+      if(rows.length<=1){ rows=[{label:'',weight:1},{label:'',weight:1}]; }
+      else{ rows.splice(i,1); }
+      renderEditor();
+    }
+  });
+  rowsEl.addEventListener('input',e=>{
+    const inp=e.target;
+    if(!inp||(inp.tagName!=='INPUT')) return;
+    const i=rowFromEvent(e);
+    if(i<0) return;
+    if(inp.classList.contains('sp-name')) rows[i].label=inp.value;
+    else if(inp.classList.contains('sp-weight')) rows[i].weight=Math.max(0.1,parseFloat(inp.value)||1);
+    refresh();
+  });
+
+  document.getElementById('spAdd').addEventListener('click',()=>{
+    normalizeRows();
+    rows.push({label:'',weight:1});
+    renderEditor();
+    const inputs=rowsEl.querySelectorAll('.sp-name');
+    const last=inputs[inputs.length-1];
+    if(last) last.focus();
+  });
+  document.getElementById('spSample').addEventListener('click',()=>{
     rows=[{label:'吃饭',weight:5},{label:'睡觉',weight:3},{label:'写代码',weight:2},{label:'旅行',weight:1}];
     renderEditor();
-  };
-  document.getElementById('spClear').onclick=()=>{
+  });
+  document.getElementById('spClear').addEventListener('click',()=>{
     rows=[{label:'',weight:1},{label:'',weight:1}];
     renderEditor();
-  };
-  document.getElementById('spSpin').onclick=spin;
+  });
+  spinBtn.addEventListener('click',spin);
+
   renderEditor();
 })();
 </script>

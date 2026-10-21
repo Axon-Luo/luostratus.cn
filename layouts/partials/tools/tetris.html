@@ -1,20 +1,29 @@
 <style>
-.tetris-wrap { max-width: 500px; margin: 0 auto; }
-.tetris-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
-.tetris-bar select, .tetris-bar button { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.85rem; cursor: pointer; }
+.tetris-wrap { max-width: 520px; margin: 0 auto; }
+.tetris-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: center; margin-bottom: 12px; }
+.tetris-bar select,
+.tetris-bar button { padding: 6px 12px; border-radius: 8px; border: 1px solid color-mix(in srgb, var(--primary) 24%, transparent); background: color-mix(in srgb, var(--primary) 10%, var(--entry)); color: var(--primary); font-size: 0.85rem; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+.tetris-bar select { background: var(--entry); }
+.tetris-bar button:hover { background: color-mix(in srgb, var(--primary) 18%, var(--entry)); border-color: color-mix(in srgb, var(--primary) 38%, transparent); }
+.tetris-bar button.primary { background: var(--primary); color: var(--theme); border-color: var(--primary); }
+.tetris-bar button.primary:hover { background: color-mix(in srgb, var(--primary) 88%, var(--entry)); }
 .tetris-main { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
-#tetrisCanvas { border: 2px solid var(--border); border-radius: 8px; background: #1a1a2e; }
+#tetrisCanvas { border: 2px solid color-mix(in srgb, var(--primary) 22%, transparent); border-radius: 8px; background: #1a1a2e; max-width: 100%; height: auto; touch-action: none; }
 .tetris-side { min-width: 100px; }
-.tetris-side canvas { border: 1px solid var(--border); border-radius: 6px; background: #1a1a2e; }
-.tetris-info { font-size: 0.9rem; color: var(--secondary); margin-top: 8px; }
+.tetris-side canvas { border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent); border-radius: 6px; background: #1a1a2e; }
+.tetris-info { font-size: 0.9rem; color: var(--secondary); margin-top: 8px; line-height: 1.7; }
 .tetris-info strong { color: var(--primary); }
-.tetris-keys { font-size: 0.78rem; color: var(--secondary); margin-top: 12px; }
+.tetris-keys { font-size: 0.78rem; color: var(--secondary); margin-top: 10px; line-height: 1.6; }
+.tetris-touch { display: none; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
+.tetris-touch button { min-width: 52px; padding: 9px 10px; border-radius: 8px; border: 1px solid color-mix(in srgb, var(--primary) 24%, transparent); background: color-mix(in srgb, var(--primary) 10%, var(--entry)); color: var(--primary); font-size: 0.9rem; cursor: pointer; }
+.tetris-touch button:active { background: color-mix(in srgb, var(--primary) 26%, var(--entry)); }
+@media (max-width: 720px) { .tetris-touch { display: flex; } }
 </style>
 
 <div class="tetris-wrap">
   <div class="tetris-bar">
     <select id="tetrisDiff"><option value="easy">简单</option><option value="normal" selected>普通</option><option value="hard">困难</option></select>
-    <button id="tetrisStart">开始</button>
+    <button id="tetrisStart" class="primary">开始</button>
     <button id="tetrisPause">暂停</button>
   </div>
   <div class="tetris-main">
@@ -29,6 +38,13 @@
       </div>
       <div class="tetris-keys">← → 移动<br>↑ 旋转 ↓ 加速<br>空格 硬降</div>
     </div>
+  </div>
+  <div class="tetris-touch">
+    <button data-act="left" aria-label="左移">←</button>
+    <button data-act="rotate" aria-label="旋转">↻</button>
+    <button data-act="right" aria-label="右移">→</button>
+    <button data-act="down" aria-label="加速下落">↓</button>
+    <button data-act="drop" aria-label="直接落底">⤓</button>
   </div>
 </div>
 
@@ -52,7 +68,7 @@
   const COLORS=['#0ff','#ff0','#a0f','#fa0','#06f','#0f0','#f00'];
 
   let board=[],piece=null,pieceType=0,pieceX=0,pieceY=0,nextType=0;
-  let score=0,lines=0,level=1,running=false,paused=false,timer=null;
+  let score=0,lines=0,level=1,running=false,paused=false,over=false,timer=null;
   let baseSpeed=500;
 
   function createBoard(){ board=Array.from({length:ROWS},()=>Array(COLS).fill(0)); }
@@ -87,18 +103,19 @@
     if(cleared){ lines+=cleared; score+=[0,40,100,300,1200][cleared]*level; level=Math.floor(lines/10)+1; }
   }
 
-  function drop(){ if(valid(piece,pieceX,pieceY+1)) pieceY++; else{ place(); clearLines(); spawn(); } updateUI(); draw(); }
+  function drop(){ if(over) return; if(valid(piece,pieceX,pieceY+1)) pieceY++; else{ place(); clearLines(); spawn(); } updateUI(); draw(); }
 
-  function hardDrop(){ while(valid(piece,pieceX,pieceY+1)) pieceY++; score+=2; drop(); }
+  function hardDrop(){ if(over) return; while(valid(piece,pieceX,pieceY+1)) pieceY++; score+=2; drop(); }
 
   function rotate(){
+    if(over) return;
     const p=piece[0].map((_,i)=>piece.map(r=>r[i]).reverse());
     if(valid(p,pieceX,pieceY)) piece=p;
   }
 
-  function move(dx){ if(valid(piece,pieceX+dx,pieceY)) pieceX+=dx; }
+  function move(dx){ if(over) return; if(valid(piece,pieceX+dx,pieceY)) pieceX+=dx; }
 
-  function endGame(){ running=false; clearInterval(timer); drawGameOver(); updateUI(); }
+  function endGame(){ running=false; paused=false; over=true; clearInterval(timer); pauseBtn.textContent='暂停'; updateUI(); draw(); }
 
   function updateUI(){
     scoreEl.textContent=score; linesEl.textContent=lines; levelEl.textContent=level;
@@ -111,7 +128,7 @@
     for(let y=0;y<ROWS;y++) for(let x=0;x<COLS;x++){
       if(board[y][x]){ ctx.fillStyle=COLORS[board[y][x]-1]; ctx.fillRect(x*CELL,y*CELL,CELL-1,CELL-1); }
     }
-    if(piece&&running) for(let y=0;y<piece.length;y++) for(let x=0;x<piece[y].length;x++){
+    if(piece&&running&&!over) for(let y=0;y<piece.length;y++) for(let x=0;x<piece[y].length;x++){
       if(piece[y][x]){ ctx.fillStyle=COLORS[pieceType]; ctx.fillRect((pieceX+x)*CELL,(pieceY+y)*CELL,CELL-1,CELL-1); }
     }
     // next
@@ -119,32 +136,55 @@
     const np=PIECES[nextType]; nctx.fillStyle=COLORS[nextType];
     for(let y=0;y<np.length;y++) for(let x=0;x<np[y].length;x++)
       if(np[y][x]) nctx.fillRect(x*CELL+12,y*CELL+12,CELL-1,CELL-1);
+    if(over){
+      ctx.fillStyle='rgba(0,0,0,0.72)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle='#fff'; ctx.font='20px sans-serif'; ctx.textAlign='center';
+      ctx.fillText('游戏结束',canvas.width/2,canvas.height/2-10);
+      ctx.font='13px sans-serif';
+      ctx.fillText(`得分 ${score} · 点击「开始」再来一局`,canvas.width/2,canvas.height/2+18);
+    }else if(paused){
+      ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle='#fff'; ctx.font='20px sans-serif'; ctx.textAlign='center';
+      ctx.fillText('已暂停',canvas.width/2,canvas.height/2);
+    }
   }
 
-  function drawGameOver(){
-    ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle='#fff'; ctx.font='20px sans-serif'; ctx.textAlign='center';
-    ctx.fillText('游戏结束',canvas.width/2,canvas.height/2);
-  }
-
-  function tick(){ if(!paused&&running){ drop(); if(!running) return; const sp=Math.max(50,baseSpeed-(level-1)*30); clearInterval(timer); timer=setInterval(tick,sp); }}
+  function tick(){ if(!paused&&running&&!over){ drop(); if(!running) return; const sp=Math.max(50,baseSpeed-(level-1)*30); clearInterval(timer); timer=setInterval(tick,sp); }}
 
   startBtn.onclick=()=>{
     const d=diffSel.value; baseSpeed=d==='easy'?800:d==='hard'?250:500;
-    createBoard(); score=0; lines=0; level=1; running=true; paused=false;
+    createBoard(); score=0; lines=0; level=1; running=true; paused=false; over=false;
+    pauseBtn.textContent='暂停';
     nextType=randPiece(); spawn(); updateUI(); draw();
     clearInterval(timer); timer=setInterval(tick,baseSpeed);
   };
-  pauseBtn.onclick=()=>{ if(!running) return; paused=!paused; pauseBtn.textContent=paused?'继续':'暂停'; if(!paused) tick(); };
+  pauseBtn.onclick=()=>{
+    if(!running||over) return;
+    paused=!paused; pauseBtn.textContent=paused?'继续':'暂停';
+    if(!paused){ draw(); tick(); } else draw();
+  };
 
   document.addEventListener('keydown',e=>{
-    if(!running||paused) return;
+    if(!running||paused||over) return;
     const k=e.key;
     if(k==='ArrowLeft'){ e.preventDefault(); move(-1); draw(); }
     else if(k==='ArrowRight'){ e.preventDefault(); move(1); draw(); }
     else if(k==='ArrowDown'){ e.preventDefault(); drop(); draw(); }
     else if(k==='ArrowUp'){ e.preventDefault(); rotate(); draw(); }
     else if(k===' '){ e.preventDefault(); hardDrop(); draw(); }
+  });
+
+  document.querySelectorAll('.tetris-touch button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      if(!running||paused||over) return;
+      const act=b.dataset.act;
+      if(act==='left') move(-1);
+      else if(act==='right') move(1);
+      else if(act==='rotate') rotate();
+      else if(act==='down') drop();
+      else if(act==='drop') hardDrop();
+      draw();
+    });
   });
 
   createBoard(); nextType=randPiece(); draw();

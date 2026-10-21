@@ -1,36 +1,91 @@
 <style>
-.cc-wrap { max-width: 560px; margin: 0 auto; }
-.cc-swatch { height: 120px; border-radius: 12px; border: 2px solid var(--border); margin-bottom: 14px; background: #3498db; transition: background 0.2s; }
-.cc-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; font-size: 0.9rem; color: var(--secondary); }
-.cc-row input[type="color"] { width: 60px; height: 40px; border: none; background: none; cursor: pointer; }
-.cc-row input[type="text"] { flex: 1; min-width: 220px; padding: 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-family: monospace; }
-.cc-btns { display: flex; gap: 8px; }
-.cc-btns button { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
+#ccWrap { max-width: 560px; margin: 0 auto; }
+.cc-swatch {
+  position: relative; height: 140px; border-radius: 14px; overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
+  margin-bottom: 16px; background: #3498db; transition: background 0.2s;
+}
+.cc-swatch-val {
+  position: absolute; left: 14px; bottom: 12px; padding: 4px 10px; border-radius: 8px;
+  background: rgba(0, 0, 0, 0.42); color: #fff; font-size: 0.86rem; letter-spacing: 0.05em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.cc-card {
+  background: var(--entry); border: 1px solid color-mix(in srgb, var(--primary) 14%, transparent);
+  border-radius: 14px; padding: 16px;
+}
+.cc-picker-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.cc-picker-row input[type="color"] {
+  width: 56px; height: 38px; padding: 0; border-radius: 10px; cursor: pointer;
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
+  background: var(--code-bg);
+}
+.cc-picker-row > span { font-size: 0.82rem; color: var(--secondary); }
+.cc-row {
+  display: grid; grid-template-columns: 46px minmax(0, 1fr); gap: 10px;
+  align-items: center; margin-bottom: 10px;
+}
+.cc-row > label { font-size: 0.8rem; color: var(--secondary); letter-spacing: 0.04em; }
+.cc-row input[type="text"] {
+  width: 100%; padding: 9px 11px; border-radius: 9px; font-size: 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
+  background: var(--code-bg); color: var(--primary); transition: border-color 0.15s;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.cc-row input[type="text"]:focus { outline: none; border-color: var(--primary); }
+.cc-row input[type="text"].is-bad { border-color: #e0533d; }
+.cc-btns { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.cc-btns button {
+  flex: 1 1 150px; padding: 10px 16px; border-radius: 9px; cursor: pointer;
+  font-size: 0.9rem; color: var(--primary); background: var(--entry);
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
+  transition: border-color 0.15s, opacity 0.15s;
+}
+.cc-btns button:hover { border-color: var(--primary); }
+.cc-btns button.is-primary {
+  background: var(--primary); color: var(--theme); border-color: var(--primary); font-weight: 600;
+}
+.cc-btns button.is-primary:hover { opacity: 0.88; }
+.cc-note { min-height: 1.2em; margin-top: 10px; font-size: 0.78rem; color: var(--secondary); }
+.cc-note.is-err { color: #e0533d; }
 </style>
 
-<div class="cc-wrap">
-  <div class="cc-swatch" id="ccSwatch"></div>
-  <div class="cc-row"><input type="color" id="ccPicker" value="#3498db"><span>取色器</span></div>
-  <div class="cc-row"><span>HEX</span><input type="text" id="ccHex" value="#3498db"></div>
-  <div class="cc-row"><span>RGB</span><input type="text" id="ccRgb" value="rgb(52, 152, 219)"></div>
-  <div class="cc-row"><span>HSL</span><input type="text" id="ccHsl" value="hsl(204, 70%, 53%)"></div>
-  <div class="cc-btns"><button id="ccCopy">📋 复制 HEX</button><button id="ccRandom">🎲 随机颜色</button></div>
+<div id="ccWrap">
+  <div class="cc-swatch" id="ccSwatch"><span class="cc-swatch-val" id="ccSwatchVal">#3498db</span></div>
+  <div class="cc-card">
+    <div class="cc-picker-row">
+      <input type="color" id="ccPicker" value="#3498db" aria-label="取色器">
+      <span>点击色块自由取色</span>
+    </div>
+    <div class="cc-row"><label for="ccHex">HEX</label><input type="text" id="ccHex" value="#3498db" spellcheck="false" autocomplete="off"></div>
+    <div class="cc-row"><label for="ccRgb">RGB</label><input type="text" id="ccRgb" value="rgb(52, 152, 219)" spellcheck="false" autocomplete="off"></div>
+    <div class="cc-row"><label for="ccHsl">HSL</label><input type="text" id="ccHsl" value="hsl(204, 70%, 53%)" spellcheck="false" autocomplete="off"></div>
+    <div class="cc-btns">
+      <button id="ccCopy" class="is-primary">📋 复制 HEX</button>
+      <button id="ccRandom">🎲 随机颜色</button>
+    </div>
+    <div class="cc-note" id="ccNote"></div>
+  </div>
 </div>
 
 <script>
 (()=>{
+  const wrap=document.getElementById('ccWrap');
+  if(!wrap) return;
   const picker=document.getElementById('ccPicker');
   const hexEl=document.getElementById('ccHex');
   const rgbEl=document.getElementById('ccRgb');
   const hslEl=document.getElementById('ccHsl');
   const swatch=document.getElementById('ccSwatch');
-  let editing=false;
+  const swatchVal=document.getElementById('ccSwatchVal');
+  const note=document.getElementById('ccNote');
 
+  function clamp(v,lo,hi){ return Math.max(lo,Math.min(hi,v)); }
   function rgbToHex(r,g,b){
-    return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+    return '#'+[r,g,b].map(v=>clamp(Math.round(v),0,255).toString(16).padStart(2,'0')).join('');
   }
   function hexToRgb(h){
-    h=h.replace('#','');
+    h=String(h).trim().replace(/^#/,'');
     if(h.length===3) h=h.split('').map(c=>c+c).join('');
     return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
   }
@@ -50,6 +105,7 @@
   }
   function hslToRgb(h,s,l){
     s/=100; l/=100;
+    h=((h%360)+360)%360;
     const c=(1-Math.abs(2*l-1))*s, x=c*(1-Math.abs((h/60)%2-1)), m=l-c/2;
     let r=0,g=0,b=0;
     if(h<60){r=c;g=x;} else if(h<120){r=x;g=c;} else if(h<180){g=c;b=x;}
@@ -57,46 +113,89 @@
     return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
   }
 
-  function fromHex(h){
-    if(!/^#?[0-9a-fA-F]{6}$/.test(h)) return;
-    const [r,g,b]=hexToRgb(h);
-    apply(r,g,b);
+  let bad=null;
+  function markInvalid(el){
+    if(bad) bad.classList.remove('is-bad');
+    bad=el||null;
+    if(bad) bad.classList.add('is-bad');
   }
-  function fromRgb(t){
-    const m=t.match(/\d+(\.\d+)?/g);
-    if(!m||m.length<3) return;
-    apply(+m[0],+m[1],+m[2]);
+  function setNote(t,isErr){
+    note.textContent=t||'';
+    note.classList.toggle('is-err',!!isErr);
   }
-  function fromHsl(t){
-    const m=t.match(/[\d.]+/g);
-    if(!m||m.length<3) return;
-    const [r,g,b]=hslToRgb(+m[0]%360,+m[1],+m[2]);
-    apply(r,g,b);
-  }
+
   function apply(r,g,b){
-    r=Math.max(0,Math.min(255,Math.round(r)));
-    g=Math.max(0,Math.min(255,Math.round(g)));
-    b=Math.max(0,Math.min(255,Math.round(b)));
-    editing=true;
+    if(!isFinite(r)||!isFinite(g)||!isFinite(b)) return;
+    r=clamp(r,0,255); g=clamp(g,0,255); b=clamp(b,0,255);
     const hex=rgbToHex(r,g,b);
     hexEl.value=hex; picker.value=hex;
-    rgbEl.value='rgb('+r+', '+g+', '+b+')';
+    rgbEl.value='rgb('+Math.round(r)+', '+Math.round(g)+', '+Math.round(b)+')';
     const [h,s,l]=rgbToHsl(r,g,b);
     hslEl.value='hsl('+h+', '+s+'%, '+l+'%)';
     swatch.style.background=hex;
-    editing=false;
+    swatchVal.textContent=hex;
+    markInvalid(null);
   }
 
-  picker.oninput=()=>fromHex(picker.value);
-  hexEl.onchange=()=>fromHex(hexEl.value);
-  rgbEl.onchange=()=>fromRgb(rgbEl.value);
-  hslEl.onchange=()=>fromHsl(hslEl.value);
-  document.getElementById('ccCopy').onclick=()=>navigator.clipboard.writeText(hexEl.value);
-  document.getElementById('ccRandom').onclick=()=>{
+  function fromHex(el){
+    const v=String(el.value).trim();
+    const m=v.match(/^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+    if(!m){ markInvalid(el); setNote('HEX 需要 3 位或 6 位十六进制，例如 #3498db',true); return; }
+    const [r,g,b]=hexToRgb(m[1]);
+    apply(r,g,b); setNote('');
+  }
+  function fromRgb(el){
+    const m=String(el.value).match(/[-+]?\d*\.?\d+/g);
+    if(!m||m.length<3){ markInvalid(el); setNote('RGB 需要 3 个 0-255 的数值，例如 rgb(52, 152, 219)',true); return; }
+    apply(+m[0],+m[1],+m[2]); setNote('');
+  }
+  function fromHsl(el){
+    const m=String(el.value).match(/[-+]?\d*\.?\d+/g);
+    if(!m||m.length<3){ markInvalid(el); setNote('HSL 需要 3 个数值，例如 hsl(204, 70%, 53%)',true); return; }
+    const [r,g,b]=hslToRgb(+m[0],clamp(+m[1],0,100),clamp(+m[2],0,100));
+    apply(r,g,b); setNote('');
+  }
+
+  picker.addEventListener('input',()=>{ apply(...hexToRgb(picker.value)); setNote(''); });
+  hexEl.addEventListener('change',()=>fromHex(hexEl));
+  rgbEl.addEventListener('change',()=>fromRgb(rgbEl));
+  hslEl.addEventListener('change',()=>fromHsl(hslEl));
+  [hexEl,rgbEl,hslEl].forEach(el=>el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ el.blur(); } }));
+
+  function copyText(t){
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      return navigator.clipboard.writeText(t);
+    }
+    return Promise.reject(new Error('no clipboard'));
+  }
+  function fallbackCopy(t){
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=t; ta.setAttribute('readonly','');
+      ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      const ok=document.execCommand&&document.execCommand('copy');
+      document.body.removeChild(ta);
+      return !!ok;
+    }catch(e){ return false; }
+  }
+
+  document.getElementById('ccCopy').addEventListener('click',()=>{
+    const t=hexEl.value;
+    const done=()=>setNote('已复制 '+t);
+    const fail=()=>{ if(fallbackCopy(t)) done(); else setNote('复制失败，请手动选择 '+t,true); };
+    let p;
+    try{ p=copyText(t); }catch(e){ p=Promise.reject(e); }
+    p.then(done).catch(fail);
+  });
+
+  document.getElementById('ccRandom').addEventListener('click',()=>{
     const h=Math.floor(Math.random()*360), s=50+Math.floor(Math.random()*40), l=40+Math.floor(Math.random()*30);
     const [r,g,b]=hslToRgb(h,s,l);
-    apply(r,g,b);
-  };
-  fromHex('#3498db');
+    apply(r,g,b); setNote('已生成随机颜色');
+  });
+
+  apply(52,152,219);
+  setNote('');
 })();
 </script>

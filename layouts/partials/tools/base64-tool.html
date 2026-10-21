@@ -1,22 +1,83 @@
 <style>
-.b64-wrap { max-width: 680px; margin: 0 auto; }
-.b64-input { width: 100%; min-height: 150px; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.95rem; resize: vertical; }
-.b64-btns { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
-.b64-btns button { padding: 9px 18px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; font-weight: 600; }
-.b64-btns .main { background: var(--primary); color: var(--theme); border-color: var(--primary); }
-.b64-out { background: var(--code-bg); border-radius: 10px; padding: 14px; min-height: 90px; color: var(--primary); word-break: break-all; }
-.b64-msg { color: #e74c3c; font-size: 0.85rem; margin-top: 8px; min-height: 18px; }
+.b64-wrap {
+  --b64-line: color-mix(in srgb, var(--primary) 22%, transparent);
+  --b64-card-line: color-mix(in srgb, var(--primary) 14%, transparent);
+  max-width: 680px;
+  margin: 0 auto;
+}
+.b64-card {
+  background: var(--entry);
+  border: 1px solid var(--b64-card-line);
+  border-radius: 12px;
+  padding: 18px;
+}
+.b64-input {
+  width: 100%;
+  min-height: 170px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--b64-line);
+  background: var(--code-bg);
+  color: var(--primary);
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+.main .b64-wrap .b64-input { min-height: 170px; font-size: 0.95rem; }
+.b64-input:focus { border-color: var(--primary); }
+.b64-btns { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; align-items: center; }
+.b64-btns button {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--b64-line);
+  background: var(--code-bg);
+  color: var(--primary);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, opacity .15s ease;
+}
+.b64-btns button:hover { border-color: var(--primary); }
+.b64-btns .b64-primary { background: var(--primary); border-color: var(--primary); color: var(--theme); }
+.b64-btns .b64-primary:hover { opacity: .88; }
+.b64-out {
+  background: var(--code-bg);
+  border: 1px solid color-mix(in srgb, var(--primary) 8%, transparent);
+  border-radius: 10px;
+  padding: 14px;
+  min-height: 96px;
+  color: var(--primary);
+  font-size: 0.9rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  max-height: 340px;
+  overflow-y: auto;
+}
+.b64-msg { font-size: 0.82rem; margin-top: 8px; min-height: 18px; line-height: 1.4; color: var(--secondary); }
+.b64-msg.err { color: #d93025; }
+[data-theme="dark"] .b64-msg.err { color: #ff8a80; }
+.b64-wrap button:focus-visible,
+.b64-wrap textarea:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--primary) 55%, transparent);
+  outline-offset: 2px;
+}
 </style>
 
 <div class="b64-wrap">
-  <textarea class="b64-input" id="b64Input" placeholder="输入文本或 Base64 内容…"></textarea>
-  <div class="b64-btns">
-    <button class="main" id="b64Enc">🔒 编码</button>
-    <button id="b64Dec">🔓 解码</button>
-    <button id="b64Copy">📋 复制结果</button>
+  <div class="b64-card">
+    <textarea class="b64-input" id="b64Input" aria-label="要编码的文本或要解码的 Base64" placeholder="输入文本或 Base64 内容…"></textarea>
+    <div class="b64-btns">
+      <button type="button" class="b64-primary" id="b64Enc">🔒 编码</button>
+      <button type="button" id="b64Dec">🔓 解码</button>
+      <button type="button" id="b64Copy">📋 复制结果</button>
+    </div>
+    <div class="b64-out" id="b64Out" aria-live="polite">结果</div>
+    <div class="b64-msg" id="b64Msg" aria-live="polite"></div>
   </div>
-  <div class="b64-out" id="b64Out">结果</div>
-  <div class="b64-msg" id="b64Msg"></div>
 </div>
 
 <script>
@@ -24,28 +85,95 @@
   const input=document.getElementById('b64Input');
   const out=document.getElementById('b64Out');
   const msg=document.getElementById('b64Msg');
+  let hasResult=false;
+
+  function setMsg(text, ok){
+    msg.textContent=text;
+    msg.classList.toggle('err',!ok);
+  }
+  function clearOut(text){
+    out.textContent=text;
+    hasResult=false;
+  }
+  function charCount(s){ return Array.from(s).length; }
 
   function encode(){
+    const text=input.value;
+    if(!text){ clearOut(''); setMsg('请输入要编码的内容',true); return; }
     try{
-      const bytes=new TextEncoder().encode(input.value);
+      const bytes=new TextEncoder().encode(text);
       let bin='';
-      bytes.forEach(b=>bin+=String.fromCharCode(b));
+      const CHUNK=0x8000;
+      for(let i=0;i<bytes.length;i+=CHUNK){
+        bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));
+      }
       out.textContent=btoa(bin);
-      msg.textContent='';
-    }catch(e){ msg.textContent='编码失败：'+e.message; }
+      hasResult=true;
+      setMsg('编码完成 · '+charCount(text)+' 字符 / '+bytes.length+' 字节',true);
+    }catch(e){
+      clearOut('');
+      setMsg('编码失败：'+((e&&e.message)||'未知错误'),false);
+    }
   }
 
   function decode(){
+    const raw=input.value;
+    if(!raw.trim()){ clearOut(''); setMsg('请输入要解码的 Base64 内容',true); return; }
+    let s=raw.replace(/\s+/g,'').replace(/-/g,'+').replace(/_/g,'/');
+    if(!/^[A-Za-z0-9+/]*={0,2}$/.test(s)){
+      clearOut('');
+      setMsg('解码失败：包含非 Base64 字符',false);
+      return;
+    }
+    const core=s.replace(/=+$/,'');
+    const rem=core.length%4;
+    if(rem===1){
+      clearOut('');
+      setMsg('解码失败：Base64 长度不正确',false);
+      return;
+    }
+    if(rem) s=core+'='.repeat(4-rem);
     try{
-      const bin=atob(input.value.trim());
+      const bin=atob(s);
       const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
-      out.textContent=new TextDecoder().decode(bytes);
-      msg.textContent='';
-    }catch(e){ msg.textContent='解码失败：不是有效的 Base64'; }
+      const text=new TextDecoder('utf-8').decode(bytes);
+      out.textContent=text;
+      hasResult=true;
+      setMsg(text.indexOf('\uFFFD')>=0
+        ?'解码完成 · '+bytes.length+' 字节，其中含无法识别为 UTF-8 的字节'
+        :'解码完成 · '+bytes.length+' 字节 / '+charCount(text)+' 字符',true);
+    }catch(e){
+      clearOut('');
+      setMsg('解码失败：不是有效的 Base64',false);
+    }
+  }
+
+  async function copyText(text){
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      try{ await navigator.clipboard.writeText(text); return true; }catch(e){}
+    }
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=text;
+      ta.setAttribute('readonly','');
+      ta.style.position='fixed';
+      ta.style.top='-1000px';
+      ta.style.opacity='0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok=document.execCommand('copy');
+      ta.remove();
+      return ok;
+    }catch(e){ return false; }
   }
 
   document.getElementById('b64Enc').onclick=encode;
   document.getElementById('b64Dec').onclick=decode;
-  document.getElementById('b64Copy').onclick=()=>navigator.clipboard.writeText(out.textContent);
+  document.getElementById('b64Copy').onclick=async()=>{
+    if(!hasResult){ setMsg('没有可复制的结果',true); return; }
+    const ok=await copyText(out.textContent);
+    setMsg(ok?'已复制到剪贴板':'复制失败，请手动选择文本',ok);
+  };
+  input.addEventListener('input',()=>{ setMsg('',true); });
 })();
 </script>

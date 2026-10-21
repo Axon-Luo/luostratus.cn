@@ -1,22 +1,86 @@
 <style>
-.jf-wrap { max-width: 760px; margin: 0 auto; }
-.jf-input { width: 100%; min-height: 200px; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-family: monospace; font-size: 0.9rem; resize: vertical; }
-.jf-btns { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
-.jf-btns button { padding: 9px 18px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; font-weight: 600; }
-.jf-out { background: var(--code-bg); border-radius: 10px; padding: 14px; min-height: 120px; color: var(--primary); font-family: monospace; font-size: 0.85rem; white-space: pre-wrap; word-break: break-word; }
-.jf-msg { color: #e74c3c; font-size: 0.85rem; margin-top: 8px; min-height: 18px; }
+.jf-wrap {
+  --jf-line: color-mix(in srgb, var(--primary) 22%, transparent);
+  --jf-card-line: color-mix(in srgb, var(--primary) 14%, transparent);
+  max-width: 680px;
+  margin: 0 auto;
+}
+.jf-card {
+  background: var(--entry);
+  border: 1px solid var(--jf-card-line);
+  border-radius: 12px;
+  padding: 18px;
+}
+.jf-input {
+  width: 100%;
+  min-height: 220px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--jf-line);
+  background: var(--code-bg);
+  color: var(--primary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  resize: vertical;
+  tab-size: 2;
+}
+.main .jf-wrap .jf-input { min-height: 220px; font-size: 0.9rem; }
+.jf-input:focus { border-color: var(--primary); }
+.jf-btns { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; align-items: center; }
+.jf-btns button {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--jf-line);
+  background: var(--code-bg);
+  color: var(--primary);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, opacity .15s ease;
+}
+.jf-btns button:hover { border-color: var(--primary); }
+.jf-btns .jf-primary { background: var(--primary); border-color: var(--primary); color: var(--theme); }
+.jf-btns .jf-primary:hover { opacity: .88; }
+.jf-out {
+  background: var(--code-bg);
+  border: 1px solid color-mix(in srgb, var(--primary) 8%, transparent);
+  border-radius: 10px;
+  padding: 14px;
+  min-height: 120px;
+  max-height: 420px;
+  overflow: auto;
+  color: var(--primary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.jf-msg { font-size: 0.82rem; margin-top: 8px; min-height: 18px; line-height: 1.45; color: var(--secondary); }
+.jf-msg.err { color: #d93025; }
+[data-theme="dark"] .jf-msg.err { color: #ff8a80; }
+.jf-wrap button:focus-visible,
+.jf-wrap textarea:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--primary) 55%, transparent);
+  outline-offset: 2px;
+}
 </style>
 
 <div class="jf-wrap">
-  <textarea class="jf-input" id="jfInput" placeholder='{"name": "洛云", "site": "luostratus.cn"}'></textarea>
-  <div class="jf-btns">
-    <button id="jfFmt">✨ 格式化</button>
-    <button id="jfMin">🗜 压缩</button>
-    <button id="jfVal">✔ 校验</button>
-    <button id="jfCopy">📋 复制</button>
+  <div class="jf-card">
+    <textarea class="jf-input" id="jfInput" spellcheck="false" aria-label="JSON 内容" placeholder='{"name": "洛云", "site": "luostratus.cn"}'></textarea>
+    <div class="jf-btns">
+      <button type="button" class="jf-primary" id="jfFmt">✨ 格式化</button>
+      <button type="button" id="jfMin">🗜 压缩</button>
+      <button type="button" id="jfVal">✔ 校验</button>
+      <button type="button" id="jfCopy">📋 复制</button>
+    </div>
+    <div class="jf-out" id="jfOut" aria-live="polite">结果</div>
+    <div class="jf-msg" id="jfMsg" aria-live="polite"></div>
   </div>
-  <div class="jf-out" id="jfOut">结果</div>
-  <div class="jf-msg" id="jfMsg"></div>
 </div>
 
 <script>
@@ -24,27 +88,100 @@
   const input=document.getElementById('jfInput');
   const out=document.getElementById('jfOut');
   const msg=document.getElementById('jfMsg');
+  let hasResult=false;
 
+  function setMsg(text, ok){
+    msg.textContent=text;
+    msg.classList.toggle('err',!ok);
+  }
+  function clearOut(){
+    out.textContent='';
+    hasResult=false;
+  }
+  function describe(v){
+    if(Array.isArray(v)) return '数组 · '+v.length+' 项';
+    if(v&&typeof v==='object') return '对象 · '+Object.keys(v).length+' 个键';
+    return typeof v;
+  }
+  function locate(raw, e){
+    const m1=/line (\d+) column (\d+)/.exec(e.message||'');
+    if(m1) return '（第 '+m1[1]+' 行第 '+m1[2]+' 列）';
+    const m2=/position (\d+)/.exec(e.message||'');
+    if(m2){
+      const pos=Math.min(raw.length,+m2[1]);
+      const before=raw.slice(0,pos);
+      const line=before.split('\n').length;
+      const col=pos-(before.lastIndexOf('\n')+1)+1;
+      return '（第 '+line+' 行第 '+col+' 列）';
+    }
+    return '';
+  }
+  function reasonText(message){
+    const m=String(message||'解析失败').replace(/^JSON\.parse:\s*/,'').replace(/\s+/g,' ').trim();
+    if(/end of (JSON )?input|end of data/i.test(m)) return 'JSON 不完整，可能缺少右括号或引号';
+    if(/Expected double-quoted property name/i.test(m)) return '对象属性名必须使用双引号，或存在多余的逗号';
+    if(/Expected ',' or '}'/i.test(m)) return '对象内缺少逗号或右花括号';
+    if(/Expected ',' or ']'/i.test(m)) return '数组内缺少逗号或右方括号';
+    if(/Unexpected non-whitespace/i.test(m)) return 'JSON 结束后还有多余内容';
+    if(/Unexpected token/i.test(m)) return '存在无法解析的字符（常见原因：多余逗号、单引号、键名未加引号）';
+    return m.length>120?m.slice(0,120)+'…':m;
+  }
   function parse(){
-    try{ return {ok:true,val:JSON.parse(input.value)}; }
-    catch(e){ msg.textContent='JSON 错误：'+e.message; return {ok:false}; }
+    const raw=input.value.trim();
+    if(!raw){ clearOut(); setMsg('请输入 JSON 内容',true); return null; }
+    try{
+      return {val:JSON.parse(raw), raw:raw};
+    }catch(e){
+      clearOut();
+      const detail=locate(raw,e);
+      setMsg('JSON 解析失败'+detail+'：'+reasonText(e&&e.message),false);
+      return null;
+    }
+  }
+  function write(text, message){
+    out.textContent=text;
+    hasResult=true;
+    setMsg(message,true);
   }
 
   document.getElementById('jfFmt').onclick=()=>{
-    const p=parse(); if(!p.ok) return;
-    out.textContent=JSON.stringify(p.val,null,2);
-    msg.textContent='格式化成功';
+    const p=parse(); if(!p) return;
+    write(JSON.stringify(p.val,null,2),'格式化成功 · 缩进 2 空格');
   };
   document.getElementById('jfMin').onclick=()=>{
-    const p=parse(); if(!p.ok) return;
-    out.textContent=JSON.stringify(p.val);
-    msg.textContent='压缩成功';
+    const p=parse(); if(!p) return;
+    const text=JSON.stringify(p.val);
+    write(text,'压缩成功 · '+p.raw.length+' 字符 → '+text.length+' 字符');
   };
   document.getElementById('jfVal').onclick=()=>{
-    const p=parse(); if(!p.ok) return;
-    out.textContent=JSON.stringify(p.val,null,2);
-    msg.textContent='✔ 合法 JSON';
+    const p=parse(); if(!p) return;
+    write(JSON.stringify(p.val,null,2),'✔ 合法 JSON · '+describe(p.val));
   };
-  document.getElementById('jfCopy').onclick=()=>navigator.clipboard.writeText(out.textContent);
+
+  async function copyText(text){
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      try{ await navigator.clipboard.writeText(text); return true; }catch(e){}
+    }
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=text;
+      ta.setAttribute('readonly','');
+      ta.style.position='fixed';
+      ta.style.top='-1000px';
+      ta.style.opacity='0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok=document.execCommand('copy');
+      ta.remove();
+      return ok;
+    }catch(e){ return false; }
+  }
+
+  document.getElementById('jfCopy').onclick=async()=>{
+    if(!hasResult){ setMsg('没有可复制的内容',false); return; }
+    const ok=await copyText(out.textContent);
+    setMsg(ok?'已复制到剪贴板':'复制失败，请手动选择文本',ok);
+  };
+  input.addEventListener('input',()=>{ setMsg('',true); });
 })();
 </script>

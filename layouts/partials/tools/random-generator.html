@@ -1,87 +1,199 @@
 <style>
-.rng-wrap { max-width: 500px; margin: 0 auto; }
+.rng-wrap { max-width: 520px; margin: 0 auto; --rng-line: color-mix(in srgb, var(--primary) 20%, transparent); }
 .rng-card { padding: 20px; border-radius: 12px; background: var(--entry); border: 1px solid var(--border); margin-bottom: 16px; }
-.rng-row { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
-.rng-row label { font-size: 0.85rem; color: var(--secondary); min-width: 60px; }
-.rng-row input { padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.9rem; width: 100px; }
-.rng-row input[type="checkbox"] { width: auto; }
-.rng-result { background: var(--code-bg); border-radius: 8px; padding: 16px; font-family: monospace; font-size: 1.1rem; word-break: break-all; min-height: 50px; color: var(--primary); }
-.rng-btns { display: flex; gap: 8px; margin-top: 10px; }
-.rng-btns button { padding: 10px 20px; border-radius: 8px; border: none; font-size: 0.95rem; cursor: pointer; font-weight: 600; }
-.rng-gen { background: var(--primary); color: var(--theme); }
-.rng-copy { border: 1px solid var(--border)!important; background: var(--entry); color: var(--primary); }
+.rng-row { display: grid; grid-template-columns: 66px minmax(0, 1fr) 66px minmax(0, 1fr); gap: 10px 12px; align-items: center; margin-bottom: 12px; }
+.rng-row label { font-size: 0.85rem; color: var(--secondary); }
+.rng-row input { width: 100%; min-width: 0; padding: 9px 10px; border-radius: 8px; border: 1px solid var(--rng-line); background: var(--entry); color: var(--primary); font-size: 0.92rem; }
+.rng-opts { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 4px; }
+.rng-opts label { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--secondary); cursor: pointer; }
+.rng-opts input { width: auto; accent-color: var(--primary); }
+.rng-btns { display: flex; gap: 10px; margin-top: 14px; }
+.rng-btns button { padding: 10px 20px; border-radius: 8px; font-size: 0.95rem; cursor: pointer; font-weight: 600; border: 1px solid var(--rng-line); background: var(--entry); color: var(--primary); }
+.rng-btns .rng-gen { flex: 1; background: var(--primary); color: var(--theme); border-color: var(--primary); }
+.rng-result { margin-top: 12px; background: var(--code-bg); border: 1px solid var(--rng-line); border-radius: 8px; padding: 14px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 1.02rem; line-height: 1.7; word-break: break-all; min-height: 76px; color: var(--primary); }
+.rng-hint { min-height: 1.2em; margin: 8px 0 0; font-size: 0.78rem; color: var(--secondary); }
+.rng-hint.is-error { color: color-mix(in srgb, #f59e0b 60%, var(--primary)); }
+.rng-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.rng-head h4 { margin: 0; font-size: 0.95rem; }
+.rng-head button { padding: 4px 10px; border-radius: 6px; border: 1px solid var(--rng-line); background: var(--entry); color: var(--secondary); font-size: 0.78rem; cursor: pointer; }
 .rng-history { font-size: 0.82rem; color: var(--secondary); }
-.rng-history div { padding: 3px 0; }
+.rng-history div { padding: 4px 0; border-bottom: 1px solid var(--rng-line); word-break: break-all; }
+.rng-history div:last-child { border-bottom: 0; }
+.rng-history strong { color: var(--primary); font-weight: 600; }
+@media (max-width: 420px) {
+  .rng-row { grid-template-columns: 58px minmax(0, 1fr); }
+}
 </style>
 
 <div class="rng-wrap">
   <div class="rng-card">
     <div class="rng-row">
-      <label>最小值</label><input type="number" id="rngMin" value="1" step="any">
-      <label>最大值</label><input type="number" id="rngMax" value="100" step="any">
+      <label for="rngMin">最小值</label><input type="number" id="rngMin" value="1" step="any">
+      <label for="rngMax">最大值</label><input type="number" id="rngMax" value="100" step="any">
     </div>
     <div class="rng-row">
-      <label>生成数量</label><input type="number" id="rngCount" value="5" min="1" max="1000">
-      <label>小数位</label><input type="number" id="rngDec" value="0" min="0" max="10">
+      <label for="rngCount">生成数量</label><input type="number" id="rngCount" value="5" min="1" max="1000" step="1">
+      <label for="rngDec">小数位</label><input type="number" id="rngDec" value="0" min="0" max="10" step="1">
     </div>
-    <div class="rng-row">
+    <div class="rng-opts">
       <label><input type="checkbox" id="rngUnique"> 不允许重复</label>
       <label><input type="checkbox" id="rngSort"> 排序输出</label>
     </div>
     <div class="rng-btns">
-      <button class="rng-gen" id="rngGenerate">🎲 生成</button>
-      <button class="rng-copy" id="rngCopy">📋 复制</button>
+      <button class="rng-gen" id="rngGenerate" type="button">🎲 生成</button>
+      <button class="rng-copy" id="rngCopy" type="button">📋 复制</button>
     </div>
     <div class="rng-result" id="rngResult">点击生成</div>
+    <p class="rng-hint" id="rngHint" aria-live="polite"></p>
   </div>
   <div class="rng-card">
-    <h4 style="margin-bottom:8px">📋 历史</h4>
+    <div class="rng-head">
+      <h4>📋 历史</h4>
+      <button id="rngClear" type="button">清空</button>
+    </div>
     <div class="rng-history" id="rngHistory"></div>
   </div>
 </div>
 
 <script>
 (()=>{
+  const KEY='rngHistory';
+  const minEl=document.getElementById('rngMin');
+  const maxEl=document.getElementById('rngMax');
+  const countEl=document.getElementById('rngCount');
+  const decEl=document.getElementById('rngDec');
+  const uniqueEl=document.getElementById('rngUnique');
+  const sortEl=document.getElementById('rngSort');
+  const resultEl=document.getElementById('rngResult');
+  const hintEl=document.getElementById('rngHint');
+  const historyEl=document.getElementById('rngHistory');
+
+  function setMsg(msg,isError){
+    hintEl.textContent=msg||'';
+    hintEl.classList.toggle('is-error',!!isError);
+  }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function loadHistory(){
+    try{
+      const raw=JSON.parse(localStorage.getItem(KEY)||'[]');
+      if(!Array.isArray(raw)) return [];
+      return raw.filter(e=>e&&typeof e==='object'&&typeof e.out==='string');
+    }catch(e){ return []; }
+  }
+  function saveHistory(list){ try{ localStorage.setItem(KEY,JSON.stringify(list.slice(0,10))); }catch(e){} }
+  function renderHistory(){
+    const list=loadHistory();
+    if(!list.length){ historyEl.textContent='暂无记录'; return; }
+    historyEl.innerHTML=list.slice(0,10).map(e=>'<div><strong>'+escapeHtml(e.time||'')+'</strong> '+escapeHtml(e.out)+'</div>').join('');
+  }
+
+  async function copyText(t){
+    if(!t) return false;
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){ await navigator.clipboard.writeText(t); return true; }
+    }catch(e){}
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=t; ta.setAttribute('readonly','');
+      ta.style.position='fixed'; ta.style.top='-1000px'; ta.style.opacity='0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok=document.execCommand('copy');
+      ta.remove();
+      return ok;
+    }catch(e){ return false; }
+  }
+
+  function clampInt(el,def,min,max,notes,label){
+    let v=parseInt(el.value,10);
+    if(!isFinite(v)) v=def;
+    const c=Math.max(min,Math.min(max,v));
+    if(c!==v){ el.value=String(c); notes.push(label+'已调整为 '+c+'（允许 '+min+'–'+max+'）'); }
+    return c;
+  }
+
   function generate(){
-    const min=+document.getElementById('rngMin').value||0;
-    const max=+document.getElementById('rngMax').value||100;
-    const count=+document.getElementById('rngCount').value||5;
-    const dec=+document.getElementById('rngDec').value||0;
-    const unique=document.getElementById('rngUnique').checked;
-    const sort=document.getElementById('rngSort').checked;
-    const mult=Math.pow(10,dec);
-
-    if(unique&&(max-min+1)*mult<count){ document.getElementById('rngResult').textContent='范围不足以生成不重复的随机数'; return; }
-
-    const results=[]; const seen=new Set();
-    while(results.length<count){
-      const raw=Math.random()*(max-min)+min;
-      const val=Math.round(raw*mult)/mult;
-      const key=val.toFixed(dec);
-      if(unique&&seen.has(key)) continue;
-      seen.add(key); results.push(val);
+    setMsg('');
+    const notes=[];
+    const min=parseFloat(minEl.value);
+    const max=parseFloat(maxEl.value);
+    if(minEl.value.trim()===''||maxEl.value.trim()===''||!isFinite(min)||!isFinite(max)){
+      setMsg('请输入有效的最小值和最大值',true);
+      resultEl.textContent='—';
+      return;
     }
-    if(sort) results.sort((a,b)=>a-b);
-    const out=results.map(v=>v.toFixed(dec)).join(', ');
-    document.getElementById('rngResult').textContent=out;
+    if(min>max){ setMsg('最小值不能大于最大值',true); resultEl.textContent='—'; return; }
 
-    // save history
-    const h=JSON.parse(localStorage.getItem('rngHistory')||'[]');
-    h.unshift({time:new Date().toLocaleTimeString('zh-CN'),out});
-    if(h.length>10) h.length=10;
-    localStorage.setItem('rngHistory',JSON.stringify(h));
+    const count=clampInt(countEl,5,1,1000,notes,'生成数量');
+    const dec=clampInt(decEl,0,0,10,notes,'小数位');
+    const mult=Math.pow(10,dec);
+    const kMin=Math.ceil(min*mult-1e-9);
+    const kMax=Math.floor(max*mult+1e-9);
+    if(kMax<kMin){
+      setMsg('当前范围内没有可生成的值，请调整最小值/最大值或小数位',true);
+      resultEl.textContent='—';
+      return;
+    }
+    const distinct=kMax-kMin+1;
+    const unique=uniqueEl.checked;
+    if(unique&&count>distinct){
+      setMsg('范围内只有 '+distinct+' 个可取值，无法生成 '+count+' 个不重复的随机数',true);
+      resultEl.textContent='—';
+      return;
+    }
+
+    let ks=[];
+    if(unique){
+      const used=new Set();
+      const limit=count*200+5000;
+      for(let tries=0;used.size<count&&tries<limit;tries++){
+        used.add(kMin+Math.floor(Math.random()*distinct));
+      }
+      if(used.size<count){
+        if(distinct<=200000){
+          const all=[];
+          for(let k=kMin;k<=kMax;k++) all.push(k);
+          for(let i=all.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=all[i]; all[i]=all[j]; all[j]=t; }
+          ks=all.slice(0,count);
+        }else{
+          while(used.size<count) used.add(kMin+Math.floor(Math.random()*distinct));
+          ks=Array.from(used);
+        }
+      }else{
+        ks=Array.from(used);
+      }
+    }else{
+      for(let i=0;i<count;i++) ks.push(kMin+Math.floor(Math.random()*distinct));
+    }
+
+    if(sortEl.checked) ks.sort((a,b)=>a-b);
+    const out=ks.map(k=>{
+      let s=(k/mult).toFixed(dec);
+      if(/^-0(\.0+)?$/.test(s)) s=s.slice(1);
+      return s;
+    }).join(', ');
+
+    resultEl.textContent=out;
+    const info='已生成 '+count+' 个'+(unique?'不重复':'')+'数字 · 范围 '+(kMin/mult).toFixed(dec)+' ~ '+(kMax/mult).toFixed(dec)+(dec>0?' · '+dec+' 位小数':'');
+    setMsg(notes.length?notes.join('；')+'；'+info:info,notes.length>0);
+
+    const list=loadHistory();
+    list.unshift({time:new Date().toLocaleTimeString('zh-CN'),out:out});
+    saveHistory(list);
     renderHistory();
   }
 
-  function renderHistory(){
-    const h=JSON.parse(localStorage.getItem('rngHistory')||'[]');
-    document.getElementById('rngHistory').innerHTML=h.map(e=>`<div><strong>${e.time}</strong> ${e.out}</div>`).join('')||'暂无记录';
-  }
+  document.getElementById('rngGenerate').addEventListener('click',generate);
+  document.getElementById('rngCopy').addEventListener('click',async()=>{
+    const ok=await copyText(resultEl.textContent.trim());
+    setMsg(ok?'已复制到剪贴板':'复制失败，请手动选择文本复制',!ok);
+  });
+  document.getElementById('rngClear').addEventListener('click',()=>{
+    saveHistory([]);
+    renderHistory();
+  });
 
-  document.getElementById('rngGenerate').onclick=generate;
-  document.getElementById('rngCopy').onclick=()=>{
-    navigator.clipboard.writeText(document.getElementById('rngResult').textContent);
-  };
   renderHistory();
 })();
 </script>

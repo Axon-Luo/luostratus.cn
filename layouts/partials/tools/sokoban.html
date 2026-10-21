@@ -1,14 +1,28 @@
 <style>
-.sk-wrap { max-width: 520px; margin: 0 auto; text-align: center; }
+.sk-wrap { max-width: 520px; margin: 0 auto; text-align: center; --sk-line: color-mix(in srgb, var(--primary) 16%, transparent); --sk-cell: 44px; }
 .sk-info { display: flex; justify-content: center; gap: 16px; color: var(--secondary); font-size: 0.9rem; margin-bottom: 10px; flex-wrap: wrap; }
-.sk-btns button { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; margin: 0 4px 8px; }
-.sk-grid { display: inline-grid; gap: 2px; background: var(--entry); border: 2px solid var(--border); border-radius: 8px; padding: 8px; }
-.sk-cell { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; border-radius: 4px; }
-.sk-wall { background: #5d6d7e; color: transparent; }
-.sk-goal { background: rgba(255,255,0,0.15); }
-.sk-player { background: rgba(52,152,219,0.25); }
-.sk-dpad { display: flex; justify-content: center; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
-.sk-dpad button { width: 44px; height: 44px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 1.1rem; cursor: pointer; }
+.sk-info strong { color: var(--primary); }
+.sk-btns { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.sk-wrap .sk-btns button { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--sk-line); background: color-mix(in srgb, var(--primary) 7%, var(--entry)); color: var(--primary); cursor: pointer; font-size: 0.9rem; }
+.sk-wrap .sk-btns button:hover { background: color-mix(in srgb, var(--primary) 13%, var(--entry)); border-color: color-mix(in srgb, var(--primary) 34%, transparent); }
+.sk-wrap .sk-btns button.primary { background: var(--primary); color: var(--theme); border-color: var(--primary); font-weight: 600; }
+.sk-board { display: inline-block; max-width: 100%; }
+.sk-grid { display: inline-grid; gap: 2px; background: var(--theme); border: 1px solid var(--sk-line); border-radius: 10px; padding: 8px; }
+.sk-cell { width: var(--sk-cell); height: var(--sk-cell); display: flex; align-items: center; justify-content: center; border-radius: 4px; box-sizing: border-box; }
+.sk-floor { background: color-mix(in srgb, var(--primary) 4%, var(--theme)); }
+.sk-wall { background: #5d6d7e; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.18); }
+.sk-goal { background: color-mix(in srgb, #f0b429 22%, var(--theme)); box-shadow: inset 0 0 0 1px color-mix(in srgb, #f0b429 70%, transparent); position: relative; }
+.sk-goal::before { content: ''; position: absolute; width: 30%; height: 30%; border-radius: 50%; background: #d99b00; opacity: 0.75; }
+.sk-box { background: linear-gradient(160deg,#c98b3a,#a86a22); box-shadow: inset 0 0 0 2px #8a5a12, inset 0 0 0 6px rgba(255,255,255,0.1); position: relative; }
+.sk-box::before { content: ''; position: absolute; inset: 28%; border: 2px solid rgba(255,255,255,0.45); border-radius: 2px; }
+.sk-box-on { background: linear-gradient(160deg,#4ade80,#22a155); box-shadow: inset 0 0 0 2px #15803d, inset 0 0 0 6px rgba(255,255,255,0.14); }
+.sk-player::after { content: ''; width: 62%; height: 62%; border-radius: 50%; background: #3b82f6; box-shadow: inset 0 0 0 3px rgba(255,255,255,0.5); }
+.sk-dpad { display: flex; justify-content: center; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+.sk-wrap .sk-dpad button { width: 44px; height: 44px; border-radius: 8px; border: 1px solid var(--sk-line); background: color-mix(in srgb, var(--primary) 7%, var(--entry)); color: var(--primary); font-size: 1.15rem; cursor: pointer; }
+.sk-wrap .sk-dpad button:hover { background: color-mix(in srgb, var(--primary) 13%, var(--entry)); border-color: color-mix(in srgb, var(--primary) 34%, transparent); }
+.sk-status { color: var(--secondary); font-size: 0.85rem; margin-top: 10px; min-height: 20px; }
+.sk-status.done { color: #22c55e; font-weight: 600; }
+@media (max-width: 420px) { .sk-wrap { --sk-cell: 36px; } }
 </style>
 
 <div class="sk-wrap">
@@ -17,11 +31,11 @@
     <button id="skReset">🔄 重置</button>
     <button id="skUndo">↩️ 撤销</button>
   </div>
-  <div class="sk-grid" id="skGrid"></div>
+  <div class="sk-board"><div class="sk-grid" id="skGrid"></div></div>
   <div class="sk-dpad">
-    <button data-d="up">↑</button><button data-d="left">←</button><button data-d="down">↓</button><button data-d="right">→</button>
+    <button data-d="up" aria-label="上">↑</button><button data-d="left" aria-label="左">←</button><button data-d="down" aria-label="下">↓</button><button data-d="right" aria-label="右">→</button>
   </div>
-  <p id="skStatus" style="color:var(--secondary);font-size:0.85rem">方向键或按钮移动</p>
+  <p class="sk-status" id="skStatus">方向键或按钮移动</p>
 </div>
 
 <script>
@@ -33,54 +47,73 @@
   ];
   const gridEl=document.getElementById('skGrid');
   const statusEl=document.getElementById('skStatus');
-  let level=0, grid=[], player={r:0,c:0}, steps=0, pushes=0, undo=[]; 
+  const resetBtn=document.getElementById('skReset');
+  let level=0, grid=[], player={r:0,c:0}, steps=0, pushes=0, undo=[], done=false;
 
   function parse(){
     grid=LEVELS[level].map(row=>row.split(''));
     for(let r=0;r<grid.length;r++) for(let c=0;c<grid[r].length;c++){
       if(grid[r][c]==='@'||grid[r][c]==='+'){ player={r,c}; grid[r][c]=grid[r][c]==='+'?'.':' '; }
     }
-    steps=0; pushes=0; undo=[];
+    steps=0; pushes=0; undo=[]; done=false;
     document.getElementById('skLevel').textContent=level+1;
     document.getElementById('skSteps').textContent=0;
     document.getElementById('skPushes').textContent=0;
+    resetBtn.textContent='🔄 重置';
+    statusEl.textContent='方向键或按钮移动';
+    statusEl.classList.remove('done');
     render();
+  }
+
+  function isDone(){
+    for(const row of grid) for(const ch of row) if(ch==='$') return false;
+    return true;
   }
 
   function render(){
     const rows=grid.length, cols=Math.max(...grid.map(r=>r.length));
-    gridEl.style.gridTemplateColumns='repeat('+cols+',40px)';
+    gridEl.style.gridTemplateColumns='repeat('+cols+', var(--sk-cell))';
     gridEl.innerHTML='';
     for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
       const d=document.createElement('div');
       d.className='sk-cell';
-      const ch=r===player.r&&c===player.c?'@':grid[r][c];
-      if(ch==='#') d.classList.add('sk-wall');
-      if(ch==='.'){ d.classList.add('sk-goal'); d.textContent='⭐'; }
-      if(ch==='$'||ch==='*') d.textContent='📦';
-      if(ch==='@'){ d.classList.add('sk-player'); d.textContent='🧍'; }
-      if(ch==='*') d.classList.add('sk-goal');
+      const isPlayer=r===player.r&&c===player.c;
+      const under=grid[r][c]||' ';
+      if(under==='#'){ d.classList.add('sk-wall'); }
+      else{
+        d.classList.add('sk-floor');
+        /* 用格子本身的内容判断，玩家站在目标点上时目标标记也不能丢 */
+        if(under==='.'||under==='*') d.classList.add('sk-goal');
+        if(under==='$') d.classList.add('sk-box');
+        if(under==='*') d.classList.add('sk-box','sk-box-on');
+        if(isPlayer) d.classList.add('sk-player');
+      }
       gridEl.appendChild(d);
     }
-    const done=grid.every(row=>row.every(ch=>ch!=='$'));
+    done=isDone();
+    resetBtn.textContent=done?'▶ 下一关':'🔄 重置';
     if(done){
-      statusEl.textContent='关卡完成！'+(level<LEVELS.length-1?' 点击重置进入下一关':' 全部通关 🎉');
-      if(level<LEVELS.length-1) document.getElementById('skReset').textContent='下一关';
+      statusEl.textContent=level<LEVELS.length-1?'关卡完成！点击「下一关」继续':'全部通关 🎉';
+      statusEl.classList.add('done');
     }
   }
 
   function move(dr,dc){
+    if(done) return;
     const r=player.r+dr, c=player.c+dc;
     if(r<0||c<0||r>=grid.length||c>=grid[r].length||grid[r][c]==='#') return;
     const snap={grid:grid.map(row=>row.slice()),player:{...player},steps,pushes};
     if(grid[r][c]==='$'||grid[r][c]==='*'){
       const r2=r+dr, c2=c+dc;
-      if(r2<0||c2<0||r2>=grid.length||c2>=grid[r2].length||grid[r2][c2]==='#'||grid[r2][c2]==='$'||grid[r2][c2]==='*') return;
-      const onGoal=grid[r2][c2]==='.';
-      grid[r2][c2]=onGoal?'*':'$';
+      if(r2<0||c2<0||r2>=grid.length||c2>=grid[r2].length) return;
+      const dest=grid[r2][c2];
+      if(dest==='#'||dest==='$'||dest==='*') return;
+      grid[r2][c2]=dest==='.'?'*':'$';
       pushes++;
     }
-    const wasGoal=grid[r][c]==='.';
+    /* 记住玩家踏进的格子原本是不是目标点（含箱子正压在目标点上的 *），
+       否则把箱子推离目标后该格会退化成普通地板，关卡直接无解 */
+    const wasGoal=grid[r][c]==='.'||grid[r][c]==='*';
     player={r,c};
     grid[r][c]=wasGoal?'.':' ';
     steps++;
@@ -91,19 +124,22 @@
   }
 
   function reset(){
-    if(level<LEVELS.length-1&&grid.every(row=>row.every(ch=>ch!=='$'))){
+    if(done&&level<LEVELS.length-1){
       level++;
-      document.getElementById('skReset').textContent='🔄 重置';
+      parse();
+      return;
     }
     parse();
     statusEl.textContent='方向键或按钮移动';
   }
 
-  document.getElementById('skReset').onclick=reset;
+  resetBtn.onclick=reset;
   document.getElementById('skUndo').onclick=()=>{
     const s=undo.pop();
     if(!s) return;
     grid=s.grid; player=s.player; steps=s.steps; pushes=s.pushes;
+    done=false; statusEl.classList.remove('done');
+    statusEl.textContent='方向键或按钮移动';
     document.getElementById('skSteps').textContent=steps;
     document.getElementById('skPushes').textContent=pushes;
     render();
@@ -114,6 +150,7 @@
   });
   document.addEventListener('keydown',e=>{
     if(!document.querySelector('.sk-wrap')) return;
+    if(e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
     if(e.key==='ArrowUp'){ e.preventDefault(); move(-1,0); }
     else if(e.key==='ArrowDown'){ e.preventDefault(); move(1,0); }
     else if(e.key==='ArrowLeft'){ e.preventDefault(); move(0,-1); }

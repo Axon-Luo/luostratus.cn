@@ -1,80 +1,209 @@
 <style>
-.rx-wrap { max-width: 760px; margin: 0 auto; }
-.rx-row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
-.rx-row input[type="text"] { flex: 1; min-width: 200px; padding: 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-family: monospace; }
-.rx-row label { font-size: 0.85rem; color: var(--secondary); }
-.rx-text { width: 100%; min-height: 180px; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.95rem; resize: vertical; }
-.rx-out { background: var(--code-bg); border-radius: 10px; padding: 14px; margin-top: 12px; min-height: 90px; color: var(--primary); white-space: pre-wrap; word-break: break-word; }
-.rx-out mark { background: var(--primary); color: var(--theme); border-radius: 3px; }
-.rx-replace { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
-.rx-replace input { flex: 1; padding: 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); }
-.rx-replace button, .rx-row button { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
-.rx-msg { color: #e74c3c; font-size: 0.85rem; margin-top: 8px; min-height: 18px; }
+#rxWrap { max-width: 760px; margin: 0 auto; }
+.rx-field { margin-bottom: 12px; }
+.rx-label { display: block; font-size: 0.78rem; color: var(--secondary); letter-spacing: 0.03em; margin-bottom: 6px; }
+.rx-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.rx-row input[type="text"] {
+  flex: 1 1 240px; min-width: 0; padding: 9px 11px; border-radius: 9px; font-size: 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
+  background: var(--entry); color: var(--primary); transition: border-color 0.15s;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.rx-row input[type="text"]:focus { outline: none; border-color: var(--primary); }
+.rx-flags { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.rx-flags .rx-label { margin: 0 4px 0 0; }
+.rx-flag {
+  position: relative; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; user-select: none;
+  padding: 5px 12px; border-radius: 999px; font-size: 0.8rem; color: var(--secondary);
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent); background: var(--entry);
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+.rx-flag:has(input:checked) { color: var(--theme); background: var(--primary); border-color: var(--primary); font-weight: 600; }
+.rx-flag:focus-within { outline: 2px solid color-mix(in srgb, var(--primary) 55%, transparent); outline-offset: 2px; }
+.rx-flag input { position: absolute; opacity: 0; width: 0; height: 0; margin: 0; }
+#rxText {
+  display: block; width: 100%; min-height: 200px; max-height: 60vh; padding: 12px;
+  border-radius: 10px; resize: vertical; font-size: 0.92rem; line-height: 1.6;
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
+  background: var(--entry); color: var(--primary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+#rxText:focus { outline: none; border-color: var(--primary); }
+.rx-out-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 14px 0 6px; flex-wrap: wrap; }
+.rx-out-head .rx-label { margin: 0; }
+.rx-out {
+  background: var(--code-bg); border-radius: 10px; padding: 14px; min-height: 96px; max-height: 50vh;
+  overflow: auto; color: var(--primary); white-space: pre-wrap; word-break: break-word;
+  border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
+  font-size: 0.92rem; line-height: 1.65;
+}
+.rx-out:empty::before { content: "匹配结果会显示在这里"; color: var(--secondary); opacity: 0.75; }
+.rx-out mark { background: var(--primary); color: var(--theme); border-radius: 3px; padding: 0 1px; }
+.rx-replace { display: flex; gap: 8px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
+.rx-replace input[type="text"] {
+  flex: 1 1 200px; min-width: 0; padding: 9px 11px; border-radius: 9px; font-size: 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
+  background: var(--entry); color: var(--primary);
+}
+.rx-replace input[type="text"]:focus { outline: none; border-color: var(--primary); }
+.rx-btn {
+  padding: 9px 18px; border-radius: 9px; cursor: pointer; font-size: 0.88rem; color: var(--primary);
+  background: var(--entry); border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
+  transition: border-color 0.15s, opacity 0.15s;
+}
+.rx-btn:hover { border-color: var(--primary); }
+.rx-btn.is-primary { background: var(--primary); color: var(--theme); border-color: var(--primary); font-weight: 600; }
+.rx-btn.is-primary:hover { opacity: 0.88; }
+.rx-msg { font-size: 0.8rem; color: var(--secondary); min-height: 1.1em; }
+.rx-msg.is-err { color: #e0533d; }
 </style>
 
-<div class="rx-wrap">
-  <div class="rx-row">
-    <input type="text" id="rxPattern" placeholder="正则表达式，例如 \d+">
-    <label><input type="checkbox" id="rxG" checked> g</label>
-    <label><input type="checkbox" id="rxI"> i</label>
-    <label><input type="checkbox" id="rxM"> m</label>
-    <label><input type="checkbox" id="rxS"> s</label>
+<div id="rxWrap" class="rx-wrap">
+  <div class="rx-field">
+    <label class="rx-label" for="rxPattern">正则表达式</label>
+    <div class="rx-row"><input type="text" id="rxPattern" placeholder="例如 \d+ 或 ^\w+@\w+\.\w+$" spellcheck="false" autocomplete="off"></div>
   </div>
-  <textarea class="rx-text" id="rxText" placeholder="输入要匹配的文本…"></textarea>
+  <div class="rx-flags">
+    <span class="rx-label">修饰符</span>
+    <label class="rx-flag" title="全局匹配"><input type="checkbox" id="rxG" checked>g</label>
+    <label class="rx-flag" title="忽略大小写"><input type="checkbox" id="rxI">i</label>
+    <label class="rx-flag" title="多行"><input type="checkbox" id="rxM">m</label>
+    <label class="rx-flag" title="点号匹配换行"><input type="checkbox" id="rxS">s</label>
+  </div>
+  <div class="rx-field">
+    <label class="rx-label" for="rxText">测试文本</label>
+    <textarea id="rxText" placeholder="粘贴要匹配的文本…" spellcheck="false"></textarea>
+  </div>
+  <div class="rx-out-head">
+    <span class="rx-label">匹配结果</span>
+    <span class="rx-msg" id="rxMsg"></span>
+  </div>
   <div class="rx-out" id="rxOut"></div>
   <div class="rx-replace">
-    <input type="text" id="rxRepl" placeholder="替换为…">
-    <button id="rxDo">替换</button>
-    <button id="rxCopy">📋 复制</button>
+    <input type="text" id="rxRepl" placeholder="替换为…（支持 $1 $&amp;）" spellcheck="false" autocomplete="off">
+    <button id="rxDo" class="rx-btn is-primary">替换</button>
+    <button id="rxCopy" class="rx-btn">📋 复制</button>
   </div>
-  <div class="rx-msg" id="rxMsg"></div>
 </div>
 
 <script>
 (()=>{
+  const root=document.getElementById('rxWrap');
+  if(!root) return;
   const pattern=document.getElementById('rxPattern');
   const text=document.getElementById('rxText');
   const out=document.getElementById('rxOut');
   const msg=document.getElementById('rxMsg');
+  const repl=document.getElementById('rxRepl');
 
-  function escape(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function setMsg(t,isErr){
+    msg.textContent=t||'';
+    msg.classList.toggle('is-err',!!isErr);
+  }
 
   function buildRegex(){
-    let flags='g';
+    let flags='';
+    if(document.getElementById('rxG').checked) flags+='g';
     if(document.getElementById('rxI').checked) flags+='i';
     if(document.getElementById('rxM').checked) flags+='m';
     if(document.getElementById('rxS').checked) flags+='s';
     return new RegExp(pattern.value,flags);
   }
+  function globalized(re){
+    return re.global?re:new RegExp(re.source,re.flags+'g');
+  }
+
+  // 在原始文本上匹配，再按片段转义，避免先转义导致 & < > 匹配不到
+  function highlight(src,re){
+    if(!re.global){
+      const m=re.exec(src);
+      if(!m||m[0]==='') return {html:esc(src),count:0};
+      return {html:esc(src.slice(0,m.index))+'<mark>'+esc(m[0])+'</mark>'+esc(src.slice(m.index+m[0].length)),count:1};
+    }
+    re.lastIndex=0;
+    let html='', last=0, count=0, m;
+    while((m=re.exec(src))!==null){
+      if(m[0]===''){
+        re.lastIndex=m.index+1;
+        if(re.lastIndex>src.length) break;
+        continue;
+      }
+      html+=esc(src.slice(last,m.index))+'<mark>'+esc(m[0])+'</mark>';
+      last=m.index+m[0].length;
+      count++;
+      if(count>=5000) break;
+    }
+    html+=esc(src.slice(last));
+    return {html:html,count:count};
+  }
 
   function render(){
-    if(!pattern.value){ out.textContent=escape(text.value)||'输入正则和文本后实时匹配'; msg.textContent=''; return; }
+    const src=text.value;
+    if(!pattern.value){
+      out.innerHTML=src?esc(src):'';
+      setMsg(src?'输入正则后开始匹配':'');
+      return;
+    }
     try{
       const re=buildRegex();
-      let count=0;
-      const html=escape(text.value).replace(re,m=>{ count++; return '<mark>'+m+'</mark>'; });
-      out.innerHTML=html;
-      msg.textContent='匹配 '+count+' 处';
+      if(!src){ out.textContent=''; setMsg('匹配 0 处'); return; }
+      const r=highlight(src,re);
+      out.innerHTML=r.html;
+      setMsg('匹配 '+r.count+' 处');
     }catch(e){
-      out.textContent=escape(text.value);
-      msg.textContent='正则错误：'+e.message;
+      out.innerHTML=esc(src);
+      setMsg('正则错误：'+e.message,true);
     }
   }
 
+  function countMatches(re,src){
+    const gre=globalized(re);
+    gre.lastIndex=0;
+    let n=0,m;
+    while((m=gre.exec(src))!==null){
+      if(m[0]===''){ gre.lastIndex=m.index+1; if(gre.lastIndex>src.length) break; continue; }
+      n++;
+      if(n>=5000) break;
+    }
+    return n;
+  }
+
   function replaceAll(){
-    if(!pattern.value) return;
+    if(!pattern.value){ setMsg('请先输入正则表达式',true); return; }
     try{
       const re=buildRegex();
-      out.innerHTML=escape(text.value.replace(re,document.getElementById('rxRepl').value));
-      msg.textContent='替换完成';
-    }catch(e){ msg.textContent='正则错误：'+e.message; }
+      const n=countMatches(re,text.value);
+      out.innerHTML=esc(text.value.replace(re,repl.value));
+      setMsg('已替换 '+n+' 处（原文未改动）');
+    }catch(e){
+      setMsg('正则错误：'+e.message,true);
+    }
+  }
+
+  function copyOut(){
+    const t=out.textContent;
+    if(!t){ setMsg('没有可复制的内容',true); return; }
+    const done=()=>setMsg('已复制结果');
+    const fail=()=>setMsg('复制失败，请手动选择',true);
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(t).then(done,fail);
+      }else{ fail(); }
+    }catch(e){ fail(); }
   }
 
   pattern.addEventListener('input',render);
   text.addEventListener('input',render);
-  document.querySelectorAll('.rx-row input[type="checkbox"]').forEach(b=>b.onchange=render);
-  document.getElementById('rxDo').onclick=replaceAll;
-  document.getElementById('rxCopy').onclick=()=>navigator.clipboard.writeText(out.textContent.replace(/<[^>]+>/g,''));
+  document.querySelectorAll('.rx-flags input[type="checkbox"]').forEach(b=>b.addEventListener('change',render));
+  document.getElementById('rxDo').addEventListener('click',replaceAll);
+  document.getElementById('rxCopy').addEventListener('click',copyOut);
+  repl.addEventListener('keydown',e=>{ if(e.key==='Enter') replaceAll(); });
+
+  // 示例文本，方便直接体验
+  text.value='订单号 A1001 金额 199 元\n订单号 B2043 金额 259 元\n联系方式：luo@example.com';
   render();
 })();
 </script>

@@ -1,112 +1,270 @@
 <style>
-.sw-wrap { max-width: 520px; margin: 0 auto; text-align: center; }
-.sw-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 14px; }
-.sw-tabs button { padding: 7px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--secondary); cursor: pointer; }
-.sw-tabs button.active { background: var(--primary); color: var(--theme); border-color: var(--primary); }
-.sw-time { font-size: 3.4rem; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; margin: 8px 0 16px; }
-.sw-btns { display: flex; justify-content: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
-.sw-btns button { padding: 9px 18px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
-.sw-btns .main { background: var(--primary); color: var(--theme); border-color: var(--primary); }
-.sw-set { display: flex; justify-content: center; gap: 10px; color: var(--secondary); font-size: 0.9rem; margin-bottom: 12px; }
-.sw-set input { width: 70px; padding: 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); }
-.sw-laps { max-width: 360px; margin: 0 auto; text-align: left; font-size: 0.9rem; color: var(--secondary); }
-.sw-laps div { padding: 4px 10px; border-bottom: 1px dashed var(--border); }
+.sw-wrap {
+  --sw-line: color-mix(in srgb, var(--primary) 22%, transparent);
+  --sw-card-line: color-mix(in srgb, var(--primary) 14%, transparent);
+  max-width: 680px;
+  margin: 0 auto;
+}
+.main .sw-wrap { max-width: 680px; }
+.sw-card {
+  background: var(--entry);
+  border: 1px solid var(--sw-card-line);
+  border-radius: 14px;
+  padding: 22px 20px 18px;
+  text-align: center;
+}
+.sw-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+.sw-tabs button,
+.sw-btns button { font: inherit; cursor: pointer; transition: background .15s ease, color .15s ease, border-color .15s ease, opacity .15s ease; }
+.sw-tabs button {
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: 1px solid var(--sw-line);
+  background: var(--code-bg);
+  color: var(--secondary);
+  font-size: 0.92rem;
+}
+.sw-tabs button:hover { color: var(--primary); border-color: var(--primary); }
+.sw-tabs button.active { background: var(--primary); border-color: var(--primary); color: var(--theme); font-weight: 600; }
+.sw-time {
+  font-size: clamp(2.8rem, 12vw, 3.6rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+  margin: 10px 0 14px;
+}
+.sw-set { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px 16px; color: var(--secondary); font-size: 0.9rem; margin-bottom: 14px; }
+.sw-set label { display: inline-flex; align-items: center; gap: 6px; }
+.sw-set input {
+  width: 70px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--sw-line);
+  background: var(--code-bg);
+  color: var(--primary);
+  text-align: center;
+  font-size: 0.9rem;
+}
+.sw-set input:focus { border-color: var(--primary); }
+.sw-btns { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.sw-btns button {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--sw-line);
+  background: var(--code-bg);
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.sw-btns button:hover:not(:disabled) { border-color: var(--primary); }
+.sw-btns .sw-primary { background: var(--primary); border-color: var(--primary); color: var(--theme); }
+.sw-btns .sw-primary:hover { opacity: .88; }
+.sw-btns button:disabled { opacity: .4; cursor: not-allowed; }
+.sw-note { color: var(--secondary); font-size: 0.85rem; margin: 12px 0 0; min-height: 1.3em; line-height: 1.3; }
+.sw-laps { max-height: 220px; overflow-y: auto; margin-top: 14px; text-align: left; font-size: 0.9rem; color: var(--secondary); font-variant-numeric: tabular-nums; }
+.sw-laps:empty { display: none; }
+.sw-lap { display: flex; justify-content: space-between; gap: 12px; padding: 7px 4px; border-bottom: 1px dashed var(--sw-line); }
+.sw-lap:last-child { border-bottom: 0; }
+.sw-lap-time { color: var(--primary); }
+.sw-wrap button:focus-visible,
+.sw-wrap input:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--primary) 55%, transparent);
+  outline-offset: 2px;
+}
 </style>
 
 <div class="sw-wrap">
-  <div class="sw-tabs">
-    <button data-tab="watch" class="active">⏱ 秒表</button>
-    <button data-tab="count">⏳ 倒计时</button>
+  <div class="sw-card">
+    <div class="sw-tabs">
+      <button type="button" data-tab="watch" class="active">⏱ 秒表</button>
+      <button type="button" data-tab="count">⏳ 倒计时</button>
+    </div>
+    <div class="sw-time" id="swTime">00:00.0</div>
+    <div class="sw-set" id="swSet" hidden>
+      <label>分钟 <input type="number" id="swMin" min="0" max="999" step="1" value="5"></label>
+      <label>秒 <input type="number" id="swSec" min="0" max="59" step="1" value="0"></label>
+    </div>
+    <div class="sw-btns">
+      <button type="button" class="sw-primary" id="swStart">▶ 开始</button>
+      <button type="button" id="swLap">⏱ 计次</button>
+      <button type="button" id="swReset">🔄 重置</button>
+    </div>
+    <p class="sw-note" id="swNote"></p>
+    <div class="sw-laps" id="swLaps"></div>
   </div>
-  <div class="sw-time" id="swTime">00:00.0</div>
-  <div class="sw-set" id="swSet" hidden>
-    <label>分钟 <input type="number" id="swMin" min="0" max="999" value="5"></label>
-    <label>秒 <input type="number" id="swSec" min="0" max="59" value="0"></label>
-  </div>
-  <div class="sw-btns">
-    <button class="main" id="swStart">▶ 开始</button>
-    <button id="swLap">⏱ 计次</button>
-    <button id="swReset">🔄 重置</button>
-  </div>
-  <div class="sw-laps" id="swLaps"></div>
 </div>
 
 <script>
 (()=>{
   const timeEl=document.getElementById('swTime');
   const lapsEl=document.getElementById('swLaps');
-  let tab='watch', timer=null, running=false, ms=0, last=0, countTarget=0, countLeft=0;
+  const noteEl=document.getElementById('swNote');
+  const startBtn=document.getElementById('swStart');
+  const lapBtn=document.getElementById('swLap');
+  const setEl=document.getElementById('swSet');
+  const minEl=document.getElementById('swMin');
+  const secEl=document.getElementById('swSec');
+
+  let tab='watch', running=false, ticker=null, lapNo=0;
+  const watch={ acc:0, from:0 };
+  const count={ target:300000, left:300000, endAt:0 };
 
   function fmtWatch(t){
-    const m=Math.floor(t/60000), s=Math.floor(t%60000/1000), d=Math.floor(t%1000/100);
-    return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+d;
+    t=Math.max(0,t);
+    const cs=Math.floor(t/100), h=Math.floor(cs/36000),
+      m=Math.floor((cs%36000)/600), s=Math.floor((cs%600)/10), d=cs%10;
+    const tail=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+d;
+    return h>0?h+':'+tail:tail;
   }
-  function fmtCount(t){
-    const m=Math.floor(t/60), s=t%60;
+  function fmtCount(sec){
+    sec=Math.max(0,sec);
+    const m=Math.floor(sec/60), s=sec%60;
     return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
   }
+  function watchMs(){ return watch.acc+(running&&tab==='watch'?Date.now()-watch.from:0); }
+  function render(){
+    timeEl.textContent=tab==='watch'
+      ?fmtWatch(watchMs())
+      :fmtCount(Math.ceil(Math.max(0,count.left)/1000));
+  }
 
-  function render(){ timeEl.textContent=tab==='watch'?fmtWatch(ms):fmtCount(Math.max(0,countLeft)); }
+  function readTarget(){
+    let m=Math.round(Number(minEl.value)), s=Math.round(Number(secEl.value));
+    if(!Number.isFinite(m)||m<0) m=0;
+    if(!Number.isFinite(s)||s<0) s=0;
+    if(m>999) m=999;
+    if(s>59) s=59;
+    minEl.value=String(m); secEl.value=String(s);
+    count.target=(m*60+s)*1000;
+  }
 
+  const Ctx=window.AudioContext||window.webkitAudioContext;
   function beep(){
     try{
-      const ctx=new (window.AudioContext||window.webkitAudioContext)();
+      if(!Ctx) return;
+      const ctx=new Ctx();
       const o=ctx.createOscillator(), g=ctx.createGain();
-      o.frequency.value=880; g.gain.value=0.2; o.connect(g); g.connect(ctx.destination);
+      o.frequency.value=880; g.gain.value=0.2;
+      o.connect(g); g.connect(ctx.destination);
       o.start(); o.stop(ctx.currentTime+0.4);
+      if(ctx.state==='suspended'&&ctx.resume) ctx.resume();
     }catch(e){}
+  }
+
+  function stopTicker(){
+    clearInterval(ticker); ticker=null;
+    running=false;
+  }
+
+  function tick(){
+    if(tab==='watch'){ render(); return; }
+    count.left=Math.max(0,count.endAt-Date.now());
+    render();
+    if(count.left<=0) finishCount();
+  }
+
+  function finishCount(){
+    stopTicker();
+    count.left=0;
+    render();
+    startBtn.textContent='▶ 开始';
+    noteEl.textContent='⏰ 倒计时结束';
+    beep();
   }
 
   function start(){
     if(running) return;
-    running=true;
-    document.getElementById('swStart').textContent='⏸ 暂停';
-    if(tab==='watch'){ last=Date.now()-ms; timer=setInterval(()=>{ ms=Date.now()-last; render(); },80); }
-    else {
-      if(countLeft<=0){ countLeft=countTarget; }
-      const endAt=Date.now()+countLeft*1000;
-      timer=setInterval(()=>{
-        countLeft=Math.max(0,Math.round((endAt-Date.now())/1000));
-        render();
-        if(countLeft<=0){ stop(); beep(); }
-      },200);
+    if(tab==='count'){
+      readTarget();
+      if(count.target<=0){ noteEl.textContent='请先设置倒计时时间'; return; }
+      if(count.left<=0||count.left>count.target) count.left=count.target;
+      count.endAt=Date.now()+count.left;
+    }else{
+      watch.from=Date.now();
     }
+    running=true;
+    noteEl.textContent='';
+    startBtn.textContent='⏸ 暂停';
+    ticker=setInterval(tick,100);
   }
 
-  function stop(){
-    clearInterval(timer); running=false;
-    document.getElementById('swStart').textContent='▶ 继续';
+  function pause(){
+    if(!running) return;
+    if(tab==='watch'){ watch.acc+=Date.now()-watch.from; }
+    else { count.left=Math.max(0,count.endAt-Date.now()); }
+    stopTicker();
+    startBtn.textContent='▶ 继续';
+    render();
   }
 
   function reset(){
-    clearInterval(timer); running=false;
-    document.getElementById('swStart').textContent='▶ 开始';
-    if(tab==='watch'){ ms=0; lapsEl.innerHTML=''; }
-    else { countLeft=countTarget; }
+    stopTicker();
+    startBtn.textContent='▶ 开始';
+    noteEl.textContent='';
+    if(tab==='watch'){
+      watch.acc=0; watch.from=0;
+      lapNo=0; lapsEl.innerHTML='';
+    }else{
+      readTarget();
+      count.left=count.target;
+    }
     render();
   }
 
   function setTab(t){
-    clearInterval(timer); running=false;
-    document.getElementById('swStart').textContent='▶ 开始';
+    if(t===tab) return;
+    if(running){
+      if(tab==='watch') watch.acc+=Date.now()-watch.from;
+      else count.left=Math.max(0,count.endAt-Date.now());
+      stopTicker();
+    }
     tab=t;
+    startBtn.textContent='▶ 开始';
+    noteEl.textContent='';
     document.querySelectorAll('.sw-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
-    document.getElementById('swSet').hidden=t!=='count';
-    document.getElementById('swLap').disabled=t!=='watch';
-    if(t==='watch'){ ms=0; lapsEl.innerHTML=''; }
-    else { countTarget=(+document.getElementById('swMin').value)*60+(+document.getElementById('swSec').value); countLeft=countTarget; }
+    setEl.hidden=t!=='count';
+    lapBtn.disabled=t!=='watch';
+    if(t==='count'){
+      readTarget();
+      if(count.left<=0||count.left>count.target) count.left=count.target;
+    }
     render();
   }
 
-  document.getElementById('swStart').onclick=()=>running?stop():start();
-  document.getElementById('swLap').onclick=()=>{
-    if(tab!=='watch'||!running) return;
-    const d=document.createElement('div');
-    d.textContent='第 '+lapsEl.children.length+1+' 圈：'+fmtWatch(ms);
-    lapsEl.prepend(d);
-  };
+  startBtn.onclick=()=>running?pause():start();
   document.getElementById('swReset').onclick=reset;
+  lapBtn.onclick=()=>{
+    if(tab!=='watch'||!running) return;
+    lapNo++;
+    const value=watchMs();
+    const row=document.createElement('div');
+    row.className='sw-lap';
+    const name=document.createElement('span');
+    name.textContent='第 '+lapNo+' 圈';
+    const time=document.createElement('span');
+    time.className='sw-lap-time';
+    time.textContent=fmtWatch(value);
+    row.appendChild(name); row.appendChild(time);
+    lapsEl.prepend(row);
+    lapsEl.scrollTop=0;
+  };
   document.querySelectorAll('.sw-tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
-  setTab('watch');
+
+  [minEl,secEl].forEach(el=>{
+    el.addEventListener('input',()=>{
+      readTarget();
+      if(!running){ count.left=count.target; if(tab==='count') render(); }
+    });
+    el.addEventListener('change',()=>{
+      readTarget();
+      if(!running){ count.left=count.target; if(tab==='count') render(); }
+    });
+  });
+
+  readTarget();
+  count.left=count.target;
+  render();
 })();
 </script>

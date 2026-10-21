@@ -1,79 +1,222 @@
 <style>
-.md-wrap { max-width: 860px; margin: 0 auto; }
-.md-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.md-cols textarea { width: 100%; min-height: 420px; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-family: monospace; font-size: 0.9rem; resize: vertical; }
-.md-preview { border: 1px solid var(--border); border-radius: 10px; padding: 16px; background: var(--entry); overflow-wrap: break-word; line-height: 1.7; }
-.md-preview h1,.md-preview h2,.md-preview h3 { color: var(--primary); }
-.md-preview code { background: var(--code-bg); padding: 2px 5px; border-radius: 4px; }
-.md-preview pre { background: var(--code-bg); padding: 12px; border-radius: 8px; overflow-x: auto; }
-.md-preview blockquote { border-left: 3px solid var(--primary); margin: 0; padding-left: 12px; color: var(--secondary); }
-.md-preview a { color: var(--primary); }
-.md-bar { display: flex; gap: 8px; margin-bottom: 10px; }
-.md-bar button { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
-@media (max-width: 700px) { .md-cols { grid-template-columns: 1fr; } }
+#mdWrap { max-width: 860px; margin: 0 auto; }
+.md-bar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.md-bar button {
+  padding: 8px 16px; border-radius: 9px; cursor: pointer; font-size: 0.86rem; color: var(--primary);
+  background: var(--entry); border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
+  transition: border-color 0.15s;
+}
+.md-bar button:hover { border-color: var(--primary); }
+.md-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: stretch; }
+.md-pane { display: flex; flex-direction: column; min-width: 0; }
+.md-pane-head {
+  font-size: 0.76rem; color: var(--secondary); letter-spacing: 0.04em;
+  margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; gap: 8px;
+}
+#mdInput {
+  flex: 1 1 auto; width: 100%; min-height: 380px; max-height: 560px; padding: 12px;
+  border-radius: 12px; resize: vertical; font-size: 0.88rem; line-height: 1.7;
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
+  background: var(--entry); color: var(--primary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+#mdInput:focus { outline: none; border-color: var(--primary); }
+.md-preview {
+  flex: 1 1 auto; min-height: 380px; max-height: 560px; overflow: auto; padding: 16px 18px;
+  border-radius: 12px; line-height: 1.75; font-size: 0.94rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 14%, transparent);
+  background: var(--entry); overflow-wrap: break-word; color: var(--primary);
+}
+.md-preview > :first-child { margin-top: 0; }
+.md-preview > :last-child { margin-bottom: 0; }
+.md-preview h1, .md-preview h2, .md-preview h3 { color: var(--primary); line-height: 1.35; margin: 1em 0 0.5em; }
+.md-preview h1 { font-size: 1.45rem; }
+.md-preview h2 { font-size: 1.25rem; }
+.md-preview h3 { font-size: 1.08rem; }
+.md-preview h4, .md-preview h5, .md-preview h6 { font-size: 1rem; margin: 0.9em 0 0.45em; }
+.md-preview p { margin: 0.6em 0; }
+.md-preview ul, .md-preview ol { margin: 0.6em 0; padding-left: 1.4em; }
+.md-preview li { margin: 0.25em 0; }
+.md-preview code {
+  background: var(--code-bg); padding: 2px 5px; border-radius: 4px; font-size: 0.86em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.md-preview pre {
+  background: var(--code-bg); padding: 12px 14px; border-radius: 8px; overflow-x: auto;
+  border: 1px solid color-mix(in srgb, var(--primary) 10%, transparent);
+}
+.md-preview pre code { background: none; padding: 0; }
+.md-preview blockquote {
+  border-left: 3px solid color-mix(in srgb, var(--primary) 40%, transparent);
+  margin: 0.8em 0; padding: 2px 0 2px 12px; color: var(--secondary);
+}
+.md-preview blockquote p { margin: 0.3em 0; }
+.md-preview a { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; }
+.md-preview hr { border: 0; border-top: 1px solid color-mix(in srgb, var(--primary) 18%, transparent); margin: 1.1em 0; }
+.md-preview del { color: var(--secondary); }
+.md-preview .md-empty { color: var(--secondary); opacity: 0.8; margin: 0; }
+@media (max-width: 700px) {
+  .md-cols { grid-template-columns: 1fr; }
+  #mdInput, .md-preview { min-height: 260px; max-height: 420px; }
+}
 </style>
 
-<div class="md-wrap">
-  <div class="md-bar"><button id="mdSample">📄 载入示例</button><button id="mdClear">🗑 清空</button></div>
+<div id="mdWrap" class="md-wrap">
+  <div class="md-bar">
+    <button id="mdSample" type="button">📄 载入示例</button>
+    <button id="mdClear" type="button">🗑 清空</button>
+  </div>
   <div class="md-cols">
-    <textarea id="mdInput" placeholder="输入 Markdown…"></textarea>
-    <div class="md-preview" id="mdPreview"></div>
+    <div class="md-pane">
+      <div class="md-pane-head">Markdown 源码</div>
+      <textarea id="mdInput" placeholder="在这里输入 Markdown，右侧实时预览…" spellcheck="false"></textarea>
+    </div>
+    <div class="md-pane">
+      <div class="md-pane-head">预览</div>
+      <div class="md-preview" id="mdPreview"></div>
+    </div>
   </div>
 </div>
 
 <script>
 (()=>{
+  const root=document.getElementById('mdWrap');
+  if(!root) return;
   const input=document.getElementById('mdInput');
   const preview=document.getElementById('mdPreview');
 
-  function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-  function render(){
-    let lines=input.value.replace(/\r/g,'').split('\n');
-    const out=[];
-    let inCode=false, codeBuf=[], inList=false, inQuote=false;
-    const flushList=()=>{ if(inList){ out.push('</ul>'); inList=false; } };
-    const flushQuote=()=>{ if(inQuote){ out.push('</blockquote>'); inQuote=false; } };
-
-    for(let i=0;i<lines.length;i++){
-      let line=lines[i];
-      const codeMatch=line.match(/^```/);
-      if(codeMatch){
-        if(inCode){ out.push('<pre><code>'+esc(codeBuf.join('\n'))+'</code></pre>'); codeBuf=[]; inCode=false; }
-        else { flushList(); flushQuote(); inCode=true; }
-        continue;
-      }
-      if(inCode){ codeBuf.push(line); continue; }
-      flushList();
-      if(line.trim()===''){ flushQuote(); out.push(''); continue; }
-      let html=esc(line);
-      html=html.replace(/`([^`]+)`/g,'<code>$1</code>');
-      html=html.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
-      html=html.replace(/(^|[^*])\*([^*]+)\*/g,'$1<em>$2</em>');
-      html=html.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
-      const h=line.match(/^(#{1,6})\s+(.*)/);
-      if(h){ const lv=h[1].length; out.push('<h'+lv+'>'+inline(h[2])+'</h'+lv+'>'); continue; }
-      const q=line.match(/^>\s?(.*)/);
-      if(q){ if(!inQuote){ out.push('<blockquote>'); inQuote=true; } out.push('<p>'+inline(q[1])+'</p>'); continue; }
-      const li=line.match(/^[-*+]\s+(.*)/);
-      if(li){ if(!inList){ out.push('<ul>'); inList=true; } out.push('<li>'+inline(li[1])+'</li>'); continue; }
-      const ol=line.match(/^\d+\.\s+(.*)/);
-      if(ol){ if(!inList){ out.push('<ol>'); inList=true; } out.push('<li>'+inline(ol[1])+'</li>'); continue; }
-      out.push('<p>'+inline(html)+'</p>');
-    }
-    if(inCode) out.push('<pre><code>'+esc(codeBuf.join('\n'))+'</code></pre>');
-    flushList(); flushQuote();
-    preview.innerHTML=out.join('\n');
-
-    function inline(h){ return h; }
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function safeUrl(u){
+    const v=String(u).trim();
+    if(/^(https?:\/\/|mailto:|#|\/|\.\/|\.\.\/)/i.test(v)) return v;
+    return '#';
   }
 
+  // 先转义，再套用行内语法：任何标签都不会被当成 HTML 执行
+  function inline(raw){
+    let s=esc(raw);
+    const codes=[];
+    s=s.replace(/`([^`]+)`/g,(m,c)=>{ codes.push(c); return '\u0001'+(codes.length-1)+'\u0001'; });
+    s=s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,(m,t,u)=>
+      '<a href="'+safeUrl(u)+'" target="_blank" rel="noopener noreferrer">'+t+'</a>');
+    s=s.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+    s=s.replace(/__([^_]+)__/g,'<strong>$1</strong>');
+    s=s.replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>');
+    s=s.replace(/~~([^~]+)~~/g,'<del>$1</del>');
+    s=s.replace(/\u0001(\d+)\u0001/g,(m,i)=>'<code>'+codes[+i]+'</code>');
+    return s;
+  }
+
+  function render(){
+    const lines=String(input.value).replace(/\r/g,'').split('\n');
+    let html='';
+    let listType=null, quoteOpen=false;
+    const closeList=()=>{ if(listType){ html+='</'+listType+'>'; listType=null; } };
+    const closeQuote=()=>{ if(quoteOpen){ html+='</blockquote>'; quoteOpen=false; } };
+    const closeAll=()=>{ closeList(); closeQuote(); };
+
+    let i=0;
+    while(i<lines.length){
+      const line=lines[i];
+
+      const fence=line.match(/^\s*(```|~~~)\s*([\w+#.-]*)\s*$/);
+      if(fence){
+        const marker=fence[1], lang=fence[2];
+        const buf=[];
+        i++;
+        while(i<lines.length && !new RegExp('^\\s*'+marker).test(lines[i])){ buf.push(lines[i]); i++; }
+        i++;
+        closeAll();
+        html+='<pre><code'+(lang?' class="language-'+esc(lang)+'"':'')+'>'+esc(buf.join('\n'))+'</code></pre>';
+        continue;
+      }
+
+      if(/^\s*$/.test(line)){ closeAll(); i++; continue; }
+
+      if(/^\s*(?:-\s*){3,}$/.test(line)||/^\s*(?:\*\s*){3,}$/.test(line)||/^\s*(?:_\s*){3,}$/.test(line)){
+        closeAll(); html+='<hr>'; i++; continue;
+      }
+
+      const h=line.match(/^(#{1,6})\s+(.*?)\s*$/);
+      if(h){
+        closeAll();
+        const lv=h[1].length;
+        html+='<h'+lv+'>'+inline(h[2].replace(/\s+#+\s*$/,''))+'</h'+lv+'>';
+        i++; continue;
+      }
+
+      const q=line.match(/^\s*>\s?(.*)$/);
+      if(q){
+        closeList();
+        if(!quoteOpen){ html+='<blockquote>'; quoteOpen=true; }
+        html+='<p>'+inline(q[1])+'</p>';
+        i++; continue;
+      }
+
+      const ul=line.match(/^\s*[-*+]\s+(.*)$/);
+      if(ul){
+        closeQuote();
+        if(listType!=='ul'){ closeList(); html+='<ul>'; listType='ul'; }
+        html+='<li>'+inline(ul[1])+'</li>';
+        i++; continue;
+      }
+
+      const ol=line.match(/^\s*\d+[.)]\s+(.*)$/);
+      if(ol){
+        closeQuote();
+        if(listType!=='ol'){ closeList(); html+='<ol>'; listType='ol'; }
+        html+='<li>'+inline(ol[1])+'</li>';
+        i++; continue;
+      }
+
+      closeAll();
+      const para=[line];
+      i++;
+      while(i<lines.length && !/^\s*$/.test(lines[i]) &&
+            !/^(#{1,6}\s|>\s?|[-*+]\s|\d+[.)]\s|```|~~~)/.test(lines[i])){
+        para.push(lines[i]); i++;
+      }
+      html+='<p>'+inline(para.join('\n')).replace(/\n/g,'<br>')+'</p>';
+    }
+    closeAll();
+
+    preview.innerHTML=html||'<p class="md-empty">预览会显示在这里</p>';
+  }
+
+  const SAMPLE=[
+    '# 欢迎使用 Markdown 预览',
+    '',
+    '这是一个**实时预览**的编辑器，支持 *斜体*、`行内代码`、~~删除线~~，以及[链接](https://luostratus.cn)。',
+    '',
+    '## 列表',
+    '',
+    '- 无序列表项一',
+    '- 无序列表项二',
+    '',
+    '1. 有序列表项一',
+    '2. 有序列表项二',
+    '',
+    '> 引用块：把想法写下来，再慢慢打磨。',
+    '',
+    '### 代码块',
+    '',
+    '```js',
+    'const site = "luostratus.cn";',
+    'console.log(`hello, ${site}`);',
+    '```',
+    '',
+    '---',
+    '',
+    '最后一段普通文本。'
+  ].join('\n');
+
   input.addEventListener('input',render);
-  document.getElementById('mdSample').onclick=()=>{
-    input.value='# 欢迎使用 Markdown\n\n**加粗**、*斜体* 和 `行内代码`。\n\n> 这是一段引用。\n\n- 列表项一\n- 列表项二\n\n```js\nconsole.log("hello")\n```\n\n[访问洛云](https://luostratus.cn)';
-    render();
-  };
-  document.getElementById('mdClear').onclick=()=>{ input.value=''; render(); };
+  document.getElementById('mdSample').addEventListener('click',()=>{ input.value=SAMPLE; render(); });
+  document.getElementById('mdClear').addEventListener('click',()=>{ input.value=''; render(); input.focus(); });
+
+  input.value='# 你好，Markdown\n\n把文本贴在左边，右边会实时渲染。\n\n- 支持**加粗**、*斜体*、`代码`\n- 支持引用与代码块\n\n> 试试点「载入示例」。';
   render();
 })();
 </script>

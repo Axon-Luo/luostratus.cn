@@ -1,65 +1,147 @@
 <style>
-.bmi-wrap { max-width: 450px; margin: 0 auto; }
-.bmi-card { padding: 24px; border-radius: 12px; background: var(--entry); border: 1px solid var(--border); margin-bottom: 16px; }
-.bmi-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
-.bmi-row label { font-size: 0.9rem; color: var(--secondary); min-width: 50px; }
-.bmi-row input { padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 1rem; width: 120px; }
-.bmi-row select { padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); }
-.bmi-result { text-align: center; padding: 20px; }
-.bmi-value { font-size: 2.5rem; font-weight: 700; color: var(--primary); }
-.bmi-level { font-size: 1.1rem; margin-top: 4px; }
-.bmi-advice { font-size: 0.9rem; color: var(--secondary); margin-top: 8px; }
-.bmi-history { font-size: 0.85rem; color: var(--secondary); }
-.bmi-history div { padding: 4px 0; border-bottom: 1px solid var(--border); }
+.bmi-wrap { max-width: 460px; margin: 0 auto; --bmi-line: color-mix(in srgb, var(--primary) 20%, transparent); }
+.bmi-card { padding: 20px; border-radius: 12px; background: var(--entry); border: 1px solid var(--border); margin-bottom: 16px; }
+.bmi-row { display: grid; grid-template-columns: 46px minmax(0, 1fr) minmax(104px, 124px); gap: 10px; align-items: center; margin-bottom: 12px; }
+.bmi-row label { font-size: 0.88rem; color: var(--secondary); }
+.bmi-row input { width: 100%; min-width: 0; padding: 9px 10px; border-radius: 8px; border: 1px solid var(--bmi-line); background: var(--entry); color: var(--primary); font-size: 1rem; }
+.bmi-row select { width: 100%; min-width: 0; padding: 9px 6px; border-radius: 8px; border: 1px solid var(--bmi-line); background: var(--entry); color: var(--primary); font-size: 0.88rem; }
+.bmi-btn { width: 100%; margin-top: 4px; padding: 11px; border-radius: 8px; border: 1px solid var(--primary); background: var(--primary); color: var(--theme); font-size: 1rem; cursor: pointer; font-weight: 600; }
+.bmi-result { text-align: center; padding: 16px 0 4px; min-height: 72px; }
+.bmi-empty { color: var(--secondary); font-size: 0.88rem; padding: 10px 0; }
+.bmi-error { color: color-mix(in srgb, #f59e0b 60%, var(--primary)); font-size: 0.88rem; padding: 10px 0; }
+.bmi-value { font-size: 2.5rem; font-weight: 700; line-height: 1.1; color: var(--primary); font-variant-numeric: tabular-nums; }
+.bmi-level { font-size: 1.05rem; font-weight: 600; margin-top: 4px; }
+.bmi-advice { font-size: 0.88rem; color: var(--secondary); margin-top: 8px; line-height: 1.6; }
+.bmi-scale { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin-top: 12px; }
+.bmi-scale span { font-size: 0.7rem; text-align: center; padding: 5px 2px; border-radius: 6px; color: var(--secondary); background: color-mix(in srgb, var(--primary) 6%, transparent); border: 1px solid transparent; white-space: nowrap; }
+.bmi-scale span.on { color: var(--primary); font-weight: 600; border-color: currentColor; }
+.bmi-note { font-size: 0.75rem; color: var(--secondary); margin-top: 10px; }
+.bmi-hist-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.bmi-hist-head h4 { margin: 0; font-size: 0.95rem; }
+.bmi-hist-head button { padding: 4px 10px; border-radius: 6px; border: 1px solid var(--bmi-line); background: var(--entry); color: var(--secondary); font-size: 0.78rem; cursor: pointer; }
+.bmi-history { font-size: 0.84rem; color: var(--secondary); }
+.bmi-history div { padding: 5px 0; border-bottom: 1px solid var(--bmi-line); }
+.bmi-history div:last-child { border-bottom: 0; }
+.bmi-history strong { color: var(--primary); }
+@media (max-width: 380px) {
+  .bmi-row { grid-template-columns: 1fr 1fr; }
+  .bmi-row label { grid-column: 1 / -1; }
+}
 </style>
 
 <div class="bmi-wrap">
   <div class="bmi-card">
     <div class="bmi-row">
-      <label>身高：</label><input type="number" id="bmiHt" value="170" step="0.1" min="50">
-      <select id="bmiHtU"><option value="cm">厘米(cm)</option><option value="m">米(m)</option></select>
+      <label for="bmiHt">身高</label>
+      <input type="number" id="bmiHt" value="170" step="0.1" min="50" inputmode="decimal">
+      <select id="bmiHtU" aria-label="身高单位"><option value="cm">厘米(cm)</option><option value="m">米(m)</option></select>
     </div>
     <div class="bmi-row">
-      <label>体重：</label><input type="number" id="bmiWt" value="65" step="0.1" min="10">
-      <select id="bmiWtU"><option value="kg">千克(kg)</option><option value="lb">磅(lb)</option></select>
+      <label for="bmiWt">体重</label>
+      <input type="number" id="bmiWt" value="65" step="0.1" min="10" inputmode="decimal">
+      <select id="bmiWtU" aria-label="体重单位"><option value="kg">千克(kg)</option><option value="lb">磅(lb)</option></select>
     </div>
-    <button id="bmiCalc" style="width:100%;padding:10px;border-radius:8px;border:none;background:var(--primary);color:var(--theme);font-size:1rem;cursor:pointer;font-weight:600;">计算 BMI</button>
-    <div class="bmi-result" id="bmiResult"></div>
+    <button id="bmiCalc" class="bmi-btn" type="button">计算 BMI</button>
+    <div class="bmi-result" id="bmiResult" aria-live="polite">
+      <p class="bmi-empty">输入身高体重后点击计算</p>
+    </div>
+    <div class="bmi-scale" id="bmiScale">
+      <span data-level="偏瘦">偏瘦 &lt;18.5</span>
+      <span data-level="正常">正常 18.5–24</span>
+      <span data-level="偏胖">偏胖 24–28</span>
+      <span data-level="肥胖">肥胖 ≥28</span>
+    </div>
+    <p class="bmi-note">分级依据中国成人 BMI 标准：BMI = 体重(kg) ÷ 身高(m)²</p>
   </div>
   <div class="bmi-card">
-    <h4 style="margin-bottom:8px">📋 历史记录</h4>
+    <div class="bmi-hist-head">
+      <h4>📋 历史记录</h4>
+      <button id="bmiClear" type="button">清空</button>
+    </div>
     <div class="bmi-history" id="bmiHistory"></div>
   </div>
 </div>
 
 <script>
 (()=>{
+  const resultEl=document.getElementById('bmiResult');
+  const historyEl=document.getElementById('bmiHistory');
+  const scaleEl=document.getElementById('bmiScale');
+  const htEl=document.getElementById('bmiHt');
+  const wtEl=document.getElementById('bmiWt');
+  const htUEl=document.getElementById('bmiHtU');
+  const wtUEl=document.getElementById('bmiWtU');
+  const KEY='bmiHistory';
+
+  function loadHistory(){
+    try{
+      const raw=JSON.parse(localStorage.getItem(KEY)||'[]');
+      if(!Array.isArray(raw)) return [];
+      return raw.filter(e=>e&&typeof e==='object'&&isFinite(Number(e.ht))&&isFinite(Number(e.wt))&&isFinite(Number(e.bmi))&&typeof e.level==='string'&&e.level);
+    }catch(e){ return []; }
+  }
+  function saveHistory(list){
+    try{ localStorage.setItem(KEY,JSON.stringify(list)); }catch(e){}
+  }
+
+  function renderHistory(){
+    const list=loadHistory();
+    if(!list.length){ historyEl.textContent='暂无记录'; return; }
+    historyEl.innerHTML=list.map(e=>{
+      const ht=Number(e.ht).toFixed(0);
+      const wt=Number(e.wt).toFixed(1);
+      return `<div>${String(e.date||'').replace(/[<>&]/g,'')} · ${ht}cm ${wt}kg · BMI <strong>${Number(e.bmi).toFixed(1)}</strong> ${String(e.level).replace(/[<>&]/g,'')}</div>`;
+    }).join('');
+  }
+
+  function markScale(level){
+    Array.from(scaleEl.children).forEach(el=>el.classList.toggle('on',el.dataset.level===level));
+  }
+
+  function error(msg){
+    resultEl.innerHTML='<p class="bmi-error">'+msg+'</p>';
+    markScale('');
+  }
+
   function calc(){
-    let ht=+document.getElementById('bmiHt').value, wt=+document.getElementById('bmiWt').value;
-    if(document.getElementById('bmiHtU').value==='cm') ht/=100;
-    if(document.getElementById('bmiWtU').value==='lb') wt*=0.453592;
-    if(!ht||!wt) return;
+    let ht=parseFloat(htEl.value);
+    let wt=parseFloat(wtEl.value);
+    if(!isFinite(ht)||!isFinite(wt)||!htEl.value.trim()||!wtEl.value.trim()){
+      error('请输入有效的身高和体重');
+      return;
+    }
+    if(htUEl.value==='cm') ht=ht/100;
+    if(wtUEl.value==='lb') wt=wt*0.45359237;
+    if(ht<=0||wt<=0){ error('身高和体重必须为正数'); return; }
+    if(ht<0.5||ht>3){ error('身高需在 50–300 厘米（0.5–3 米）之间'); return; }
+    if(wt<2||wt>500){ error('体重需在 2–500 千克之间'); return; }
+
     const bmi=wt/(ht*ht);
-    let level,color;
-    if(bmi<18.5){ level='偏瘦'; color='#f59e0b'; }
-    else if(bmi<24){ level='正常'; color='#22c55e'; }
-    else if(bmi<28){ level='偏胖'; color='#f97316'; }
-    else{ level='肥胖'; color='#ef4444'; }
-    const advice=bmi<18.5?'适当增加营养摄入':bmi<24?'保持当前健康生活方式':bmi<28?'建议控制饮食、加强运动':'建议咨询医生，制定减重计划';
-    document.getElementById('bmiResult').innerHTML=`<div class="bmi-value" style="color:${color}">${bmi.toFixed(1)}</div><div class="bmi-level" style="color:${color}">${level}</div><div class="bmi-advice">${advice}</div>`;
-    // save history
-    const h=JSON.parse(localStorage.getItem('bmiHistory')||'[]');
-    const date=new Date().toLocaleDateString('zh-CN');
-    h.unshift({date,ht:ht*100,wt,bmi:bmi.toFixed(1),level});
-    if(h.length>10) h.length=10;
-    localStorage.setItem('bmiHistory',JSON.stringify(h));
+    const bmi1=Math.round(bmi*10)/10;
+    let level,color,advice;
+    if(bmi1<18.5){ level='偏瘦'; color='#f59e0b'; advice='适当增加营养摄入，规律作息'; }
+    else if(bmi1<24){ level='正常'; color='#22c55e'; advice='保持当前健康生活方式'; }
+    else if(bmi1<28){ level='偏胖'; color='#f97316'; advice='建议控制饮食、加强运动'; }
+    else{ level='肥胖'; color='#ef4444'; advice='建议咨询医生，制定减重计划'; }
+
+    resultEl.innerHTML='<div class="bmi-value" style="color:'+color+'">'+bmi1.toFixed(1)+'</div>'
+      +'<div class="bmi-level" style="color:'+color+'">'+level+'</div>'
+      +'<div class="bmi-advice">'+advice+'</div>';
+    markScale(level);
+
+    const list=loadHistory();
+    list.unshift({date:new Date().toLocaleDateString('zh-CN'),ht:+(ht*100).toFixed(1),wt:+wt.toFixed(1),bmi:+bmi1.toFixed(1),level:level});
+    saveHistory(list.slice(0,10));
     renderHistory();
   }
-  function renderHistory(){
-    const h=JSON.parse(localStorage.getItem('bmiHistory')||'[]');
-    document.getElementById('bmiHistory').innerHTML=h.map(e=>`<div>${e.date} · ${e.ht.toFixed(0)}cm ${e.wt}kg · BMI <strong>${e.bmi}</strong> <span>${e.level}</span></div>`).join('')||'暂无记录';
-  }
-  document.getElementById('bmiCalc').onclick=calc;
+
+  document.getElementById('bmiCalc').addEventListener('click',calc);
+  document.getElementById('bmiClear').addEventListener('click',()=>{
+    saveHistory([]);
+    renderHistory();
+  });
+  [htEl,wtEl].forEach(el=>el.addEventListener('keydown',e=>{ if(e.key==='Enter') calc(); }));
+
   renderHistory();
 })();
 </script>

@@ -1,38 +1,121 @@
 <style>
-.tc-wrap { max-width: 680px; margin: 0 auto; }
-.tc-input { width: 100%; min-height: 140px; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 1rem; resize: vertical; }
+.tc-wrap {
+  --tc-line: color-mix(in srgb, var(--primary) 22%, transparent);
+  --tc-card-line: color-mix(in srgb, var(--primary) 14%, transparent);
+  max-width: 680px;
+  margin: 0 auto;
+}
+.tc-card {
+  background: var(--entry);
+  border: 1px solid var(--tc-card-line);
+  border-radius: 12px;
+  padding: 18px;
+}
+.tc-input {
+  width: 100%;
+  min-height: 160px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--tc-line);
+  background: var(--code-bg);
+  color: var(--primary);
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+.main .tc-wrap .tc-input { min-height: 160px; font-size: 1rem; }
+.tc-input:focus { border-color: var(--primary); }
 .tc-btns { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
-.tc-btns button { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; font-size: 0.9rem; }
-.tc-btns button:hover { border-color: var(--primary); }
-.tc-out { background: var(--code-bg); border-radius: 10px; padding: 14px; min-height: 80px; color: var(--primary); word-break: break-word; }
-.tc-copy { margin-top: 8px; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
+.tc-btns button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--tc-line);
+  background: var(--code-bg);
+  color: var(--primary);
+  font: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+.tc-btns button:hover { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, var(--code-bg)); }
+.tc-out {
+  background: var(--code-bg);
+  border: 1px solid color-mix(in srgb, var(--primary) 8%, transparent);
+  border-radius: 10px;
+  padding: 14px;
+  min-height: 96px;
+  color: var(--primary);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-height: 360px;
+  overflow-y: auto;
+}
+.tc-out.tc-hint { color: var(--secondary); }
+.tc-tools { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+.tc-copy {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--tc-line);
+  background: var(--code-bg);
+  color: var(--primary);
+  font: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+.tc-copy:hover { border-color: var(--primary); }
+.tc-msg { font-size: 0.82rem; color: var(--secondary); }
+.tc-msg.err { color: #d93025; }
+[data-theme="dark"] .tc-msg.err { color: #ff8a80; }
+.tc-wrap button:focus-visible,
+.tc-wrap textarea:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--primary) 55%, transparent);
+  outline-offset: 2px;
+}
 </style>
 
 <div class="tc-wrap">
-  <textarea class="tc-input" id="tcInput" placeholder="输入要转换的文本…"></textarea>
-  <div class="tc-btns">
-    <button data-act="upper">大写</button>
-    <button data-act="lower">小写</button>
-    <button data-act="title">首字母大写</button>
-    <button data-act="camel">camelCase</button>
-    <button data-act="pascal">PascalCase</button>
-    <button data-act="snake">snake_case</button>
-    <button data-act="kebab">kebab-case</button>
-    <button data-act="reverse">反转</button>
+  <div class="tc-card">
+    <textarea class="tc-input" id="tcInput" aria-label="要转换的文本" placeholder="输入要转换的文本…"></textarea>
+    <div class="tc-btns">
+      <button type="button" data-act="upper">大写</button>
+      <button type="button" data-act="lower">小写</button>
+      <button type="button" data-act="title">首字母大写</button>
+      <button type="button" data-act="camel">camelCase</button>
+      <button type="button" data-act="pascal">PascalCase</button>
+      <button type="button" data-act="snake">snake_case</button>
+      <button type="button" data-act="kebab">kebab-case</button>
+      <button type="button" data-act="reverse">反转</button>
+    </div>
+    <div class="tc-out" id="tcOut" aria-live="polite">结果会显示在这里</div>
+    <div class="tc-tools">
+      <button type="button" class="tc-copy" id="tcCopy">📋 复制结果</button>
+      <span class="tc-msg" id="tcMsg" aria-live="polite"></span>
+    </div>
   </div>
-  <div class="tc-out" id="tcOut">结果会显示在这里</div>
-  <button class="tc-copy" id="tcCopy">📋 复制结果</button>
 </div>
 
 <script>
 (()=>{
   const input=document.getElementById('tcInput');
   const out=document.getElementById('tcOut');
+  const msg=document.getElementById('tcMsg');
+  let msgTimer=0;
 
   function words(t){ return t.trim().split(/[^A-Za-z0-9\u4e00-\u9fa5]+/).filter(Boolean); }
 
   function convert(act){
     const t=input.value;
+    if(!t.trim()){
+      out.textContent='输入为空，请先输入文本';
+      out.classList.add('tc-hint');
+      return;
+    }
+    out.classList.remove('tc-hint');
     let r=t;
     if(act==='upper') r=t.toUpperCase();
     else if(act==='lower') r=t.toLowerCase();
@@ -48,7 +131,39 @@
     out.textContent=r;
   }
 
+  async function copyText(text){
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      try{ await navigator.clipboard.writeText(text); return true; }catch(e){}
+    }
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=text;
+      ta.setAttribute('readonly','');
+      ta.style.position='fixed';
+      ta.style.top='-1000px';
+      ta.style.opacity='0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok=document.execCommand('copy');
+      ta.remove();
+      return ok;
+    }catch(e){ return false; }
+  }
+
   document.querySelectorAll('.tc-btns button').forEach(b=>b.onclick=()=>convert(b.dataset.act));
-  document.getElementById('tcCopy').onclick=()=>navigator.clipboard.writeText(out.textContent);
+
+  document.getElementById('tcCopy').onclick=async()=>{
+    const text=out.textContent;
+    if(out.classList.contains('tc-hint')||!text){
+      msg.textContent='没有可复制的结果';
+      msg.classList.add('err');
+      return;
+    }
+    const ok=await copyText(text);
+    msg.textContent=ok?'已复制到剪贴板':'复制失败，请手动选择文本';
+    msg.classList.toggle('err',!ok);
+    clearTimeout(msgTimer);
+    msgTimer=setTimeout(()=>{ msg.textContent=''; msg.classList.remove('err'); },2400);
+  };
 })();
 </script>

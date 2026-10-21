@@ -1,71 +1,285 @@
 <style>
-.sc-wrap { max-width: 460px; margin: 0 auto; }
-.sc-display { background: var(--code-bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 12px; text-align: right; }
-.sc-expr { color: var(--secondary); font-size: 0.9rem; min-height: 20px; word-break: break-all; }
-.sc-result { color: var(--primary); font-size: 1.8rem; font-weight: 700; word-break: break-all; }
-.sc-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; }
-.sc-grid button { padding: 12px 0; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 1rem; cursor: pointer; }
+#scWrap { max-width: 460px; margin: 0 auto; }
+.sc-display {
+  position: relative; background: var(--code-bg); border-radius: 14px; padding: 14px 16px 16px;
+  margin-bottom: 14px; text-align: right;
+  border: 1px solid color-mix(in srgb, var(--primary) 16%, transparent);
+}
+.sc-mode {
+  position: absolute; left: 12px; top: 12px; padding: 3px 10px; border-radius: 999px;
+  font-size: 0.72rem; letter-spacing: 0.06em; cursor: pointer;
+  color: var(--secondary); border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent);
+  background: transparent;
+}
+.sc-mode:hover { color: var(--primary); border-color: var(--primary); }
+#scMode { height: 26px; min-height: 26px; line-height: 1; display: inline-flex; align-items: center; }
+#scClearHist { min-height: 0; height: 24px; padding: 0 6px; }
+.sc-expr { color: var(--secondary); font-size: 0.9rem; min-height: 22px; word-break: break-all; line-height: 1.5; }
+.sc-expr:empty::before { content: "输入表达式，例如 sin(30)+2^3"; opacity: 0.75; }
+.sc-result { color: var(--primary); font-size: 1.9rem; font-weight: 700; word-break: break-all; line-height: 1.25; }
+.sc-result.is-err { color: #e0533d; font-size: 1.5rem; }
+.sc-hint { min-height: 1.05em; margin-top: 4px; font-size: 0.76rem; color: #e0533d; }
+.sc-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.sc-grid button {
+  padding: 0; height: 46px; border-radius: 10px; cursor: pointer; font-size: 0.98rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 16%, transparent);
+  background: var(--entry); color: var(--primary);
+  transition: border-color 0.15s, background 0.15s;
+}
+.sc-grid button:hover { border-color: var(--primary); }
 .sc-grid button.op { color: var(--secondary); }
-.sc-grid button.eq { background: var(--primary); color: var(--theme); border-color: var(--primary); }
-.sc-history { margin-top: 12px; font-size: 0.85rem; color: var(--secondary); }
-.sc-history div { padding: 3px 0; border-bottom: 1px dashed var(--border); }
+.sc-grid button.op:hover { color: var(--primary); }
+.sc-grid button.eq { background: var(--primary); color: var(--theme); border-color: var(--primary); font-weight: 700; }
+.sc-grid button.eq:hover { opacity: 0.88; }
+.sc-history { margin-top: 16px; border-top: 1px solid color-mix(in srgb, var(--primary) 12%, transparent); padding-top: 10px; }
+.sc-history-head { display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: var(--secondary); margin-bottom: 6px; }
+.sc-history-head button { border: 0; background: none; color: var(--secondary); font-size: 0.78rem; cursor: pointer; padding: 2px 4px; }
+.sc-history-head button:hover { color: var(--primary); }
+.sc-history div.sc-item {
+  padding: 6px 8px; font-size: 0.85rem; color: var(--secondary); cursor: pointer;
+  border-bottom: 1px dashed color-mix(in srgb, var(--primary) 12%, transparent);
+  border-radius: 6px; word-break: break-all;
+}
+.sc-history div.sc-item:hover { background: var(--entry); color: var(--primary); }
+.sc-history .sc-empty { padding: 4px 0; font-size: 0.82rem; color: var(--secondary); opacity: 0.8; }
 </style>
 
-<div class="sc-wrap">
+<div id="scWrap">
   <div class="sc-display">
+    <button class="sc-mode" id="scMode" title="切换角度制/弧度制">DEG</button>
     <div class="sc-expr" id="scExpr"></div>
     <div class="sc-result" id="scResult">0</div>
+    <div class="sc-hint" id="scHint"></div>
   </div>
   <div class="sc-grid">
     <button data-k="sin(">sin</button><button data-k="cos(">cos</button><button data-k="tan(">tan</button><button data-k="sqrt(">√</button><button data-k="^">^</button>
     <button data-k="ln(">ln</button><button data-k="log(">log</button><button data-k="π">π</button><button data-k="(">(</button><button data-k=")">)</button>
     <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="÷" class="op">÷</button><button data-k="AC" class="op">AC</button>
     <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="×" class="op">×</button><button data-k="DEL" class="op">⌫</button>
-    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="-" class="op">−</button><button data-k="+">+</button>
+    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="-" class="op">−</button><button data-k="+" class="op">+</button>
     <button data-k="0">0</button><button data-k=".">.</button><button data-k="=" class="eq">=</button><button data-k="%">%</button><button data-k="!">!</button>
   </div>
-  <div class="sc-history" id="scHistory"></div>
+  <div class="sc-history" id="scHistoryBox">
+    <div class="sc-history-head"><span>历史记录</span><button id="scClearHist">清空</button></div>
+    <div id="scHistory"></div>
+  </div>
 </div>
 
 <script>
 (()=>{
+  const root=document.getElementById('scWrap');
+  if(!root) return;
   const exprEl=document.getElementById('scExpr');
   const resultEl=document.getElementById('scResult');
+  const hintEl=document.getElementById('scHint');
+  const modeEl=document.getElementById('scMode');
   const historyEl=document.getElementById('scHistory');
-  let expr='';
+  let expr='', deg=true;
 
-  function render(){ exprEl.textContent=expr; }
+  /* ---------- 表达式求值（自写词法+递归下降，避免 eval 与替换串扰） ---------- */
+  const FUNCS={sin:Math.sin,cos:Math.cos,tan:Math.tan,ln:Math.log,log:Math.log10,sqrt:Math.sqrt};
+  function tokenize(src){
+    const out=[]; let i=0;
+    while(i<src.length){
+      const c=src[i];
+      if(c===' '||c==='\t'){ i++; continue; }
+      if(/[0-9.]/.test(c)){
+        let j=i; while(j<src.length&&/[0-9.]/.test(src[j])) j++;
+        const num=parseFloat(src.slice(i,j));
+        if(isNaN(num)) throw new Error('数字格式有误');
+        out.push({t:'num',v:num}); i=j; continue;
+      }
+      if(c==='π'){ out.push({t:'num',v:Math.PI}); i++; continue; }
+      if(/[a-zA-Z]/.test(c)){
+        let j=i; while(j<src.length&&/[a-zA-Z]/.test(src[j])) j++;
+        const name=src.slice(i,j).toLowerCase();
+        if(!FUNCS[name]) throw new Error('未知函数 '+name);
+        out.push({t:'func',v:name}); i=j; continue;
+      }
+      if('+-*/^!%()'.includes(c)){
+        const map={'×':'*','÷':'/','−':'-'};
+        out.push({t:c}); i++; continue;
+      }
+      const sub={'×':'*','÷':'/','−':'-'}[c];
+      if(sub){ out.push({t:sub}); i++; continue; }
+      throw new Error('无法识别的字符 '+c);
+    }
+    return out;
+  }
+
+  function parse(tokens){
+    let pos=0;
+    const peek=()=>tokens[pos];
+    const eat=t=>{ if(tokens[pos]&&tokens[pos].t===t){ pos++; return true; } return false; };
+
+    function primary(){
+      const tk=peek();
+      if(!tk) throw new Error('表达式不完整');
+      if(tk.t==='num'){ pos++; return tk.v; }
+      if(tk.t==='-'){ pos++; return -unary(); }
+      if(tk.t==='+'){ pos++; return unary(); }
+      if(tk.t==='('){
+        pos++;
+        const v=expression();
+        if(!eat(')')) throw new Error('括号不匹配');
+        return v;
+      }
+      if(tk.t==='func'){
+        pos++;
+        let arg;
+        if(eat('(')){
+          arg=expression();
+          if(!eat(')')) throw new Error('括号不匹配');
+        }else{
+          arg=unary();
+        }
+        let v=arg;
+        if(deg&&(tk.v==='sin'||tk.v==='cos'||tk.v==='tan')) v=v*Math.PI/180;
+        return FUNCS[tk.v](v);
+      }
+      throw new Error('表达式有误');
+    }
+    function postfix(){
+      let v=primary();
+      for(;;){
+        if(eat('!')){ v=factorial(v); }
+        else if(eat('%')){ v=v/100; }
+        else break;
+      }
+      return v;
+    }
+    function unary(){ return postfix(); }
+    function power(){
+      const base=unary();
+      if(eat('^')){
+        const exp=unary();
+        return Math.pow(base,exp);
+      }
+      return base;
+    }
+    function term(){
+      let v=power();
+      for(;;){
+        if(eat('*')){ v=v*power(); }
+        else if(eat('/')){ const d=power(); if(d===0) throw new Error('除数不能为 0'); v=v/d; }
+        else if(peek()&&(peek().t==='num'||peek().t==='('||peek().t==='func')){ v=v*power(); }
+        else break;
+      }
+      return v;
+    }
+    function expression(){
+      let v=term();
+      for(;;){
+        if(eat('+')) v=v+term();
+        else if(eat('-')) v=v-term();
+        else break;
+      }
+      return v;
+    }
+    const val=expression();
+    if(pos<tokens.length) throw new Error('表达式有误');
+    return val;
+  }
+  function factorial(n){
+    if(n<0||Math.abs(n-Math.round(n))>1e-9) throw new Error('阶乘只支持非负整数');
+    n=Math.round(n);
+    if(n>170) throw new Error('数值过大');
+    let f=1; for(let i=2;i<=n;i++) f*=i; return f;
+  }
+
+  function render(){
+    exprEl.textContent=expr;
+    if(!expr){ resultEl.textContent='0'; resultEl.classList.remove('is-err'); hintEl.textContent=''; }
+  }
+  function showResult(val){
+    if(typeof val!=='number'||!isFinite(val)) throw new Error('结果无效');
+    let v=Math.round(val*1e10)/1e10;
+    resultEl.classList.remove('is-err');
+    resultEl.textContent=String(v);
+    hintEl.textContent='';
+    return v;
+  }
+  function showError(msg){
+    resultEl.textContent='错误';
+    resultEl.classList.add('is-err');
+    hintEl.textContent=msg||'';
+  }
 
   function evaluate(){
     if(!expr) return;
-    let s=expr.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-').replace(/\^/g,'**');
-    s=s.replace(/π/g,'(Math.PI)');
-    s=s.replace(/sin\(/g,'Math.sin(').replace(/cos\(/g,'Math.cos(').replace(/tan\(/g,'Math.tan(');
-    s=s.replace(/ln\(/g,'Math.log(').replace(/log\(/g,'Math.log10(').replace(/sqrt\(/g,'Math.sqrt(');
     try{
-      let val=Function('"use strict";return ('+s+')')();
-      if(typeof val!=='number'||!isFinite(val)) throw new Error('NaN');
-      val=Math.round(val*1e10)/1e10;
-      resultEl.textContent=val;
-      const row=document.createElement('div');
-      row.textContent=expr+' = '+val;
-      historyEl.prepend(row);
-      while(historyEl.children.length>8) historyEl.removeChild(historyEl.lastChild);
+      const v=showResult(parse(tokenize(expr)));
+      pushHistory(expr+' = '+v);
     }catch(e){
-      resultEl.textContent='错误';
+      showError(e.message);
     }
   }
+  function pushHistory(line){
+    const empty=historyEl.querySelector('.sc-empty');
+    if(empty) empty.remove();
+    const row=document.createElement('div');
+    row.className='sc-item';
+    row.textContent=line;
+    row.dataset.expr=line.split(' = ')[0];
+    historyEl.prepend(row);
+    while(historyEl.children.length>8) historyEl.removeChild(historyEl.lastChild);
+  }
+  function historyEmptyHint(){
+    if(historyEl.children.length) return;
+    const p=document.createElement('div');
+    p.className='sc-empty';
+    p.textContent='还没有计算记录';
+    historyEl.appendChild(p);
+  }
 
-  document.querySelectorAll('.sc-grid button').forEach(b=>b.onclick=()=>{
-    const k=b.dataset.k;
+  document.querySelectorAll('.sc-grid button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const k=b.dataset.k;
+      resultEl.classList.remove('is-err');
+      hintEl.textContent='';
+      if(k==='AC'){ expr=''; resultEl.textContent='0'; }
+      else if(k==='DEL'){ expr=expr.slice(0,-1); }
+      else if(k==='='){ evaluate(); render(); return; }
+      else { expr+=k; }
+      render();
+    });
+  });
+
+  modeEl.addEventListener('click',()=>{
+    deg=!deg;
+    modeEl.textContent=deg?'DEG':'RAD';
+    hintEl.textContent='';
+    if(expr){ resultEl.textContent=''; }
+  });
+
+  document.getElementById('scClearHist').addEventListener('click',()=>{ historyEl.innerHTML=''; historyEmptyHint(); });
+
+  historyEl.addEventListener('click',e=>{
+    const item=e.target.closest('.sc-item');
+    if(!item) return;
+    expr=item.dataset.expr||'';
+    resultEl.classList.remove('is-err');
+    hintEl.textContent='';
+    render();
+  });
+
+  document.addEventListener('keydown',e=>{
+    if(e.target&&/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+    const map={'Enter':'=','=':'=','Backspace':'DEL','Escape':'AC','Delete':'AC'};
+    let k=map[e.key];
+    if(!k&&/^[0-9.+\-*/^()%!]$/.test(e.key)) k=e.key;
+    if(!k) return;
+    e.preventDefault();
+    resultEl.classList.remove('is-err');
+    hintEl.textContent='';
     if(k==='AC'){ expr=''; resultEl.textContent='0'; }
     else if(k==='DEL'){ expr=expr.slice(0,-1); }
-    else if(k==='='){ evaluate(); }
-    else if(k==='%'){ expr+='/100'; }
-    else if(k==='!'){ try{ const v=eval(expr); let f=1; for(let i=2;i<=Math.round(v);i++) f*=i; expr=String(f); }catch(e){ resultEl.textContent='错误'; } }
+    else if(k==='='){ evaluate(); render(); return; }
     else { expr+=k; }
     render();
   });
+
+  historyEmptyHint();
   render();
 })();
 </script>

@@ -1,16 +1,24 @@
 <style>
-.hr-wrap { max-width: 560px; margin: 0 auto; text-align: center; }
-.hr-info { color: var(--secondary); font-size: 0.9rem; margin-bottom: 12px; }
-.hr-btns { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; }
-.hr-btns button { padding: 8px 18px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; }
-#hrCanvas { border: 2px solid var(--border); border-radius: 8px; background: #f8f4e8; max-width: 100%; touch-action: none; }
+.hr-wrap { max-width: 520px; margin: 0 auto; text-align: center; --hr-line: color-mix(in srgb, var(--primary) 16%, transparent); }
+.hr-info { color: var(--secondary); font-size: 0.9rem; margin-bottom: 10px; }
+.hr-info strong { color: var(--primary); }
+.hr-card { background: var(--entry); border: 1px solid var(--hr-line); border-radius: 12px; padding: 16px; max-width: 500px; margin: 0 auto; }
+.hr-btns { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
+.hr-wrap .hr-btns button { padding: 7px 16px; border-radius: 8px; border: 1px solid var(--hr-line); background: color-mix(in srgb, var(--primary) 7%, var(--entry)); color: var(--primary); cursor: pointer; font-size: 0.9rem; }
+.hr-wrap .hr-btns button:hover { background: color-mix(in srgb, var(--primary) 13%, var(--entry)); border-color: color-mix(in srgb, var(--primary) 34%, transparent); }
+#hrCanvas { border-radius: 8px; background: #f6efdf; max-width: 100%; height: auto; touch-action: none; display: block; margin: 0 auto; cursor: grab; box-shadow: inset 0 0 0 2px #d8c79b; }
+#hrCanvas.dragging { cursor: grabbing; }
+.hr-status { margin-top: 10px; color: var(--secondary); font-size: 0.9rem; min-height: 22px; }
+.hr-status.win { color: #22c55e; font-weight: 600; }
 </style>
 
 <div class="hr-wrap">
-  <div class="hr-info">拖拽棋子移动，让曹操到达底部出口</div>
-  <div class="hr-btns"><button id="hrReset">🔄 重置</button></div>
-  <canvas id="hrCanvas"></canvas>
-  <p id="hrStatus" style="margin-top:10px;color:var(--secondary)">曹操：左上角 2×2 红块</p>
+  <div class="hr-info">拖拽棋子移动，让曹操到达底部出口 · 已移动 <strong id="hrMoves">0</strong> 步</div>
+  <div class="hr-card">
+    <div class="hr-btns"><button id="hrReset">🔄 重置</button></div>
+    <canvas id="hrCanvas" aria-label="华容道棋盘"></canvas>
+    <p class="hr-status" id="hrStatus">曹操是上方中央 2×2 红块，滑到最下方中间即通关</p>
+  </div>
 </div>
 
 <script>
@@ -20,37 +28,50 @@
   const ctx=canvas.getContext('2d');
   canvas.width=COLS*CELL; canvas.height=ROWS*CELL;
   const status=document.getElementById('hrStatus');
-  let pieces=[], dragging=null, dragStart=null, startPos=null, moves=0, win=false;
+  const movesEl=document.getElementById('hrMoves');
+  let pieces=[], dragging=null, grab=null, startPos=null, moves=0, win=false;
 
   function reset(){
+    /* 经典「横刀立马」布局：曹操 2×2 在上中，四员武将围住，四个兵在第三、四行，底部中间留两格 */
     pieces=[
       {name:'曹操',x:1,y:0,w:2,h:2,color:'#d64541',win:true},
-      {name:'关羽',x:1,y:2,w:2,h:1,color:'#27ae60'},
       {name:'张飞',x:0,y:0,w:1,h:2,color:'#2980b9'},
       {name:'赵云',x:3,y:0,w:1,h:2,color:'#8e44ad'},
       {name:'马超',x:0,y:2,w:1,h:2,color:'#d35400'},
+      {name:'关羽',x:1,y:2,w:2,h:1,color:'#27ae60'},
       {name:'黄忠',x:3,y:2,w:1,h:2,color:'#16a085'},
-      {name:'兵',x:0,y:3,w:1,h:1,color:'#7f8c8d'},
       {name:'兵',x:1,y:3,w:1,h:1,color:'#7f8c8d'},
       {name:'兵',x:2,y:3,w:1,h:1,color:'#7f8c8d'},
-      {name:'兵',x:3,y:3,w:1,h:1,color:'#7f8c8d'}
+      {name:'兵',x:0,y:4,w:1,h:1,color:'#7f8c8d'},
+      {name:'兵',x:3,y:4,w:1,h:1,color:'#7f8c8d'}
     ];
-    dragging=null; moves=0; win=false;
-    status.textContent='曹操：左上角 2×2 红块';
+    dragging=null; grab=null; moves=0; win=false;
+    movesEl.textContent='0';
+    canvas.classList.remove('dragging');
+    status.textContent='曹操是上方中央 2×2 红块，滑到最下方中间即通关';
+    status.classList.remove('win');
     draw();
   }
 
   function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.strokeStyle='#c9b98a'; ctx.lineWidth=1;
+    ctx.fillStyle='#f6efdf'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.strokeStyle='#cbb98e'; ctx.lineWidth=1;
     for(let c=0;c<=COLS;c++){ ctx.beginPath(); ctx.moveTo(c*CELL,0); ctx.lineTo(c*CELL,canvas.height); ctx.stroke(); }
     for(let r=0;r<=ROWS;r++){ ctx.beginPath(); ctx.moveTo(0,r*CELL); ctx.lineTo(canvas.width,r*CELL); ctx.stroke(); }
+    /* 底部出口 */
     ctx.fillStyle='#e74c3c';
-    ctx.fillRect(CELL,ROWS*CELL-8,CELL*2,8);
+    ctx.fillRect(CELL,ROWS*CELL-6,CELL*2,6);
+    ctx.fillStyle='#b03a35';
+    ctx.font='bold 14px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.fillText('出口', CELL*2, ROWS*CELL-10);
     for(const p of pieces){
+      ctx.save();
+      if(p===dragging){ ctx.shadowColor='rgba(0,0,0,0.35)'; ctx.shadowBlur=12; ctx.shadowOffsetY=4; }
       ctx.fillStyle=p.color;
-      roundRect(p.x*CELL+2,p.y*CELL+2,p.w*CELL-4,p.h*CELL-4,8);
+      roundRect(p.x*CELL+3,p.y*CELL+3,p.w*CELL-6,p.h*CELL-6,10);
       ctx.fill();
+      ctx.restore();
       ctx.fillStyle='#fff';
       ctx.font='bold 18px sans-serif';
       ctx.textAlign='center'; ctx.textBaseline='middle';
@@ -65,7 +86,7 @@
   }
 
   function hit(p,x,y){
-    return x>=p.x*CELL&&x<=p.x*CELL+p.w*CELL&&y>=p.y*CELL&&y<=p.y*CELL+p.h*CELL;
+    return x>=p.x*CELL&&x<p.x*CELL+p.w*CELL&&y>=p.y*CELL&&y<p.y*CELL+p.h*CELL;
   }
 
   function collide(p){
@@ -76,29 +97,55 @@
     return false;
   }
 
-  function finishDrag(){
+  /* 向目标走一格，越界或相撞则回退 */
+  function step(p,dx,dy){
+    const nx=p.x+dx, ny=p.y+dy;
+    if(nx<0||ny<0||nx+p.w>COLS||ny+p.h>ROWS) return false;
+    p.x=nx; p.y=ny;
+    if(collide(p)){ p.x-=dx; p.y-=dy; return false; }
+    return true;
+  }
+
+  /* 逐步滑到目标格，遇到障碍停在最后一格 */
+  function slideTo(p,tx,ty){
+    let guard=0;
+    while(p.x!==tx&&guard++<8){ if(!step(p,Math.sign(tx-p.x),0)) break; }
+    guard=0;
+    while(p.y!==ty&&guard++<8){ if(!step(p,0,Math.sign(ty-p.y))) break; }
+  }
+
+  function pointOf(e){
+    const rect=canvas.getBoundingClientRect();
+    return {x:(e.clientX-rect.left)*(canvas.width/rect.width), y:(e.clientY-rect.top)*(canvas.height/rect.height)};
+  }
+
+  function finishDrag(e){
+    if(!dragging) return;
     const p=dragging;
-    p.x=Math.round(p.x); p.y=Math.round(p.y);
-    p.x=Math.max(0,Math.min(COLS-p.w,p.x));
-    p.y=Math.max(0,Math.min(ROWS-p.h,p.y));
-    if(collide(p)){ p.x=startPos.x; p.y=startPos.y; }
-    else if(p.x!==startPos.x||p.y!==startPos.y){ moves++; }
+    if(p.x!==startPos.x||p.y!==startPos.y) moves++;
+    movesEl.textContent=moves;
     if(p.win&&p.x===1&&p.y===3&&!win){
-      win=true; status.textContent='恭喜通关！共移动 '+moves+' 步 🎉';
+      win=true;
+      status.textContent='恭喜通关！共移动 '+moves+' 步 🎉';
+      status.classList.add('win');
     }
-    dragging=null;
+    dragging=null; grab=null;
+    canvas.classList.remove('dragging');
     draw();
   }
 
   canvas.addEventListener('pointerdown',e=>{
     if(win) return;
-    const rect=canvas.getBoundingClientRect();
-    const x=(e.clientX-rect.left)*(canvas.width/rect.width);
-    const y=(e.clientY-rect.top)*(canvas.height/rect.height);
-    for(const p of pieces){
-      if(hit(p,x,y)){
+    const pt=pointOf(e);
+    for(let i=pieces.length-1;i>=0;i--){
+      const p=pieces[i];
+      if(hit(p,pt.x,pt.y)){
         dragging=p; startPos={x:p.x,y:p.y};
-        canvas.setPointerCapture(e.pointerId);
+        /* 记录抓取点相对棋子左上角的偏移，避免一按下就跳到另一格 */
+        grab={dx:pt.x/CELL-p.x, dy:pt.y/CELL-p.y};
+        canvas.classList.add('dragging');
+        try{ canvas.setPointerCapture(e.pointerId); }catch(err){}
+        draw();
         break;
       }
     }
@@ -106,19 +153,21 @@
 
   canvas.addEventListener('pointermove',e=>{
     if(!dragging) return;
-    const rect=canvas.getBoundingClientRect();
-    const x=(e.clientX-rect.left)*(canvas.width/rect.width);
-    const y=(e.clientY-rect.top)*(canvas.height/rect.height);
-    const dx=Math.round((x-startPos.x*CELL)/CELL);
-    const dy=Math.round((y-startPos.y*CELL)/CELL);
-    const p=dragging;
-    p.x=Math.max(0,Math.min(COLS-p.w,startPos.x+dx));
-    p.y=Math.max(0,Math.min(ROWS-p.h,startPos.y+dy));
-    if(!collide(p)) draw(); else { p.x=startPos.x; p.y=startPos.y; }
+    const pt=pointOf(e);
+    const tx=Math.max(0,Math.min(COLS-dragging.w,Math.round(pt.x/CELL-grab.dx)));
+    const ty=Math.max(0,Math.min(ROWS-dragging.h,Math.round(pt.y/CELL-grab.dy)));
+    if(tx===dragging.x&&ty===dragging.y) return;
+    slideTo(dragging,tx,ty);
+    draw();
   });
 
   canvas.addEventListener('pointerup',finishDrag);
-  canvas.addEventListener('pointercancel',()=>{ if(dragging){ dragging.x=startPos.x; dragging.y=startPos.y; dragging=null; draw(); } });
+  canvas.addEventListener('pointercancel',()=>{
+    if(dragging){ dragging.x=startPos.x; dragging.y=startPos.y; }
+    dragging=null; grab=null;
+    canvas.classList.remove('dragging');
+    draw();
+  });
   document.getElementById('hrReset').onclick=reset;
   reset();
 })();

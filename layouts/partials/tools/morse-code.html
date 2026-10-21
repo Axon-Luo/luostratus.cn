@@ -1,75 +1,227 @@
 <style>
-.morse-wrap { max-width: 550px; margin: 0 auto; }
-.morse-section { margin-bottom: 16px; }
-.morse-section textarea { width: 100%; height: 80px; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.95rem; resize: vertical; font-family: monospace; }
-.morse-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
-.morse-bar select, .morse-bar button, .morse-bar input { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.85rem; cursor: pointer; }
-.morse-bar input[type="range"] { width: 100px; padding: 0; }
+.morse-wrap { max-width: 560px; margin: 0 auto; --morse-line: color-mix(in srgb, var(--primary) 20%, transparent); }
+.morse-card { margin-bottom: 18px; padding: 20px; border-radius: 12px; background: var(--entry); border: 1px solid var(--border); }
+.morse-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 12px; margin-bottom: 10px; }
+.morse-head h3 { margin: 0; font-size: 0.98rem; }
+.morse-head span { font-size: 0.75rem; color: var(--secondary); }
+.morse-section textarea, .morse-card textarea { width: 100%; box-sizing: border-box; min-height: 84px; padding: 12px; border-radius: 8px; border: 1px solid var(--morse-line); background: var(--entry); color: var(--primary); font-size: 0.95rem; resize: vertical; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; line-height: 1.6; }
+.morse-card textarea:focus, .morse-bar button:focus-visible, .morse-bar input:focus-visible { outline: 2px solid color-mix(in srgb, var(--primary) 45%, transparent); outline-offset: 1px; }
+.morse-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+.morse-bar select, .morse-bar button { padding: 7px 13px; border-radius: 8px; border: 1px solid var(--morse-line); background: var(--entry); color: var(--primary); font-size: 0.85rem; cursor: pointer; }
+.morse-bar button:disabled { opacity: 0.55; cursor: not-allowed; }
+.morse-wpm { display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--secondary); margin-right: auto; }
+.morse-wpm input[type="range"] { width: 110px; accent-color: var(--primary); padding: 0; }
+.morse-wpm span { min-width: 1.6em; color: var(--primary); font-variant-numeric: tabular-nums; }
+.morse-hint { min-height: 1.2em; margin: 6px 0 0; font-size: 0.78rem; color: var(--secondary); }
+.morse-hint.is-error { color: color-mix(in srgb, #f59e0b 60%, var(--primary)); }
+@media (max-width: 560px) {
+  .morse-wpm { width: 100%; margin-right: 0; }
+  .morse-wpm input[type="range"] { flex: 1; width: auto; max-width: none; }
+}
 </style>
 
 <div class="morse-wrap">
-  <div class="morse-section">
-    <label style="font-size:0.9rem;color:var(--secondary)">文字 → 摩斯电码</label>
-    <textarea id="morseText" placeholder="输入文字...">HELLO WORLD</textarea>
+  <div class="morse-card">
+    <div class="morse-head"><h3>文字 → 摩斯电码</h3><span>字母用空格分隔，单词用 / 分隔</span></div>
+    <textarea id="morseText" placeholder="输入文字..." autocomplete="off" spellcheck="false">HELLO WORLD</textarea>
     <div class="morse-bar">
-      <label style="font-size:0.8rem;color:var(--secondary)">WPM:<input type="range" id="morseWPM" min="5" max="40" value="20"></label>
-      <span id="morseWPMVal" style="font-size:0.8rem;color:var(--secondary)">20</span>
-      <button id="morsePlay">▶ 播放</button>
-      <button id="morseStop">■ 停止</button>
-      <button id="morseCopy">📋 复制</button>
+      <label class="morse-wpm">WPM <input type="range" id="morseWPM" min="5" max="40" value="20" aria-label="播放速度 WPM"><span id="morseWPMVal">20</span></label>
+      <button type="button" id="morsePlay">▶ 播放</button>
+      <button type="button" id="morseStop">■ 停止</button>
+      <button type="button" id="morseCopy">📋 复制</button>
     </div>
     <textarea id="morseCode" placeholder="摩斯电码..." readonly></textarea>
+    <p class="morse-hint" id="morseEncHint" aria-live="polite"></p>
   </div>
-  <div class="morse-section">
-    <label style="font-size:0.9rem;color:var(--secondary)">摩斯电码 → 文字</label>
-    <textarea id="morseDecodeInput" placeholder="输入摩斯电码（用空格分隔字母，用 / 分隔单词）..."></textarea>
-    <button id="morseDecodeBtn" style="margin-top:8px;padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--entry);color:var(--primary);cursor:pointer;">解码</button>
+
+  <div class="morse-card">
+    <div class="morse-head"><h3>摩斯电码 → 文字</h3><span>支持 / 或空格分隔单词</span></div>
+    <textarea id="morseDecodeInput" placeholder="例如 .... . .-.. .-.. --- / .-- --- .-. .-.. -.." autocomplete="off" spellcheck="false"></textarea>
+    <div class="morse-bar">
+      <button type="button" id="morseDecodeBtn">解码</button>
+      <button type="button" id="morseClear">清空</button>
+    </div>
     <textarea id="morseDecoded" placeholder="解码结果..." readonly></textarea>
+    <p class="morse-hint" id="morseDecHint" aria-live="polite"></p>
   </div>
 </div>
 
 <script>
 (()=>{
   const MORSE={'A':'.-','B':'-...','C':'-.-.','D':'-..','E':'.','F':'..-.','G':'--.','H':'....','I':'..','J':'.---','K':'-.-','L':'.-..','M':'--','N':'-.','O':'---','P':'.--.','Q':'--.-','R':'.-.','S':'...','T':'-','U':'..-','V':'...-','W':'.--','X':'-..-','Y':'-.--','Z':'--..','0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.','.':'.-.-.-',',':'--..--','?':'..--..',"'":'.----.','!':'-.-.--','/':'-..-.','(':'-.--.',')':'-.--.-','&':'.-...',':':'---...',';':'-.-.-.','=':'-...-','+':'.-.-.','-':'-....-','_':'..--.-','"':'.-..-.','$':'...-..-','@':'.--.-.'};
-  const REV={}; for(const[k,v] of Object.entries(MORSE)) REV[v]=k;
+  const REV={};
+  Object.keys(MORSE).forEach(k=>{ REV[MORSE[k]]=k; });
 
-  const textEl=document.getElementById('morseText'),codeEl=document.getElementById('morseCode');
-  const wpmInp=document.getElementById('morseWPM'),wpmVal=document.getElementById('morseWPMVal');
+  const textEl=document.getElementById('morseText');
+  const codeEl=document.getElementById('morseCode');
+  const wpmInp=document.getElementById('morseWPM');
+  const wpmVal=document.getElementById('morseWPMVal');
+  const encHint=document.getElementById('morseEncHint');
+  const decHint=document.getElementById('morseDecHint');
+  const decInput=document.getElementById('morseDecodeInput');
+  const decOut=document.getElementById('morseDecoded');
+  const playBtn=document.getElementById('morsePlay');
+  const stopBtn=document.getElementById('morseStop');
 
-  function toMorse(txt){ return txt.toUpperCase().split('').map(c=>MORSE[c]||c).join(' '); }
-  function fromMorse(code){ return code.split(' / ').map(w=>w.split(' ').map(c=>REV[c]||c).join('')).join(' '); }
+  function setMsg(el,msg,isError){
+    el.textContent=msg||'';
+    el.classList.toggle('is-error',!!isError);
+  }
 
-  textEl.oninput=()=>{ codeEl.value=toMorse(textEl.value); };
-  wpmInp.oninput=()=>{ wpmVal.textContent=wpmInp.value; };
-  textEl.oninput(); // initial conversion
+  function toMorse(txt){
+    const words=String(txt).toUpperCase().split(/\s+/).filter(Boolean);
+    const skipped=new Set();
+    const encoded=[];
+    words.forEach(word=>{
+      const letters=[];
+      for(const ch of word){
+        if(MORSE[ch]) letters.push(MORSE[ch]);
+        else skipped.add(ch);
+      }
+      if(letters.length) encoded.push(letters.join(' '));
+    });
+    return {code:encoded.join(' / '), skipped:Array.from(skipped)};
+  }
 
-  document.getElementById('morseDecodeBtn').onclick=()=>{
-    const input=document.getElementById('morseDecodeInput').value.trim();
-    document.getElementById('morseDecoded').value=fromMorse(input);
-  };
+  function fromMorse(code){
+    const normalized=String(code).replace(/\s*\/\s*/g,' / ').replace(/\s+/g,' ').trim();
+    if(!normalized) return {text:'',unknown:[]};
+    const unknown=new Set();
+    const words=normalized.split(' / ').map(word=>{
+      return word.split(' ').filter(Boolean).map(token=>{
+        if(Object.prototype.hasOwnProperty.call(REV,token)) return REV[token];
+        unknown.add(token);
+        return '?';
+      }).join('');
+    }).filter(Boolean);
+    return {text:words.join(' '),unknown:Array.from(unknown)};
+  }
 
-  document.getElementById('morseCopy').onclick=()=>{ navigator.clipboard.writeText(codeEl.value); };
-
-  let audioCtx=null,playing=false;
-  document.getElementById('morsePlay').onclick=()=>{
-    if(playing) return; playing=true;
-    if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-    const code=codeEl.value; const wpm=+wpmInp.value; const dotLen=1200/wpm/1000;
-    const events=[]; let t=0;
-    for(const ch of code){
-      if(ch==='.'){ events.push({t,on:true}); t+=dotLen; events.push({t,on:false}); t+=dotLen; }
-      else if(ch==='-'){ events.push({t,on:true}); t+=dotLen*3; events.push({t,on:false}); t+=dotLen; }
-      else if(ch===' '){ t+=dotLen*3; }
-      else if(ch==='/'){ t+=dotLen*7; }
+  function renderEncode(){
+    const {code,skipped}=toMorse(textEl.value);
+    codeEl.value=code;
+    if(skipped.length){
+      const shown=skipped.slice(0,8).join(' ');
+      setMsg(encHint,'已忽略 '+skipped.length+' 个不支持的字符：'+shown+(skipped.length>8?' …':''),true);
+    }else if(!code&&textEl.value.trim()){
+      setMsg(encHint,'没有可编码的字符（仅支持字母、数字与常用标点）',true);
+    }else{
+      setMsg(encHint,'');
     }
-    const startTime=audioCtx.currentTime; let stopped=false;
-    const osc=audioCtx.createOscillator(); osc.type='sine'; osc.frequency.value=700;
-    const gain=audioCtx.createGain(); gain.gain.value=0;
-    osc.connect(gain); gain.connect(audioCtx.destination); osc.start();
-    for(const{on,t:evt} of events){ gain.gain.setValueAtTime(on?0.5:0,startTime+evt); }
-    setTimeout(()=>{ osc.stop(); playing=false; },(t+0.2)*1000);
-    document.getElementById('morseStop').onclick=()=>{ osc.stop(); playing=false; };
-  };
-  document.getElementById('morseStop').onclick=()=>{ playing=false; };
+  }
+
+  function decode(){
+    const {text,unknown}=fromMorse(decInput.value);
+    decOut.value=text;
+    if(unknown.length){
+      const shown=unknown.slice(0,6).join(' ');
+      setMsg(decHint,'有 '+unknown.length+' 个无法识别的代码，已用 ? 代替：'+shown+(unknown.length>6?' …':''),true);
+    }else if(!text&&decInput.value.trim()){
+      setMsg(decHint,'没有可解码的内容',true);
+    }else{
+      setMsg(decHint,'');
+    }
+  }
+
+  textEl.addEventListener('input',renderEncode);
+  wpmInp.addEventListener('input',()=>{ wpmVal.textContent=wpmInp.value; });
+  document.getElementById('morseDecodeBtn').addEventListener('click',decode);
+  document.getElementById('morseClear').addEventListener('click',()=>{
+    decInput.value=''; decOut.value=''; setMsg(decHint,''); decInput.focus();
+  });
+  decInput.addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&e.key==='Enter') decode(); });
+
+  /* ---------- 复制（带降级与错误提示，避免未捕获异常） ---------- */
+  async function copyText(t){
+    if(!t) return false;
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        await navigator.clipboard.writeText(t);
+        return true;
+      }
+    }catch(e){}
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=t; ta.setAttribute('readonly','');
+      ta.style.position='fixed'; ta.style.top='-1000px'; ta.style.opacity='0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok=document.execCommand('copy');
+      ta.remove();
+      return ok;
+    }catch(e){ return false; }
+  }
+
+  document.getElementById('morseCopy').addEventListener('click',async()=>{
+    const ok=await copyText(codeEl.value);
+    setMsg(encHint,ok?'已复制摩斯电码':'复制失败，请手动选择文本复制',!ok);
+    setTimeout(()=>{ if(codeEl.value) renderEncode(); },1600);
+  });
+
+  /* ---------- 音频播放 ---------- */
+  let audioCtx=null,osc=null,gainNode=null,endTimer=null,playing=false;
+
+  function resetPlayUi(){
+    playing=false;
+    playBtn.disabled=false;
+    playBtn.textContent='▶ 播放';
+  }
+
+  function stopAudio(){
+    if(endTimer){ clearTimeout(endTimer); endTimer=null; }
+    if(osc&&audioCtx){
+      try{ gainNode.gain.cancelScheduledValues(audioCtx.currentTime); gainNode.gain.setValueAtTime(0,audioCtx.currentTime); }catch(e){}
+      try{ osc.stop(); }catch(e){}
+      try{ osc.disconnect(); }catch(e){}
+      try{ gainNode.disconnect(); }catch(e){}
+    }
+    osc=null; gainNode=null;
+    resetPlayUi();
+  }
+
+  playBtn.addEventListener('click',()=>{
+    if(playing) return;
+    const code=codeEl.value.trim();
+    if(!code){ setMsg(encHint,'没有可播放的摩斯电码',true); return; }
+    const Ctx=window.AudioContext||window.webkitAudioContext;
+    if(!Ctx){ setMsg(encHint,'当前浏览器不支持音频播放',true); return; }
+    try{
+      if(!audioCtx) audioCtx=new Ctx();
+      if(audioCtx.state==='suspended'&&audioCtx.resume) audioCtx.resume().catch(()=>{});
+      const wpm=Math.max(5,Math.min(40,+wpmInp.value||20));
+      const dot=1.2/wpm;
+      const events=[];
+      let t=0;
+      for(const ch of code){
+        if(ch==='.'){ events.push([t,true]); t+=dot; events.push([t,false]); t+=dot; }
+        else if(ch==='-'){ events.push([t,true]); t+=dot*3; events.push([t,false]); t+=dot; }
+        else if(ch===' '){ t+=dot*3; }
+        else if(ch==='/'){ t+=dot*7; }
+      }
+      if(!events.length){ setMsg(encHint,'没有可播放的摩斯电码',true); return; }
+      const start=audioCtx.currentTime+0.06;
+      osc=audioCtx.createOscillator();
+      osc.type='sine';
+      osc.frequency.value=700;
+      gainNode=audioCtx.createGain();
+      gainNode.gain.setValueAtTime(0,start);
+      osc.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      events.forEach(([at,on])=>{ gainNode.gain.setValueAtTime(on?0.35:0,start+at); });
+      osc.start(start);
+      osc.stop(start+t+0.05);
+      playing=true;
+      playBtn.disabled=true;
+      playBtn.textContent='播放中…';
+      setMsg(encHint,'');
+      endTimer=setTimeout(()=>{ stopAudio(); },(t+0.3)*1000);
+    }catch(e){
+      stopAudio();
+      setMsg(encHint,'音频播放失败：'+(e&&e.message?e.message:'未知错误'),true);
+    }
+  });
+  stopBtn.addEventListener('click',()=>{ stopAudio(); });
+
+  renderEncode();
 })();
 </script>

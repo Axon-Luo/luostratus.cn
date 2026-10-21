@@ -1,88 +1,227 @@
 <style>
-.pd-wrap { max-width: 480px; margin: 0 auto; text-align: center; }
-.pd-mode { display: flex; justify-content: center; gap: 8px; margin-bottom: 14px; }
-.pd-mode button { padding: 7px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--entry); color: var(--secondary); cursor: pointer; }
-.pd-mode button.active { background: var(--primary); color: var(--theme); border-color: var(--primary); }
-.pd-time { font-size: 4rem; font-weight: 700; color: var(--primary); margin: 10px 0 18px; font-variant-numeric: tabular-nums; }
-.pd-btns { display: flex; justify-content: center; gap: 10px; margin-bottom: 12px; }
-.pd-btns button { padding: 10px 22px; border-radius: 10px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); cursor: pointer; font-weight: 600; }
-.pd-btns .main { background: var(--primary); color: var(--theme); border-color: var(--primary); }
-.pd-set { display: flex; justify-content: center; gap: 14px; color: var(--secondary); font-size: 0.9rem; }
-.pd-set input { width: 60px; padding: 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); }
+.pd-wrap {
+  --pd-line: color-mix(in srgb, var(--primary) 22%, transparent);
+  --pd-card-line: color-mix(in srgb, var(--primary) 14%, transparent);
+  max-width: 680px;
+  margin: 0 auto;
+}
+.main .pd-wrap { max-width: 680px; }
+.pd-card {
+  background: var(--entry);
+  border: 1px solid var(--pd-card-line);
+  border-radius: 14px;
+  padding: 22px 20px 16px;
+  text-align: center;
+}
+.pd-mode { display: flex; justify-content: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+.pd-mode button,
+.pd-btns button {
+  font: inherit;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease, opacity .15s ease;
+}
+.pd-mode button {
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: 1px solid var(--pd-line);
+  background: var(--code-bg);
+  color: var(--secondary);
+  font-size: 0.92rem;
+}
+.pd-mode button:hover { color: var(--primary); border-color: var(--primary); }
+.pd-mode button.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--theme);
+  font-weight: 600;
+}
+.pd-time {
+  font-size: clamp(3rem, 12vw, 4.2rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--primary);
+  margin: 8px 0 16px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+}
+.pd-btns { display: flex; justify-content: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+.pd-btns button {
+  padding: 10px 24px;
+  border-radius: 10px;
+  border: 1px solid var(--pd-line);
+  background: var(--code-bg);
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.pd-btns button:hover { border-color: var(--primary); }
+.pd-btns .pd-primary { background: var(--primary); border-color: var(--primary); color: var(--theme); }
+.pd-btns .pd-primary:hover { opacity: .88; }
+.pd-set { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px 18px; color: var(--secondary); font-size: 0.9rem; }
+.pd-set label { display: inline-flex; align-items: center; gap: 6px; }
+.pd-set input {
+  width: 64px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--pd-line);
+  background: var(--code-bg);
+  color: var(--primary);
+  text-align: center;
+  font-size: 0.9rem;
+}
+.pd-set input:focus { border-color: var(--primary); }
+.pd-status {
+  color: var(--secondary);
+  font-size: 0.85rem;
+  margin: 14px 0 0;
+  min-height: 1.3em;
+  line-height: 1.3;
+}
+.pd-wrap button:focus-visible,
+.pd-wrap input:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--primary) 55%, transparent);
+  outline-offset: 2px;
+}
 </style>
 
 <div class="pd-wrap">
-  <div class="pd-mode">
-    <button data-mode="work" class="active">🍅 专注</button>
-    <button data-mode="break">☕ 休息</button>
+  <div class="pd-card">
+    <div class="pd-mode">
+      <button type="button" data-mode="work" class="active">🍅 专注</button>
+      <button type="button" data-mode="break">☕ 休息</button>
+    </div>
+    <div class="pd-time" id="pdTime">25:00</div>
+    <div class="pd-btns">
+      <button type="button" class="pd-primary" id="pdStart">▶ 开始</button>
+      <button type="button" id="pdReset">🔄 重置</button>
+    </div>
+    <div class="pd-set">
+      <label>专注 <input type="number" id="pdWork" min="1" max="120" step="1" value="25"> 分钟</label>
+      <label>休息 <input type="number" id="pdBreak" min="1" max="60" step="1" value="5"> 分钟</label>
+    </div>
+    <p class="pd-status" id="pdStatus">已专注 0 轮</p>
   </div>
-  <div class="pd-time" id="pdTime">25:00</div>
-  <div class="pd-btns">
-    <button class="main" id="pdStart">▶ 开始</button>
-    <button id="pdReset">🔄 重置</button>
-  </div>
-  <div class="pd-set">
-    <label>专注 <input type="number" id="pdWork" min="1" max="120" value="25"> 分钟</label>
-    <label>休息 <input type="number" id="pdBreak" min="1" max="60" value="5"> 分钟</label>
-  </div>
-  <p id="pdStatus" style="color:var(--secondary);font-size:0.85rem;margin-top:10px">已专注 0 轮</p>
 </div>
 
 <script>
 (()=>{
   const timeEl=document.getElementById('pdTime');
   const statusEl=document.getElementById('pdStatus');
-  let mode='work', total=25*60, left=total, timer=null, cycles=0, running=false;
+  const startBtn=document.getElementById('pdStart');
+  const workEl=document.getElementById('pdWork');
+  const breakEl=document.getElementById('pdBreak');
 
+  let mode='work', total=25*60, left=total, cycles=0, running=false;
+  let ticker=null, endAt=0, note='';
+
+  function clampMin(el, fallback, max){
+    let v=Math.round(Number(el.value));
+    if(!Number.isFinite(v)||v<1) v=fallback;
+    if(v>max) v=max;
+    el.value=String(v);
+    return v;
+  }
+  function applySettings(){
+    total=(mode==='work'?clampMin(workEl,25,120):clampMin(breakEl,5,60))*60;
+  }
   function fmt(s){
+    s=Math.max(0,Math.round(s));
     const m=Math.floor(s/60), sec=s%60;
     return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');
   }
-
   function render(){ timeEl.textContent=fmt(left); }
+  function renderStatus(){
+    statusEl.textContent=(note?note+' · ':'')+'已专注 '+cycles+' 轮';
+  }
+
+  function paintMode(){
+    document.querySelectorAll('.pd-mode button').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
+  }
+  function switchMode(m){
+    mode=m;
+    paintMode();
+    applySettings();
+    left=total;
+    render();
+  }
+  function stop(){
+    clearInterval(ticker); ticker=null; running=false;
+    startBtn.textContent='▶ 开始';
+  }
 
   function beep(){
     try{
-      const ctx=new (window.AudioContext||window.webkitAudioContext)();
+      const Ctx=window.AudioContext||window.webkitAudioContext;
+      if(!Ctx) return;
+      const ctx=new Ctx();
       const o=ctx.createOscillator(), g=ctx.createGain();
       o.frequency.value=880; g.gain.value=0.2;
       o.connect(g); g.connect(ctx.destination);
       o.start(); o.stop(ctx.currentTime+0.4);
+      if(ctx.state==='suspended'&&ctx.resume) ctx.resume();
     }catch(e){}
   }
 
-  function switchMode(m){
-    mode=m;
-    document.querySelectorAll('.pd-mode button').forEach(b=>b.classList.toggle('active',b.dataset.mode===m));
-    total=(m==='work'?+document.getElementById('pdWork').value:+document.getElementById('pdBreak').value)*60;
-    left=total; render();
-  }
-
   function tick(){
-    left--;
+    left=Math.max(0,Math.round((endAt-Date.now())/1000));
     render();
-    if(left<=0){
-      clearInterval(timer); running=false;
-      document.getElementById('pdStart').textContent='▶ 开始';
-      beep();
-      if(mode==='work'){ cycles++; statusEl.textContent='专注完成！休息一下吧（已专注 '+cycles+' 轮）'; switchMode('break'); }
-      else { statusEl.textContent='休息结束，开始下一轮专注'; switchMode('work'); }
-    }
+    if(left<=0) finish();
   }
 
-  document.getElementById('pdStart').onclick=()=>{
-    if(running){ clearInterval(timer); running=false; document.getElementById('pdStart').textContent='▶ 继续'; return; }
-    if(left<=0){ left=total; }
+  function finish(){
+    clearInterval(ticker); ticker=null; running=false;
+    startBtn.textContent='▶ 开始';
+    beep();
+    if(mode==='work'){
+      cycles++;
+      switchMode('break');
+      note='专注完成，休息一下吧';
+    }else{
+      switchMode('work');
+      note='休息结束，开始下一轮专注';
+    }
+    renderStatus();
+  }
+
+  startBtn.onclick=()=>{
+    if(running){
+      clearInterval(ticker); ticker=null; running=false;
+      startBtn.textContent='▶ 继续';
+      return;
+    }
+    if(left<=0){ applySettings(); left=total; render(); }
     running=true;
-    document.getElementById('pdStart').textContent='⏸ 暂停';
-    timer=setInterval(tick,1000);
+    note='';
+    renderStatus();
+    startBtn.textContent='⏸ 暂停';
+    endAt=Date.now()+left*1000;
+    ticker=setInterval(tick,200);
   };
+
   document.getElementById('pdReset').onclick=()=>{
-    clearInterval(timer); running=false;
-    document.getElementById('pdStart').textContent='▶ 开始';
+    stop();
+    note='';
     switchMode(mode);
+    renderStatus();
   };
-  document.querySelectorAll('.pd-mode button').forEach(b=>b.onclick=()=>{ clearInterval(timer); running=false; document.getElementById('pdStart').textContent='▶ 开始'; switchMode(b.dataset.mode); });
+
+  document.querySelectorAll('.pd-mode button').forEach(b=>{
+    b.onclick=()=>{ stop(); note=''; switchMode(b.dataset.mode); renderStatus(); };
+  });
+
+  [workEl,breakEl].forEach(el=>{
+    el.addEventListener('change',()=>{
+      clampMin(workEl,25,120);
+      clampMin(breakEl,5,60);
+      if(running) return;
+      switchMode(mode);
+      renderStatus();
+    });
+  });
+
+  applySettings();
+  left=total;
   render();
+  renderStatus();
 })();
 </script>

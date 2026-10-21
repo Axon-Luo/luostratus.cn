@@ -1,16 +1,23 @@
 <style>
 .breakout-wrap { max-width: 600px; margin: 0 auto; }
 .breakout-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
-.breakout-bar select, .breakout-bar button { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--entry); color: var(--primary); font-size: 0.85rem; cursor: pointer; }
-.breakout-info { display: flex; gap: 20px; margin-bottom: 10px; font-size: 0.9rem; color: var(--secondary); }
+.breakout-bar select,
+.breakout-bar button { padding: 6px 12px; border-radius: 8px; border: 1px solid color-mix(in srgb, var(--primary) 24%, transparent); background: color-mix(in srgb, var(--primary) 10%, var(--entry)); color: var(--primary); font-size: 0.85rem; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+.breakout-bar select { background: var(--entry); }
+.breakout-bar button:hover { background: color-mix(in srgb, var(--primary) 18%, var(--entry)); border-color: color-mix(in srgb, var(--primary) 38%, transparent); }
+.breakout-bar button.primary { background: var(--primary); color: var(--theme); border-color: var(--primary); }
+.breakout-bar button.primary:hover { background: color-mix(in srgb, var(--primary) 88%, var(--entry)); }
+.breakout-info { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 10px; font-size: 0.9rem; color: var(--secondary); }
 .breakout-info strong { color: var(--primary); }
-#breakoutCanvas { border: 2px solid var(--border); border-radius: 8px; background: #1a1a2e; display: block; max-width: 100%; margin: 0 auto; }
+#breakoutCanvas { border: 2px solid color-mix(in srgb, var(--primary) 22%, transparent); border-radius: 8px; background: #1a1a2e; display: block; max-width: 100%; height: auto; margin: 0 auto; touch-action: none; }
+.breakout-hint { margin-top: 10px; font-size: 0.78rem; color: var(--secondary); text-align: center; }
 </style>
 
 <div class="breakout-wrap">
   <div class="breakout-bar">
     <select id="brkDiff"><option value="easy">简单</option><option value="normal" selected>普通</option><option value="hard">困难</option></select>
-    <button id="brkStart">开始</button>
+    <button id="brkStart" class="primary">开始</button>
+    <button id="brkPause">暂停</button>
   </div>
   <div class="breakout-info">
     <span>分数：<strong id="brkScore">0</strong></span>
@@ -18,16 +25,19 @@
     <span>最高分：<strong id="brkBest">0</strong></span>
   </div>
   <canvas id="breakoutCanvas" width="480" height="400"></canvas>
+  <div class="breakout-hint">鼠标 / 手指在画面上左右移动控制挡板；方向键同样可用。</div>
 </div>
 
 <script>
 (()=>{
   const canvas=document.getElementById('breakoutCanvas'),ctx=canvas.getContext('2d');
   const scoreEl=document.getElementById('brkScore'),livesEl=document.getElementById('brkLives'),bestEl=document.getElementById('brkBest');
+  const pauseBtn=document.getElementById('brkPause');
 
   let bricks=[],ball={x:240,y:350,dx:3,dy:-3,r:7},paddle={x:200,y:380,w:80,h:12};
-  let score=0,lives=3,running=false,combo=0;
+  let score=0,lives=3,running=false,paused=false,over=false,combo=0;
   let rows=7,cols=8,brickW=50,brickH=18,ballSpeed=3,paddleW=80;
+  let anim=null;
 
   function loadDiff(){
     const d=document.getElementById('brkDiff').value;
@@ -47,18 +57,33 @@
   function updateUI(){ scoreEl.textContent=score; livesEl.textContent=lives; const b=localStorage.getItem('brkBest')||0; if(score>b){ localStorage.setItem('brkBest',score); bestEl.textContent=score; } else bestEl.textContent=b; }
   bestEl.textContent=localStorage.getItem('brkBest')||0;
 
+  function overlay(title,sub){
+    ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#fff'; ctx.font='24px sans-serif'; ctx.textAlign='center';
+    ctx.fillText(title,canvas.width/2,canvas.height/2-6);
+    ctx.font='14px sans-serif';
+    ctx.fillText(sub,canvas.width/2,canvas.height/2+24);
+  }
+
   function draw(){
     ctx.fillStyle='#1a1a2e'; ctx.fillRect(0,0,canvas.width,canvas.height);
     bricks.forEach(b=>{ if(b.alive){ ctx.fillStyle=b.color; ctx.fillRect(b.x,b.y,b.w,b.h); }});
     ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2); ctx.fill();
     ctx.fillStyle='#60a5fa'; const px=Math.max(0,Math.min(canvas.width-paddle.w,paddle.x)); ctx.fillRect(px,paddle.y,paddle.w,paddle.h);
+    if(over) overlay('游戏结束',`得分 ${score} · 点击「开始」再来一局`);
+    else if(paused) overlay('已暂停','点击「继续」恢复');
   }
 
   function update(){
     ball.x+=ball.dx; ball.y+=ball.dy;
     if(ball.x-ball.r<=0||ball.x+ball.r>=canvas.width) ball.dx*=-1;
     if(ball.y-ball.r<=0) ball.dy*=-1;
-    if(ball.y+ball.r>=canvas.height){ lives--; if(lives<=0) endGame(); else{ resetBall(); combo=0; } updateUI(); }
+    if(ball.y+ball.r>=canvas.height){
+      ball.y=canvas.height-ball.r;
+      lives--; combo=0;
+      if(lives<=0){ endGame(); return; }
+      resetBall(); updateUI(); draw(); return;
+    }
     // paddle collision
     if(ball.y+ball.r>=paddle.y&&ball.y+ball.r<=paddle.y+paddle.h&&ball.x>=paddle.x&&ball.x<=paddle.x+paddle.w){
       ball.dy=-Math.abs(ball.dy); const hit=(ball.x-paddle.x)/paddle.w-0.5; ball.dx=hit*ballSpeed*2;
@@ -77,18 +102,38 @@
     updateUI(); draw();
   }
 
-  function endGame(){ running=false; ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.fillStyle='#fff'; ctx.font='24px sans-serif'; ctx.textAlign='center'; ctx.fillText('游戏结束',canvas.width/2,canvas.height/2); }
+  function endGame(){
+    running=false; paused=false; over=true; clearInterval(anim);
+    pauseBtn.textContent='暂停'; updateUI(); draw();
+  }
 
-  let anim;
-  function loop(){ if(!running) return; update(); anim=requestAnimationFrame(loop); }
+  function loop(){ if(!running||paused||over) return; update(); if(!running) return; anim=requestAnimationFrame(loop); }
 
   document.getElementById('brkStart').onclick=()=>{
-    loadDiff(); running=true; lives=+livesEl.textContent||3; if(anim) cancelAnimationFrame(anim); loop();
+    if(anim) cancelAnimationFrame(anim);
+    over=false; paused=false; pauseBtn.textContent='暂停';
+    loadDiff(); running=true; draw(); loop();
+  };
+  pauseBtn.onclick=()=>{
+    if(!running||over) return;
+    paused=!paused; pauseBtn.textContent=paused?'继续':'暂停';
+    if(paused){ if(anim) cancelAnimationFrame(anim); draw(); }
+    else loop();
   };
 
-  canvas.addEventListener('mousemove',e=>{ const rect=canvas.getBoundingClientRect(); paddle.x=(e.clientX-rect.left)*(canvas.width/rect.width)-paddle.w/2; });
+  function setPaddleFromClientX(clientX){
+    const rect=canvas.getBoundingClientRect();
+    paddle.x=(clientX-rect.left)*(canvas.width/rect.width)-paddle.w/2;
+  }
+  canvas.addEventListener('mousemove',e=>setPaddleFromClientX(e.clientX));
+  canvas.addEventListener('touchstart',e=>{ const t=e.touches[0]; if(t) setPaddleFromClientX(t.clientX); },{passive:true});
+  canvas.addEventListener('touchmove',e=>{ const t=e.touches[0]; if(t){ e.preventDefault(); setPaddleFromClientX(t.clientX); } },{passive:false});
 
-  document.addEventListener('keydown',e=>{ if(e.key==='ArrowLeft') paddle.x-=25; if(e.key==='ArrowRight') paddle.x+=25; });
+  document.addEventListener('keydown',e=>{
+    if(!running||paused||over) return;
+    if(e.key==='ArrowLeft'){ e.preventDefault(); paddle.x-=25; }
+    if(e.key==='ArrowRight'){ e.preventDefault(); paddle.x+=25; }
+  });
 
   loadDiff(); draw();
 })();
