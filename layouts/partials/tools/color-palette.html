@@ -130,6 +130,157 @@
 }
 </style>
 
+<style>
+/* ===== 站点视觉适配：窄栏单列 + 站点卡片/按钮/边框体系（覆盖上面的 App 原始排版） ===== */
+.pf { max-width: 680px; margin: 0 auto; padding: 0 0 32px; }
+.pf-head { margin: 4px 0 24px; }
+.pf-head h1 { font-size: 2rem; font-weight: 700; line-height: 1.3; margin: 0 0 8px; }
+.pf-head p { font-size: 0.95rem; line-height: 1.65; color: var(--secondary); margin: 0; }
+.pf-grid { display: block; }
+.pf-card { border-radius: 12px; padding: 20px; margin-bottom: 18px; }
+.pf-card h2 { font-size: 1.05rem; font-weight: 600; margin: 0 0 14px; }
+.pf-section-head { margin-bottom: 14px; }
+.pf-hint { font-size: 0.78rem; line-height: 1.5; }
+.pf-primary { border-radius: 8px; padding: 11px 18px; font-size: 0.92rem; font-weight: 600; }
+.pf-ghost { border-radius: 8px; padding: 8px 14px; font-size: 0.85rem; }
+.pf-chip { border-radius: 8px; padding: 7px 13px; font-size: 0.82rem; color: var(--secondary); background: transparent; }
+.pf-chip.is-on { background: var(--primary); color: var(--theme); border-color: var(--primary); }
+.pf-swatch-btn { border-radius: 10px; }
+.pf-formats { display: inline-flex; gap: 0; padding: 0; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: transparent; }
+.pf-formats button { border: 0; border-right: 1px solid var(--border); border-radius: 0; padding: 7px 16px; font-size: 0.82rem; color: var(--secondary); background: transparent; }
+.pf-formats button:last-child { border-right: 0; }
+.pf-formats button.is-on { background: var(--primary); color: var(--theme); border-color: var(--primary); }
+.pf-input-row input { border-radius: 8px; padding: 9px 12px; font-size: 0.9rem; background: var(--entry); }
+.pf-input-row button { border-radius: 8px; padding: 0 18px; font-size: 0.88rem; font-weight: 500; }
+.pf-hue-row { margin-top: 14px; }
+.pf-palettes { gap: 14px; }
+.pf-palette { border-radius: 12px; }
+.pf-palette-head { padding: 12px 14px; }
+.pf-name-wrap strong { font-size: 0.95rem; }
+.pf-rename { border-radius: 6px; padding: 3px 8px; font-size: 0.74rem; }
+.pf-icon-btn { width: 32px; height: 32px; border-radius: 8px; font-size: 0.95rem; }
+.pf-share-btn { border-radius: 8px; padding: 6px 11px; font-size: 0.78rem; }
+.pf-strips { min-height: 88px; }
+.pf-strip { padding: 9px 8px; gap: 2px; }
+.pf-strip span { font-size: 0.68rem; }
+.pf-strip .pf-strip-hex { font-size: 0.64rem; }
+.pf-palette-body { padding: 12px 14px 14px; }
+.pf-meta-row { gap: 10px; margin-bottom: 10px; }
+.pf-badge { border-radius: 6px; padding: 2px 8px; font-size: 0.72rem; font-weight: 500; }
+.pf-ratio { font-size: 0.76rem; }
+.pf-desc { font-size: 0.82rem; line-height: 1.7; }
+.pf-tabs { border: 1px solid var(--border); border-radius: 8px; padding: 2px; gap: 2px; background: transparent; }
+.pf-tabs button { border-radius: 6px; padding: 5px 12px; font-size: 0.8rem; color: var(--secondary); }
+.pf-tabs button.is-on { background: var(--primary); color: var(--theme); box-shadow: none; }
+.pf-preview-toolbar { gap: 10px; }
+.pf-preview { border-radius: 12px; }
+.pv-nav { padding: 14px 18px; gap: 16px; font-size: 0.8rem; }
+.pv-hero { padding: 24px 20px 20px; }
+.pv-hero h3 { font-size: 1.4rem; }
+.pv-hero p { font-size: 0.84rem; }
+.pv-cta { border-radius: 6px; }
+.pv-tag { border-radius: 6px; }
+.pv-btns span { border-radius: 6px; }
+.pv-cards { padding: 0 20px 20px; }
+.pv-card { border-radius: 8px; }
+.pv-slide { padding: 24px 22px 26px; }
+.pv-slide-tags span { border-radius: 6px; }
+.pv-poster { padding: 20px; }
+.pv-poster-side { border-radius: 8px; }
+.pf-access li { border-radius: 8px; padding: 10px 14px; font-size: 0.86rem; }
+.pf-dot { border-radius: 6px; }
+.pf-access-ratio { font-size: 0.8rem; }
+.pf-saved-item { border-radius: 8px; padding: 12px 14px; }
+.pf-saved-meta strong { font-size: 0.88rem; }
+.pf-saved-acts button { border-radius: 6px; padding: 4px 10px; font-size: 0.75rem; }
+.pf-empty { font-size: 0.88rem; line-height: 1.6; }
+.pf-foot { font-size: 0.78rem; margin-top: 24px; line-height: 1.6; }
+.pf-toast { border-radius: 8px; }
+@media (max-width: 720px) {
+  .pf-head h1 { font-size: 1.7rem; }
+  .pf-card { padding: 16px; }
+  .pf-strips { min-height: 78px; }
+  .pf-strip span { font-size: 0.62rem; }
+}
+
+/* 修正：组件按钮需高于 .pf button 重置规则的优先级，否则边框/底色会被清掉 */
+.pf .pf-primary { background: var(--primary); color: var(--theme); border: 0; border-radius: 8px; padding: 11px 18px; font-size: 0.92rem; font-weight: 600; width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.pf .pf-primary:hover { opacity: 0.88; }
+.pf .pf-ghost { border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; font-size: 0.85rem; background: transparent; color: var(--primary); display: inline-flex; align-items: center; gap: 6px; }
+.pf .pf-ghost:hover { border-color: var(--primary); }
+.pf .pf-chip { border: 1px solid var(--border); border-radius: 8px; padding: 7px 13px; font-size: 0.82rem; color: var(--secondary); background: transparent; }
+.pf .pf-chip:hover { border-color: var(--primary); color: var(--primary); }
+.pf .pf-chip.is-on { background: var(--primary); color: var(--theme); border-color: var(--primary); }
+.pf .pf-icon-btn { border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--secondary); width: 32px; height: 32px; display: inline-grid; place-items: center; font-size: 0.95rem; line-height: 1; }
+.pf .pf-icon-btn:hover { border-color: var(--primary); color: var(--primary); }
+.pf .pf-icon-btn.is-on { color: #e5a50a; border-color: #e5a50a; }
+.pf .pf-share-btn { border: 1px solid var(--border); border-radius: 8px; padding: 6px 11px; font-size: 0.78rem; background: transparent; color: var(--secondary); }
+.pf .pf-share-btn:hover { border-color: var(--primary); color: var(--primary); }
+.pf .pf-rename { border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; font-size: 0.74rem; background: transparent; color: var(--secondary); }
+.pf .pf-rename:hover { border-color: var(--primary); color: var(--primary); }
+.pf .pf-formats button { border: 0; border-right: 1px solid var(--border); border-radius: 0; padding: 7px 16px; font-size: 0.82rem; background: transparent; color: var(--secondary); }
+.pf .pf-formats button:last-child { border-right: 0; }
+.pf .pf-formats button.is-on { background: var(--primary); color: var(--theme); }
+.pf .pf-tabs button { background: transparent; border: 0; color: var(--secondary); }
+.pf .pf-tabs button.is-on { background: var(--primary); color: var(--theme); }
+.pf .pf-input-row button { border: 1px solid var(--primary); background: var(--primary); color: var(--theme); border-radius: 8px; padding: 0 18px; font-size: 0.88rem; font-weight: 500; }
+.pf .pf-saved-acts button { border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: 0.75rem; background: transparent; color: var(--secondary); }
+.pf .pf-saved-acts button:hover { color: var(--primary); border-color: var(--primary); }
+
+/* 方案配色改为紧凑色块 + 文字标签，替代通栏色带 */
+.pf-colors { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; padding: 4px 14px 14px; }
+.pf-color { display: flex; flex-direction: column; gap: 6px; align-items: stretch; border: 0; background: transparent; padding: 0; min-width: 0; text-align: left; }
+.pf-color-chip { display: block; height: 64px; border-radius: 8px; border: 1px solid var(--border); transition: transform 0.15s ease; }
+.pf-color:hover .pf-color-chip { transform: translateY(-2px); }
+.pf-color-role { font-size: 0.72rem; color: var(--secondary); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-color-hex { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.68rem; color: var(--primary); line-height: 1.3; }
+.pf-palette-head { border-bottom: 0; padding: 14px 14px 8px; }
+@media (max-width: 480px) {
+  .pf-colors { gap: 6px; padding: 4px 12px 12px; }
+  .pf-color-chip { height: 52px; }
+  .pf-color-role { font-size: 0.66rem; }
+  .pf-color-hex { font-size: 0.62rem; }
+}
+
+/* 控件边框：站点 --border 在深色下与卡片底色几乎同色，这里用主色混合提升可辨识度 */
+.pf { --pf-line: color-mix(in srgb, var(--primary) 16%, transparent); --pf-fill: color-mix(in srgb, var(--primary) 6%, transparent); }
+.pf .pf-chip { border-color: var(--pf-line); }
+.pf .pf-chip:hover { border-color: var(--primary); }
+.pf .pf-ghost { border-color: var(--pf-line); background: var(--pf-fill); }
+.pf .pf-icon-btn { border-color: var(--pf-line); }
+.pf .pf-share-btn { border-color: var(--pf-line); }
+.pf .pf-rename { border-color: var(--pf-line); }
+.pf .pf-formats { border-color: var(--pf-line); }
+.pf .pf-formats button { border-right-color: var(--pf-line); }
+.pf .pf-input-row input { border-color: var(--pf-line); }
+.pf .pf-tabs { border-color: var(--pf-line); }
+.pf .pf-palette { border-color: var(--pf-line); }
+.pf .pf-palette.is-active { border-color: var(--primary); box-shadow: none; }
+.pf .pf-access li { border-color: var(--pf-line); }
+.pf .pf-saved-item { border-color: var(--pf-line); }
+.pf .pf-saved-acts button { border-color: var(--pf-line); }
+.pf .pf-color-chip { border-color: var(--pf-line); }
+.pf .pf-mini-swatches button { border-color: var(--pf-line); }
+
+/* 表单行：标签在左、控件在右，贴近站内工具的表单排布 */
+.pf-row { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 14px; }
+.pf-row:last-of-type { margin-bottom: 18px; }
+.pf-row-label { flex: 0 0 44px; font-size: 0.82rem; color: var(--secondary); line-height: 36px; white-space: nowrap; }
+.pf-row .pf-base { margin-bottom: 0; }
+.pf-row .pf-formats { margin-bottom: 0; }
+.pf-row .pf-input-row { flex: 1; min-width: 0; }
+.pf-row .pf-hue-row { flex: 1; margin: 0; align-items: center; }
+.pf-row .pf-upload { margin-top: 0; align-items: center; }
+.pf-row .pf-upload-hint { line-height: 36px; }
+.pf-row .pf-chips { flex: 1; min-width: 0; }
+.pf-error { margin: 0 0 10px 58px; }
+@media (max-width: 560px) {
+  .pf-row { display: block; }
+  .pf-row-label { display: block; line-height: 1.6; margin-bottom: 6px; }
+  .pf-error { margin-left: 0; }
+}
+</style>
+
 <div class="pf" id="pfRoot">
   <header class="pf-head">
     <h1>配色工坊</h1>
@@ -140,44 +291,54 @@
     <aside class="pf-side">
       <section class="pf-card">
         <h2>基础色</h2>
-        <div class="pf-base">
-          <button type="button" class="pf-swatch-btn" id="pfSwatch" title="打开系统取色器" aria-label="打开系统取色器"></button>
-          <input type="color" id="pfPicker" value="#4a6cf7" hidden>
-          <div class="pf-base-meta">
-            <code id="pfBaseHex">#4A6CF7</code>
-            <span id="pfBaseName">蓝</span>
+        <div class="pf-row">
+          <span class="pf-row-label">颜色</span>
+          <div class="pf-base">
+            <button type="button" class="pf-swatch-btn" id="pfSwatch" title="打开系统取色器" aria-label="打开系统取色器"></button>
+            <input type="color" id="pfPicker" value="#4a6cf7" hidden>
+            <div class="pf-base-meta">
+              <code id="pfBaseHex">#4A6CF7</code>
+              <span id="pfBaseName">蓝</span>
+            </div>
           </div>
         </div>
-        <div class="pf-formats" id="pfFormats"></div>
-        <div class="pf-input-row">
-          <input type="text" id="pfColorInput" autocomplete="off" spellcheck="false" placeholder="#4A6CF7" aria-label="输入颜色值">
-          <button type="button" id="pfApply">应用</button>
+        <div class="pf-row">
+          <span class="pf-row-label">格式</span>
+          <div class="pf-formats" id="pfFormats"></div>
+        </div>
+        <div class="pf-row">
+          <span class="pf-row-label">色值</span>
+          <div class="pf-input-row">
+            <input type="text" id="pfColorInput" autocomplete="off" spellcheck="false" placeholder="#4A6CF7" aria-label="输入颜色值">
+            <button type="button" id="pfApply">应用</button>
+          </div>
         </div>
         <p class="pf-error" id="pfError"></p>
-        <div class="pf-hue-row">
-          <label for="pfHue">色相</label>
-          <input type="range" id="pfHue" min="0" max="359" value="229">
-          <span class="pf-hint" id="pfHueVal">229°</span>
+        <div class="pf-row">
+          <span class="pf-row-label">色相</span>
+          <div class="pf-hue-row">
+            <input type="range" id="pfHue" min="0" max="359" value="229" aria-label="调整色相">
+            <span class="pf-hint" id="pfHueVal">229°</span>
+          </div>
         </div>
-        <div class="pf-upload">
-          <button type="button" class="pf-ghost" id="pfUpload">上传图片取色</button>
-          <input type="file" id="pfFile" accept="image/*" hidden>
-          <span class="pf-upload-hint">提取 3-5 个主色</span>
+        <div class="pf-row">
+          <span class="pf-row-label">图片</span>
+          <div class="pf-upload">
+            <button type="button" class="pf-ghost" id="pfUpload">上传图片取色</button>
+            <input type="file" id="pfFile" accept="image/*" hidden>
+            <span class="pf-upload-hint">提取 3-5 个主色</span>
+          </div>
         </div>
         <div class="pf-mini-swatches" id="pfMiniSwatches"></div>
       </section>
 
       <section class="pf-card">
-        <h2>场景</h2>
-        <div class="pf-chips" id="pfScenes"></div>
-        <h2>风格</h2>
-        <div class="pf-chips" id="pfStyles"></div>
-        <h2>情绪</h2>
-        <div class="pf-chips" id="pfMoods"></div>
-        <h2>色彩关系</h2>
-        <div class="pf-chips" id="pfHarmonies"></div>
-        <h2>锁定角色</h2>
-        <div class="pf-chips" id="pfLocks"></div>
+        <h2>生成设置</h2>
+        <div class="pf-row"><span class="pf-row-label">场景</span><div class="pf-chips" id="pfScenes"></div></div>
+        <div class="pf-row"><span class="pf-row-label">风格</span><div class="pf-chips" id="pfStyles"></div></div>
+        <div class="pf-row"><span class="pf-row-label">情绪</span><div class="pf-chips" id="pfMoods"></div></div>
+        <div class="pf-row"><span class="pf-row-label">关系</span><div class="pf-chips" id="pfHarmonies"></div></div>
+        <div class="pf-row"><span class="pf-row-label">锁定</span><div class="pf-chips" id="pfLocks"></div></div>
         <button type="button" class="pf-primary" id="pfGenerate">生成 3 套配色方案</button>
       </section>
     </aside>
@@ -563,11 +724,11 @@
 
   function paletteCard(p) {
     var active = p.id === state.activePaletteId;
-    var strips = p.colors.map(function (c) {
-      var tc = textOn(c.hex);
-      return '<button type="button" class="pf-strip" style="background:' + esc(c.hex) + ';color:' + tc + ';" data-action="copy" data-hex="' + esc(c.hex) + '" title="复制 ' + esc(c.hex) + '">' +
-        '<span>' + esc(c.role) + ' ' + c.ratio + '%</span>' +
-        '<span class="pf-strip-hex">' + esc(c.hex) + '</span>' +
+    var colors = p.colors.map(function (c) {
+      return '<button type="button" class="pf-color" data-action="copy" data-hex="' + esc(c.hex) + '" title="复制 ' + esc(c.hex) + '">' +
+        '<span class="pf-color-chip" style="background:' + esc(c.hex) + '"></span>' +
+        '<span class="pf-color-role">' + esc(c.role) + ' ' + c.ratio + '%</span>' +
+        '<span class="pf-color-hex">' + esc(c.hex) + '</span>' +
         '</button>';
     }).join('');
     var nameHTML;
@@ -589,7 +750,7 @@
           '<button type="button" class="pf-share-btn" data-action="share" data-id="' + esc(p.id) + '">分享</button>' +
         '</div>' +
       '</div>' +
-      '<div class="pf-strips">' + strips + '</div>' +
+      '<div class="pf-colors">' + colors + '</div>' +
       '<div class="pf-palette-body">' +
         '<div class="pf-meta-row">' + badge + '<span class="pf-ratio">文字/背景 ' + acc.text.toFixed(2) + ':1</span><span class="pf-ratio">主色/背景 ' + acc.main.toFixed(2) + ':1</span></div>' +
         '<p class="pf-desc">' + desc + '</p>' + warns +
