@@ -44,7 +44,7 @@ params:
       url: "https://space.bilibili.com/438193192"
 
   # 显示功能开启
-  ShowReadingTime: true
+  ShowReadingTime: false
   ShowToc: true
   ShowBreadCrumbs: true
   ShowCodeCopyButtons: true
