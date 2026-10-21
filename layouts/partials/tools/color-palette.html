@@ -1,0 +1,1151 @@
+<style>
+.pf{max-width:1152px;margin:0 auto;padding:4px 16px 28px;color:var(--primary);box-sizing:border-box;}
+.pf-head h1{font-size:1.9rem;line-height:1.25;margin:0 0 6px;}
+.pf-head p{color:var(--secondary);font-size:.92rem;margin:0 0 20px;}
+.pf-grid{display:grid;grid-template-columns:328px minmax(0,1fr);gap:16px;align-items:start;}
+.pf-card{background:var(--entry);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;}
+.pf-card h2{font-size:.98rem;margin:0 0 12px;font-weight:600;}
+.pf-card h2+.pf-chips{margin-bottom:14px;}
+.pf-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+.pf-section-head h2{margin:0;}
+.pf-hint{color:var(--secondary);font-size:.76rem;}
+.pf button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0;}
+.pf-primary{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--primary);color:var(--theme);border-radius:10px;padding:10px 16px;font-size:.9rem;font-weight:600;width:100%;transition:opacity .15s;}
+.pf-primary:hover{opacity:.88;}
+.pf-ghost{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:9px;padding:7px 12px;font-size:.82rem;background:transparent;transition:border-color .15s;}
+.pf-ghost:hover{border-color:var(--primary);}
+.pf-base{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.pf-swatch-btn{width:64px;height:64px;border-radius:12px;border:1px solid var(--border);flex:0 0 auto;position:relative;overflow:hidden;}
+.pf-swatch-btn::after{content:"取色";position:absolute;inset:auto 0 0 0;background:rgba(0,0,0,.42);color:#fff;font-size:.62rem;text-align:center;padding:2px 0;opacity:0;transition:opacity .15s;}
+.pf-swatch-btn:hover::after{opacity:1;}
+.pf-base-meta{min-width:0;}
+.pf-base-meta code{font-size:1rem;font-weight:600;letter-spacing:.02em;display:block;}
+.pf-base-meta span{color:var(--secondary);font-size:.8rem;}
+.pf-formats{display:flex;gap:6px;margin-bottom:10px;}
+.pf-formats button{border:1px solid var(--border);border-radius:999px;padding:4px 12px;font-size:.76rem;color:var(--secondary);}
+.pf-formats button.is-on{background:var(--primary);color:var(--theme);border-color:var(--primary);}
+.pf-input-row{display:flex;gap:8px;}
+.pf-input-row input{flex:1;min-width:0;border:1px solid var(--border);background:transparent;color:var(--primary);border-radius:9px;padding:9px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85rem;}
+.pf-input-row input:focus{outline:none;border-color:var(--primary);}
+.pf-input-row button{border:1px solid var(--primary);background:var(--primary);color:var(--theme);border-radius:9px;padding:0 16px;font-size:.82rem;}
+.pf-error{color:#e0533d;font-size:.76rem;min-height:1em;margin:6px 0 0;}
+.pf-hue-row{display:flex;align-items:center;gap:10px;margin:12px 0 4px;}
+.pf-hue-row label{font-size:.78rem;color:var(--secondary);white-space:nowrap;}
+.pf-hue-row input[type=range]{flex:1;accent-color:var(--primary);}
+.pf-upload{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap;}
+.pf-upload-hint{font-size:.72rem;color:var(--secondary);}
+.pf-mini-swatches{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.pf-mini-swatches button{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);}
+.pf-chips{display:flex;flex-wrap:wrap;gap:7px;}
+.pf-chip{border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-size:.78rem;color:var(--secondary);transition:border-color .15s,color .15s;}
+.pf-chip:hover{border-color:var(--primary);color:var(--primary);}
+.pf-chip.is-on{background:var(--primary);color:var(--theme);border-color:var(--primary);}
+.pf-palettes{display:flex;flex-direction:column;gap:12px;}
+.pf-palette{border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .15s,box-shadow .15s;background:transparent;}
+.pf-palette.is-active{border-color:var(--primary);box-shadow:0 0 0 2px color-mix(in srgb,var(--primary) 18%,transparent);}
+.pf-palette-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.pf-name-wrap{display:flex;align-items:center;gap:8px;min-width:0;flex:1;}
+.pf-name-wrap strong{font-size:.86rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pf-name-wrap input{flex:1;min-width:80px;border:1px solid var(--primary);background:transparent;color:var(--primary);border-radius:7px;padding:4px 8px;font-size:.82rem;}
+.pf-name-wrap input:focus{outline:none;}
+.pf-rename{font-size:.7rem;color:var(--secondary);border:1px solid var(--border);border-radius:6px;padding:2px 7px;}
+.pf-rename:hover{color:var(--primary);border-color:var(--primary);}
+.pf-palette-acts{display:flex;align-items:center;gap:6px;}
+.pf-icon-btn{width:30px;height:30px;display:inline-grid;place-items:center;border-radius:8px;border:1px solid var(--border);font-size:.85rem;line-height:1;color:var(--secondary);}
+.pf-icon-btn:hover{border-color:var(--primary);color:var(--primary);}
+.pf-icon-btn.is-on{color:#e5a50a;border-color:#e5a50a;}
+.pf-share-btn{font-size:.72rem;border:1px solid var(--border);border-radius:8px;padding:5px 9px;color:var(--secondary);}
+.pf-share-btn:hover{border-color:var(--primary);color:var(--primary);}
+.pf-strips{display:flex;min-height:78px;}
+.pf-strip{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;padding:7px 6px;text-align:left;gap:1px;overflow:hidden;}
+.pf-strip span{font-size:.62rem;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.pf-strip .pf-strip-hex{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.6rem;opacity:.82;}
+.pf-palette-body{padding:10px 12px 12px;}
+.pf-meta-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.pf-badge{font-size:.68rem;border-radius:999px;padding:2px 8px;border:1px solid currentColor;}
+.pf-badge.ok{color:#1f9d55;}
+.pf-badge.warn{color:#c47f00;}
+.pf-badge.bad{color:#d0453a;}
+.pf-ratio{font-size:.72rem;color:var(--secondary);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;}
+.pf-desc{margin:0;font-size:.76rem;color:var(--secondary);line-height:1.65;}
+.pf-desc div{overflow:hidden;text-overflow:ellipsis;}
+.pf-warn{color:#c47f00;font-size:.72rem;margin:6px 0 0;}
+.pf-tabs{display:inline-flex;background:color-mix(in srgb,var(--primary) 8%,transparent);border-radius:999px;padding:3px;gap:2px;}
+.pf-tabs button{border-radius:999px;padding:4px 12px;font-size:.76rem;color:var(--secondary);}
+.pf-tabs button.is-on{background:var(--entry);color:var(--primary);box-shadow:0 1px 3px rgba(0,0,0,.12);}
+.pf-preview-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.pf-preview{border-radius:12px;overflow:hidden;border:1px solid var(--border);}
+.pv-web{padding:0;}
+.pv-nav{display:flex;align-items:center;gap:14px;padding:12px 18px;font-size:.76rem;flex-wrap:wrap;}
+.pv-nav .pv-brand{font-weight:700;margin-right:auto;}
+.pv-cta{padding:5px 12px;border-radius:999px;font-size:.72rem;}
+.pv-hero{padding:22px 18px 18px;}
+.pv-hero h3{margin:10px 0 8px;font-size:1.35rem;line-height:1.3;}
+.pv-hero p{margin:0 0 14px;font-size:.8rem;line-height:1.7;max-width:46em;}
+.pv-tag{display:inline-block;font-size:.68rem;padding:3px 9px;border-radius:999px;}
+.pv-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.pv-btns span{padding:7px 14px;border-radius:9px;font-size:.76rem;}
+.pv-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 18px 18px;}
+.pv-card{border:1px solid;border-radius:10px;padding:12px;}
+.pv-card b{font-size:.82rem;}
+.pv-card p{margin:6px 0 0;font-size:.72rem;line-height:1.6;opacity:.72;}
+.pv-slide{padding:22px 20px 24px;position:relative;}
+.pv-slide-bar{height:4px;border-radius:2px;margin-bottom:16px;}
+.pv-slide h3{margin:0 0 12px;font-size:1.3rem;}
+.pv-slide ul{margin:0 0 14px;padding-left:18px;font-size:.82rem;line-height:2;}
+.pv-slide li::marker{color:inherit;}
+.pv-slide-tags{display:flex;gap:8px;flex-wrap:wrap;}
+.pv-slide-tags span{font-size:.7rem;padding:3px 10px;border-radius:999px;}
+.pv-poster{padding:18px;display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:14px;min-height:250px;}
+.pv-poster-body{display:flex;flex-direction:column;justify-content:center;gap:8px;}
+.pv-poster-body h3{margin:0;font-size:1.7rem;line-height:1.2;}
+.pv-poster-body p{margin:0;font-size:.8rem;opacity:.75;}
+.pv-poster-side{border-radius:10px;position:relative;overflow:hidden;}
+.pv-poster-side i{position:absolute;border-radius:50%;display:block;}
+.pf-access{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
+.pf-access li{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:.8rem;}
+.pf-dot{width:22px;height:22px;border-radius:6px;border:1px solid var(--border);flex:0 0 auto;}
+.pf-access-role{flex:1;min-width:0;}
+.pf-access-ratio{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.74rem;color:var(--secondary);}
+.pf-saved-list{display:flex;flex-direction:column;gap:10px;}
+.pf-saved-item{border:1px solid var(--border);border-radius:10px;padding:10px 12px;}
+.pf-saved-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.pf-saved-strips{display:flex;gap:3px;flex:0 0 auto;}
+.pf-saved-strips span{width:14px;height:26px;border-radius:4px;display:block;}
+.pf-saved-meta{flex:1;min-width:120px;display:flex;flex-direction:column;gap:1px;}
+.pf-saved-meta strong{font-size:.82rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pf-saved-meta span{font-size:.7rem;color:var(--secondary);}
+.pf-saved-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.pf-saved-acts button{font-size:.7rem;border:1px solid var(--border);border-radius:7px;padding:3px 9px;color:var(--secondary);}
+.pf-saved-acts button:hover{color:var(--primary);border-color:var(--primary);}
+.pf-empty{color:var(--secondary);font-size:.8rem;padding:6px 2px;}
+.pf-foot{text-align:center;color:var(--secondary);font-size:.72rem;margin-top:18px;}
+.pf-toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:var(--primary);color:var(--theme);border-radius:999px;padding:8px 18px;font-size:.8rem;z-index:9999;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;}
+.pf-toast.is-show{opacity:1;transform:translateX(-50%) translateY(-4px);}
+@media (max-width:900px){
+  .pf-grid{grid-template-columns:1fr;}
+  .pf-head h1{font-size:1.6rem;}
+  .pv-poster{grid-template-columns:1fr;}
+  .pv-poster-side{min-height:90px;}
+}
+</style>
+
+<div class="pf" id="pfRoot">
+  <header class="pf-head">
+    <h1>配色工坊</h1>
+    <p>一个颜色、一张图片，快速生成可预览、可检查、可导出的配色方案。</p>
+  </header>
+
+  <div class="pf-grid">
+    <aside class="pf-side">
+      <section class="pf-card">
+        <h2>基础色</h2>
+        <div class="pf-base">
+          <button type="button" class="pf-swatch-btn" id="pfSwatch" title="打开系统取色器" aria-label="打开系统取色器"></button>
+          <input type="color" id="pfPicker" value="#4a6cf7" hidden>
+          <div class="pf-base-meta">
+            <code id="pfBaseHex">#4A6CF7</code>
+            <span id="pfBaseName">蓝</span>
+          </div>
+        </div>
+        <div class="pf-formats" id="pfFormats"></div>
+        <div class="pf-input-row">
+          <input type="text" id="pfColorInput" autocomplete="off" spellcheck="false" placeholder="#4A6CF7" aria-label="输入颜色值">
+          <button type="button" id="pfApply">应用</button>
+        </div>
+        <p class="pf-error" id="pfError"></p>
+        <div class="pf-hue-row">
+          <label for="pfHue">色相</label>
+          <input type="range" id="pfHue" min="0" max="359" value="229">
+          <span class="pf-hint" id="pfHueVal">229°</span>
+        </div>
+        <div class="pf-upload">
+          <button type="button" class="pf-ghost" id="pfUpload">上传图片取色</button>
+          <input type="file" id="pfFile" accept="image/*" hidden>
+          <span class="pf-upload-hint">提取 3-5 个主色</span>
+        </div>
+        <div class="pf-mini-swatches" id="pfMiniSwatches"></div>
+      </section>
+
+      <section class="pf-card">
+        <h2>场景</h2>
+        <div class="pf-chips" id="pfScenes"></div>
+        <h2>风格</h2>
+        <div class="pf-chips" id="pfStyles"></div>
+        <h2>情绪</h2>
+        <div class="pf-chips" id="pfMoods"></div>
+        <h2>色彩关系</h2>
+        <div class="pf-chips" id="pfHarmonies"></div>
+        <h2>锁定角色</h2>
+        <div class="pf-chips" id="pfLocks"></div>
+        <button type="button" class="pf-primary" id="pfGenerate">生成 3 套配色方案</button>
+      </section>
+    </aside>
+
+    <div class="pf-main">
+      <section class="pf-card">
+        <div class="pf-section-head">
+          <h2>配色方案</h2>
+          <span class="pf-hint">点击色块复制色值 · 点击卡片设为当前预览</span>
+        </div>
+        <div class="pf-palettes" id="pfPalettes"></div>
+      </section>
+
+      <section class="pf-card">
+        <div class="pf-section-head">
+          <h2>实时预览</h2>
+          <div class="pf-preview-toolbar">
+            <div class="pf-tabs" id="pfPreviewStyles"></div>
+            <div class="pf-tabs" id="pfBlindSims"></div>
+          </div>
+        </div>
+        <div class="pf-preview" id="pfPreview"></div>
+      </section>
+
+      <section class="pf-card">
+        <div class="pf-section-head">
+          <h2>对比度检测</h2>
+          <button type="button" class="pf-ghost" id="pfFix">一键修复对比度</button>
+        </div>
+        <ul class="pf-access" id="pfAccess"></ul>
+      </section>
+
+      <section class="pf-card">
+        <div class="pf-section-head">
+          <h2>我的方案</h2>
+          <div class="pf-tabs" id="pfSavedTabs"></div>
+        </div>
+        <div id="pfSaved"></div>
+      </section>
+    </div>
+  </div>
+
+  <p class="pf-foot">配色工坊 · 所有数据保存在本地浏览器</p>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- 常量（与 App 保持一致） ---------- */
+  var ROLE_ORDER = ['主色', '辅助色', '强调色', '背景', '文字'];
+  var ROLE_RATIO = { '主色': 40, '辅助色': 25, '背景': 15, '强调色': 10, '文字': 10 };
+  var HARMONY = { complementary: '互补色', analogous: '类似色', triadic: '三角色', split: '分裂互补', monochrome: '单色渐变' };
+  var SCENES = ['网页UI', 'PPT', '海报', '社交媒体封面', '穿搭', '家居', '品牌'];
+  var STYLES = ['极简', '复古', '科技', '自然', '国潮', '活力'];
+  var MOODS = ['温暖', '冷静', '清新', '高级', '活力'];
+  var STYLE_MOD = { '极简': { sat: -20, light: 10 }, '复古': { sat: -10, light: -5 }, '科技': { sat: 10, light: 0 }, '自然': { sat: -5, light: 5 }, '国潮': { sat: 20, light: -5 }, '活力': { sat: 25, light: 0 } };
+  var MOOD_MOD = { '温暖': { hue: -10, sat: 5, light: 5 }, '冷静': { hue: 15, sat: -10, light: 0 }, '清新': { sat: 5, light: 10 }, '高级': { sat: -25, light: -5 } };
+  var SCENE_DESC = { '网页UI': '适合网页与 App 界面', 'PPT': '适合演示文稿与汇报页面', '海报': '适合海报与印刷物料', '社交媒体封面': '适合封面图与 Banner', '穿搭': '适合服装与饰品搭配', '家居': '适合软装与空间配色', '品牌': '适合品牌视觉与 Logo' };
+  var HUE_NAMES = [[15, '红'], [45, '橙'], [70, '黄'], [95, '黄绿'], [150, '绿'], [185, '青'], [215, '蓝'], [255, '靛蓝'], [290, '紫'], [330, '洋红'], [360, '红']];
+  var CVD_REDGREEN = [0.152, 1.052, -0.204, 0.114, 0.833, 0.053, -0.003, -0.036, 1.039];
+  var CVD_BLUEYELLOW = [1.256, -0.077, -0.179, -0.016, 0.899, 0.117, 0.178, 0.13, 0.692];
+  var LS_FAV = 'peise_favorites';
+  var LS_HIST = 'peise_history';
+
+  /* ---------- 颜色工具 ---------- */
+  function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
+  function hexToRgb(hex) {
+    var t = String(hex || '').trim().replace('#', '');
+    if (t.length === 3) t = t.split('').map(function (c) { return c + c; }).join('');
+    var n = parseInt(t, 16);
+    if (isNaN(n) || t.length !== 6) return { r: 0, g: 0, b: 0 };
+    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+  }
+  function rgbToHex(c) {
+    return '#' + [c.r, c.g, c.b].map(function (v) {
+      return clamp(Math.round(v), 0, 255).toString(16).padStart(2, '0');
+    }).join('').toUpperCase();
+  }
+  function rgbToHsl(c) {
+    var r = c.r / 255, g = c.g / 255, b = c.b / 255;
+    var mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+    var l = (mx + mn) / 2, h = 0, s = 0;
+    if (mx !== mn) {
+      var d = mx - mn;
+      s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+      if (mx === r) h = (g - b) / d + (g < b ? 6 : 0);
+      else if (mx === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+      h *= 60;
+    }
+    return { h: Math.round(h), s: Math.round(100 * s), l: Math.round(100 * l) };
+  }
+  function hexToHsl(hex) { return rgbToHsl(hexToRgb(hex)); }
+  function hslToHex(c) {
+    var L = c.l / 100;
+    var f = function (n) {
+      var k = (n + c.h / 30) % 12;
+      var a = (c.s / 100) * Math.min(L, 1 - L);
+      return L - a * Math.max(-1, Math.min(k - 3, Math.min(9 - k, 1)));
+    };
+    return rgbToHex({ r: f(0) * 255, g: f(8) * 255, b: f(4) * 255 });
+  }
+  function normalizeHex(v) {
+    var t = String(v || '').trim().replace('#', '');
+    if (t.length === 3) t = t.split('').map(function (c) { return c + c; }).join('');
+    return '#' + t.toUpperCase();
+  }
+  function luminance(hex) {
+    var c = hexToRgb(hex);
+    var f = function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
+  }
+  function contrast(a, b) {
+    var x = luminance(a), y = luminance(b);
+    var hi = x > y ? x : y, lo = x > y ? y : x;
+    return (hi + 0.05) / (lo + 0.05);
+  }
+  function fixContrast(hex, bg, target) {
+    if (contrast(hex, bg) >= target) return hex;
+    var hsl = hexToHsl(hex);
+    var dist = function (c) {
+      var a = hexToRgb(hex), b = hexToRgb(c);
+      return Math.pow(a.r - b.r, 2) + Math.pow(a.g - b.g, 2) + Math.pow(a.b - b.b, 2);
+    };
+    var list = [];
+    for (var l = 0; l <= 100; l += 1.5) list.push(hslToHex({ h: hsl.h, s: hsl.s, l: l }));
+    var s2 = Math.min(100, hsl.s + 30);
+    if (s2 !== hsl.s) for (var l2 = 0; l2 <= 100; l2 += 2) list.push(hslToHex({ h: hsl.h, s: s2, l: l2 }));
+    var ok = list.filter(function (c) { return contrast(c, bg) >= target; }).sort(function (a, b) { return dist(a) - dist(b); })[0];
+    if (ok) return ok;
+    for (var s = hsl.s; s >= 0; s -= 10) {
+      for (var l3 = 0; l3 <= 100; l3 += 2) {
+        var c = hslToHex({ h: hsl.h, s: s, l: l3 });
+        if (contrast(c, bg) >= target) return c;
+      }
+    }
+    return contrast('#000000', bg) >= contrast('#FFFFFF', bg) ? '#000000' : '#FFFFFF';
+  }
+  function colorName(hex) {
+    var hsl = hexToHsl(hex);
+    if (hsl.s <= 8) {
+      if (hsl.l >= 92) return '纯白';
+      if (hsl.l >= 78) return '银灰';
+      if (hsl.l >= 55) return '浅灰';
+      if (hsl.l >= 30) return '中灰';
+      if (hsl.l >= 12) return '深灰';
+      return '墨黑';
+    }
+    var pre = '';
+    if (hsl.s <= 25) pre = '灰';
+    else if (hsl.l <= 25) pre = '深';
+    else if (hsl.l >= 78) pre = '浅';
+    else if (hsl.l >= 65 && hsl.s <= 55) pre = '柔';
+    else if (hsl.s >= 75 && hsl.l >= 45 && hsl.l <= 65) pre = '鲜';
+    var hit = HUE_NAMES.find(function (x) { return hsl.h <= x[0]; });
+    return pre + (hit ? hit[1] : '红');
+  }
+  function rgbDistance(a, b) {
+    var x = hexToRgb(a), y = hexToRgb(b);
+    return Math.sqrt(Math.pow(x.r - y.r, 2) + Math.pow(x.g - y.g, 2) + Math.pow(x.b - y.b, 2));
+  }
+  function textOn(bgHex) {
+    return contrast('#FFFFFF', bgHex) >= contrast('#000000', bgHex) ? '#FFFFFF' : '#111111';
+  }
+  function alpha(hex, a) {
+    var c = hexToRgb(hex);
+    return 'rgba(' + c.r + ',' + c.g + ',' + c.b + ',' + a + ')';
+  }
+  function simulate(hex, mode) {
+    if (!mode || mode === '无') return hex;
+    var m = mode === '红绿色弱' ? CVD_REDGREEN : CVD_BLUEYELLOW;
+    var c = hexToRgb(hex);
+    return rgbToHex({
+      r: clamp(Math.round(m[0] * c.r + m[1] * c.g + m[2] * c.b), 0, 255),
+      g: clamp(Math.round(m[3] * c.r + m[4] * c.g + m[5] * c.b), 0, 255),
+      b: clamp(Math.round(m[6] * c.r + m[7] * c.g + m[8] * c.b), 0, 255)
+    });
+  }
+
+  /* ---------- 配色生成（移植自 App） ---------- */
+  function harmonyHues(h, type) {
+    switch (type) {
+      case 'complementary': return [h, h, (h + 180) % 360, h, (h + 180) % 360];
+      case 'analogous': return [h, (h + 30) % 360, (h + 330) % 360, h, (h + 30) % 360];
+      case 'triadic': return [h, (h + 120) % 360, (h + 240) % 360, h, (h + 120) % 360];
+      case 'split': return [h, (h + 150) % 360, (h + 210) % 360, h, (h + 150) % 360];
+      default: return [h, h, h, h, h];
+    }
+  }
+  function buildPalette(baseHex, type, seed, scene, style, mood, locked) {
+    var base = hexToHsl(baseHex);
+    var st = STYLE_MOD[style] || {};
+    var md = MOOD_MOD[mood] || {};
+    var adjHex = hslToHex({
+      h: (base.h + (md.hue || 0) + 360) % 360,
+      s: clamp(base.s + (st.sat || 0) + (md.sat || 0), 0, 100),
+      l: clamp(base.l + (st.light || 0) + (md.light || 0), 4, 96)
+    });
+    var adj = hexToHsl(adjHex);
+    var hues = harmonyHues(adj.h, type);
+    var u = (37 * seed) % 13 - 6;
+    var colors = ROLE_ORDER.map(function (role) {
+      if (locked && locked[role]) return { hex: locked[role], name: colorName(locked[role]), role: role, ratio: ROLE_RATIO[role] };
+      var c;
+      if (role === '主色') c = { h: hues[0], s: clamp(adj.s + u, 35, 90), l: clamp(adj.l + u, 30, 62) };
+      else if (role === '辅助色') c = { h: hues[1], s: clamp(adj.s - 15 + u, 20, 80), l: clamp(adj.l + 18 + u, 40, 75) };
+      else if (role === '强调色') c = { h: hues[2], s: clamp(adj.s + 15 + u, 45, 95), l: clamp(adj.l - 5 + u, 28, 60) };
+      else if (role === '背景') c = { h: hues[3], s: clamp(adj.s - 70 + u, 2, 18), l: clamp(92 + u, 86, 97) };
+      else c = { h: hues[4], s: clamp(adj.s - 55 + u, 5, 40), l: clamp(14 + u, 8, 22) };
+      var hex = hslToHex(c);
+      return { hex: hex, name: colorName(hex), role: role, ratio: ROLE_RATIO[role] };
+    });
+    var bg = colors.find(function (x) { return x.role === '背景'; });
+    var tx = colors.find(function (x) { return x.role === '文字'; });
+    if (!(locked && locked['文字']) && contrast(tx.hex, bg.hex) < 4.5) {
+      tx.hex = fixContrast(tx.hex, bg.hex, 4.5);
+      tx.name = colorName(tx.hex);
+    }
+    var palette = {
+      id: 'p_' + Date.now() + '_' + seed + '_' + Math.random().toString(36).slice(2, 7),
+      name: HARMONY[type] + '·' + (style || '通用') + (mood ? '·' + mood : '') + (scene ? '·' + scene : ''),
+      customName: '',
+      type: type,
+      scene: scene,
+      style: style,
+      mood: mood,
+      colors: colors
+    };
+    palette.description = buildDescription(palette);
+    palette.accessibility = buildAccess(palette);
+    return palette;
+  }
+  function buildDescription(p) {
+    var hexes = p.colors.map(function (c) { return c.hex; }).join(' / ');
+    var ratios = p.colors.map(function (c) { return c.role + c.ratio + '%'; }).join('、');
+    return [
+      '色彩关系：基于' + (HARMONY[p.type] || '自动') + '关系构建（' + hexes + '）。',
+      '适用场景：' + (SCENE_DESC[p.scene] || '通用设计场景') + '。',
+      '使用比例：' + ratios + '，主色为主，强调色少量点缀。'
+    ].join('\n');
+  }
+  function buildAccess(p) {
+    var bg = (p.colors.find(function (c) { return c.role === '背景'; }) || {}).hex || '#FFFFFF';
+    var tx = (p.colors.find(function (c) { return c.role === '文字'; }) || {}).hex || '#000000';
+    var main = (p.colors.find(function (c) { return c.role === '主色'; }) || {}).hex || '#666666';
+    var t = contrast(tx, bg), m = contrast(main, bg), warns = [];
+    if (t < 4.5) warns.push('文字与背景对比度 ' + t.toFixed(2) + ':1，未达 AA');
+    if (m < 3) warns.push('主色作为背景时对比度 ' + m.toFixed(2) + ':1，白字可能不达标');
+    return { text: t, main: m, aa: t >= 4.5, aaa: t >= 7, warnings: warns };
+  }
+
+  function generate(count, seedOverride) {
+    var types = state.harmonyType === 'auto' ? Object.keys(HARMONY) : [state.harmonyType];
+    var seed = typeof seedOverride === 'number' ? seedOverride : Math.floor(Math.random() * 1000);
+    var out = [];
+    for (var i = 0; i < count; i++) {
+      out.push(buildPalette(state.baseColor, types[i % types.length], seed + 7 * i + 1, state.scene, state.style, state.mood, state.locked));
+    }
+    return out;
+  }
+
+  /* ---------- 状态与存储 ---------- */
+  var state = {
+    baseColor: '#4A6CF7',
+    colorFormat: 'HEX',
+    harmonyType: 'auto',
+    scene: '网页UI',
+    style: '',
+    mood: '',
+    locked: {},
+    palettes: [],
+    favorites: readLS(LS_FAV),
+    history: readLS(LS_HIST),
+    activePaletteId: '',
+    previewStyle: '网页',
+    blindSim: '无',
+    savedTab: 'favorites',
+    renamingId: '',
+    imageColors: []
+  };
+
+  function readLS(key) {
+    try { var raw = localStorage.getItem(key); var v = raw ? JSON.parse(raw) : []; return Array.isArray(v) ? v : []; } catch (e) { return []; }
+  }
+  function writeLS(key, val) {
+    try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { /* 忽略隐私模式等写入失败 */ }
+  }
+  function saveFavorites() { writeLS(LS_FAV, state.favorites); }
+  function saveHistory() { writeLS(LS_HIST, state.history); }
+
+  function clone(v) { return JSON.parse(JSON.stringify(v)); }
+  function displayName(p) { return p.customName || p.name; }
+  function current() {
+    return state.palettes.find(function (p) { return p.id === state.activePaletteId; }) || state.palettes[0] || null;
+  }
+  function byId(id) {
+    var found = state.palettes.find(function (p) { return p.id === id; });
+    if (found) return found;
+    found = state.favorites.find(function (p) { return p.id === id; });
+    if (found) return found;
+    return state.history.find(function (p) { return p.id === id; }) || null;
+  }
+  function hexMap(palette) {
+    var map = {};
+    (palette ? palette.colors : []).forEach(function (c) { map[c.role] = c.hex; });
+    return map;
+  }
+  function pushHistory(p) {
+    var sig = p.colors.map(function (c) { return c.hex; }).join();
+    var i = state.history.findIndex(function (x) { return x.colors.map(function (c) { return c.hex; }).join() === sig; });
+    if (i > -1) state.history.splice(i, 1);
+    state.history.unshift(clone(p));
+    if (state.history.length > 30) state.history.length = 30;
+    saveHistory();
+  }
+  function isFavorite(id) { return state.favorites.some(function (p) { return p.id === id; }); }
+
+  /* ---------- DOM ---------- */
+  var $ = function (sel) { return document.querySelector(sel); };
+  var root = $('#pfRoot');
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function chip(label, on, action, value) {
+    return '<button type="button" class="pf-chip' + (on ? ' is-on' : '') + '" data-action="' + action + '" data-value="' + esc(value) + '">' + esc(label) + '</button>';
+  }
+
+  /* ---------- 渲染 ---------- */
+  function renderControls() {
+    var hsl = hexToHsl(state.baseColor);
+    $('#pfSwatch').style.background = state.baseColor;
+    $('#pfBaseHex').textContent = state.baseColor;
+    $('#pfBaseName').textContent = colorName(state.baseColor);
+    $('#pfPicker').value = state.baseColor.toLowerCase();
+    $('#pfFormats').innerHTML = ['HEX', 'RGB', 'HSL'].map(function (f) {
+      return '<button type="button" class="' + (state.colorFormat === f ? 'is-on' : '') + '" data-action="format" data-value="' + f + '">' + f + '</button>';
+    }).join('');
+    if (document.activeElement !== $('#pfColorInput')) {
+      if (state.colorFormat === 'RGB') {
+        var rgb = hexToRgb(state.baseColor);
+        $('#pfColorInput').value = rgb.r + ', ' + rgb.g + ', ' + rgb.b;
+      } else if (state.colorFormat === 'HSL') {
+        $('#pfColorInput').value = hsl.h + ', ' + hsl.s + ', ' + hsl.l;
+      } else {
+        $('#pfColorInput').value = state.baseColor;
+      }
+    }
+    $('#pfColorInput').placeholder = state.colorFormat === 'HEX' ? '#4A6CF7' : (state.colorFormat === 'RGB' ? '74, 108, 247' : '229, 73, 63');
+    if (document.activeElement !== $('#pfHue')) $('#pfHue').value = hsl.h;
+    $('#pfHueVal').textContent = hsl.h + '°';
+
+    $('#pfScenes').innerHTML = SCENES.map(function (s) { return chip(s, state.scene === s, 'scene', s); }).join('');
+    var styleOpts = [['通用', '']].concat(STYLES.map(function (s) { return [s, s]; }));
+    $('#pfStyles').innerHTML = styleOpts.map(function (o) { return chip(o[0], state.style === o[1], 'style', o[1]); }).join('');
+    var moodOpts = [['无', '']].concat(MOODS.map(function (s) { return [s, s]; }));
+    $('#pfMoods').innerHTML = moodOpts.map(function (o) { return chip(o[0], state.mood === o[1], 'mood', o[1]); }).join('');
+    var harmOpts = [['自动', 'auto']].concat(Object.keys(HARMONY).map(function (k) { return [HARMONY[k], k]; }));
+    $('#pfHarmonies').innerHTML = harmOpts.map(function (o) { return chip(o[0], state.harmonyType === o[1], 'harmony', o[1]); }).join('');
+    $('#pfLocks').innerHTML = ROLE_ORDER.map(function (r) {
+      var on = !!state.locked[r];
+      return '<button type="button" class="pf-chip' + (on ? ' is-on' : '') + '" data-action="lock" data-value="' + r + '">' + (on ? '🔒 ' : '🔓 ') + r + '</button>';
+    }).join('');
+
+    $('#pfMiniSwatches').innerHTML = state.imageColors.map(function (hex) {
+      return '<button type="button" style="background:' + hex + '" data-action="pick-image-color" data-value="' + hex + '" aria-label="使用 ' + hex + '"></button>';
+    }).join('');
+
+    $('#pfPreviewStyles').innerHTML = ['网页', '海报', 'PPT'].map(function (x) {
+      return '<button type="button" class="' + (state.previewStyle === x ? 'is-on' : '') + '" data-action="preview-style" data-value="' + x + '">' + x + '</button>';
+    }).join('');
+    $('#pfBlindSims').innerHTML = ['无', '红绿色弱', '蓝黄色弱'].map(function (x) {
+      return '<button type="button" class="' + (state.blindSim === x ? 'is-on' : '') + '" data-action="blind-sim" data-value="' + x + '">' + x + '</button>';
+    }).join('');
+    $('#pfSavedTabs').innerHTML = [
+      ['收藏', 'favorites', state.favorites.length],
+      ['历史', 'history', state.history.length]
+    ].map(function (o) {
+      return '<button type="button" class="' + (state.savedTab === o[1] ? 'is-on' : '') + '" data-action="saved-tab" data-value="' + o[1] + '">' + o[0] + ' (' + o[2] + ')</button>';
+    }).join('');
+  }
+
+  function paletteCard(p) {
+    var active = p.id === state.activePaletteId;
+    var strips = p.colors.map(function (c) {
+      var tc = textOn(c.hex);
+      return '<button type="button" class="pf-strip" style="background:' + esc(c.hex) + ';color:' + tc + ';" data-action="copy" data-hex="' + esc(c.hex) + '" title="复制 ' + esc(c.hex) + '">' +
+        '<span>' + esc(c.role) + ' ' + c.ratio + '%</span>' +
+        '<span class="pf-strip-hex">' + esc(c.hex) + '</span>' +
+        '</button>';
+    }).join('');
+    var nameHTML;
+    if (state.renamingId === p.id) {
+      nameHTML = '<input type="text" id="pfRenameInput" value="' + esc(p.customName || p.name) + '" maxlength="60" aria-label="方案名称">';
+    } else {
+      nameHTML = '<strong title="' + esc(displayName(p)) + '">' + esc(displayName(p)) + '</strong>' +
+        '<button type="button" class="pf-rename" data-action="rename" data-id="' + esc(p.id) + '">重命名</button>';
+    }
+    var acc = p.accessibility || buildAccess(p);
+    var badge = acc.aaa ? '<span class="pf-badge ok">AAA</span>' : (acc.aa ? '<span class="pf-badge ok">AA</span>' : '<span class="pf-badge bad">未通过</span>');
+    var desc = String(p.description || '').split('\n').map(function (line) { return '<div>' + esc(line) + '</div>'; }).join('');
+    var warns = (acc.warnings && acc.warnings.length) ? '<p class="pf-warn">' + esc(acc.warnings.join('；')) + '</p>' : '';
+    return '<article class="pf-palette' + (active ? ' is-active' : '') + '" data-id="' + esc(p.id) + '" data-action="select">' +
+      '<div class="pf-palette-head">' +
+        '<div class="pf-name-wrap">' + nameHTML + '</div>' +
+        '<div class="pf-palette-acts">' +
+          '<button type="button" class="pf-icon-btn' + (isFavorite(p.id) ? ' is-on' : '') + '" data-action="fav" data-id="' + esc(p.id) + '" title="' + (isFavorite(p.id) ? '取消收藏' : '收藏方案') + '">' + (isFavorite(p.id) ? '★' : '☆') + '</button>' +
+          '<button type="button" class="pf-share-btn" data-action="share" data-id="' + esc(p.id) + '">分享</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="pf-strips">' + strips + '</div>' +
+      '<div class="pf-palette-body">' +
+        '<div class="pf-meta-row">' + badge + '<span class="pf-ratio">文字/背景 ' + acc.text.toFixed(2) + ':1</span><span class="pf-ratio">主色/背景 ' + acc.main.toFixed(2) + ':1</span></div>' +
+        '<p class="pf-desc">' + desc + '</p>' + warns +
+      '</div>' +
+    '</article>';
+  }
+
+  function renderPalettes() {
+    $('#pfPalettes').innerHTML = state.palettes.length
+      ? state.palettes.map(paletteCard).join('')
+      : '<p class="pf-empty">还没有方案，点击左侧「生成 3 套配色方案」。</p>';
+    if (state.renamingId) {
+      var input = $('#pfRenameInput');
+      if (input) { input.focus(); input.select(); }
+    }
+  }
+
+  function renderPreview() {
+    var p = current();
+    var box = $('#pfPreview');
+    if (!p) { box.innerHTML = '<p class="pf-empty" style="padding:16px">暂无方案</p>'; return; }
+    var c = {};
+    p.colors.forEach(function (x) { c[x.role] = simulate(x.hex, state.blindSim); });
+    var text = c['文字'] || '#111111', bg = c['背景'] || '#FFFFFF', main = c['主色'] || '#4A6CF7', sub = c['辅助色'] || '#888888', accent = c['强调色'] || '#FF6600';
+    if (state.previewStyle === '网页') {
+      box.innerHTML = '<div class="pv-web" style="background:' + bg + ';color:' + text + '">' +
+        '<div class="pv-nav" style="border-bottom:1px solid ' + alpha(text, 0.14) + '">' +
+          '<span class="pv-brand" style="color:' + main + '">品牌 LUO</span>' +
+          '<span>首页</span><span>产品</span><span>关于</span>' +
+          '<span class="pv-cta" style="background:' + main + ';color:' + textOn(main) + '">立即开始</span>' +
+        '</div>' +
+        '<div class="pv-hero">' +
+          '<span class="pv-tag" style="background:' + alpha(main, 0.14) + ';color:' + main + '">新功能</span>' +
+          '<h3 style="color:' + text + '">用色彩讲述品牌故事</h3>' +
+          '<p>这是一段示例正文文字，用于观察配色在真实界面中的层次感与可读性。</p>' +
+          '<div class="pv-btns"><span style="background:' + accent + ';color:' + textOn(accent) + '">立即开始</span>' +
+          '<span style="border:1px solid ' + sub + ';color:' + sub + '">了解更多</span></div>' +
+        '</div>' +
+        '<div class="pv-cards">' +
+          '<div class="pv-card" style="border-color:' + alpha(text, 0.14) + '"><b style="color:' + main + '">夏日色彩节</b><p>一场关于颜色、光与情绪的城市漫游</p></div>' +
+          '<div class="pv-card" style="border-color:' + alpha(text, 0.14) + '"><b style="color:' + accent + '">重点标签</b><p>次级标签与辅助信息在这里展示</p></div>' +
+        '</div>' +
+      '</div>';
+    } else if (state.previewStyle === 'PPT') {
+      box.innerHTML = '<div class="pv-slide" style="background:' + bg + ';color:' + text + '">' +
+        '<div class="pv-slide-bar" style="background:' + main + '"></div>' +
+        '<h3>季度业务回顾与展望</h3>' +
+        '<ul><li>市场增长趋势分析</li><li>核心产品数据表现</li><li>下阶段策略规划</li></ul>' +
+        '<div class="pv-slide-tags">' +
+          '<span style="background:' + alpha(main, 0.16) + ';color:' + main + '">重点标签</span>' +
+          '<span style="background:' + alpha(sub, 0.2) + ';color:' + text + '">次级标签</span>' +
+          '<span style="background:' + accent + ';color:' + textOn(accent) + '">强调标签</span>' +
+        '</div>' +
+      '</div>';
+    } else {
+      box.innerHTML = '<div class="pv-poster" style="background:' + bg + ';color:' + text + '">' +
+        '<div class="pv-poster-body">' +
+          '<span style="color:' + accent + ';font-size:.72rem;letter-spacing:.12em">2026 · 城市文化</span>' +
+          '<h3 style="color:' + text + '">夏日色彩节</h3>' +
+          '<p>一场关于颜色、光与情绪的城市漫游</p>' +
+          '<div class="pv-btns" style="margin-top:6px"><span style="background:' + main + ';color:' + textOn(main) + '">查看详情</span></div>' +
+        '</div>' +
+        '<div class="pv-poster-side" style="background:' + main + '">' +
+          '<i style="width:78px;height:78px;left:-14px;top:-10px;background:' + alpha(accent, 0.85) + '"></i>' +
+          '<i style="width:52px;height:52px;right:12px;bottom:18px;background:' + alpha(sub, 0.9) + '"></i>' +
+          '<i style="width:26px;height:26px;left:34px;bottom:32px;background:' + alpha('#FFFFFF', 0.7) + '"></i>' +
+        '</div>' +
+      '</div>';
+    }
+  }
+
+  function renderAccess() {
+    var p = current();
+    var list = $('#pfAccess');
+    if (!p) { list.innerHTML = ''; return; }
+    var m = hexMap(p);
+    var bg = m['背景'];
+    var rows = [
+      { label: '文字 / 背景', hex: m['文字'], target: 4.5 },
+      { label: '主色 / 背景', hex: m['主色'], target: 3 },
+      { label: '辅助色 / 背景', hex: m['辅助色'], target: 3 },
+      { label: '强调色 / 背景', hex: m['强调色'], target: 3 }
+    ];
+    list.innerHTML = rows.map(function (r) {
+      var ratio = contrast(r.hex, bg);
+      var stateText, cls;
+      if (ratio >= 7) { stateText = 'AAA'; cls = 'ok'; }
+      else if (ratio >= r.target) { stateText = r.target === 4.5 ? 'AA' : 'AA 大字'; cls = 'ok'; }
+      else { stateText = '未通过'; cls = 'bad'; }
+      return '<li>' +
+        '<span class="pf-dot" style="background:' + simulate(r.hex, state.blindSim) + '"></span>' +
+        '<span class="pf-access-role">' + esc(r.label) + '</span>' +
+        '<span class="pf-access-ratio">' + ratio.toFixed(2) + ':1</span>' +
+        '<span class="pf-badge ' + cls + '">' + stateText + '</span>' +
+      '</li>';
+    }).join('');
+  }
+
+  function savedItem(p) {
+    var strips = p.colors.map(function (c) { return '<span style="background:' + esc(c.hex) + '"></span>'; }).join('');
+    var meta = [p.scene, p.style || '通用', HARMONY[p.type] || ''].filter(Boolean).join(' · ');
+    return '<div class="pf-saved-item">' +
+      '<div class="pf-saved-top">' +
+        '<div class="pf-saved-strips">' + strips + '</div>' +
+        '<div class="pf-saved-meta"><strong>' + esc(displayName(p)) + '</strong><span>' + esc(meta) + '</span></div>' +
+        '<button type="button" class="pf-ghost" style="padding:4px 10px;font-size:.72rem" data-action="restore" data-id="' + esc(p.id) + '">恢复</button>' +
+        (state.savedTab === 'favorites' ? '<button type="button" class="pf-ghost" style="padding:4px 10px;font-size:.72rem" data-action="delete-fav" data-id="' + esc(p.id) + '">删除</button>' : '') +
+      '</div>' +
+      '<div class="pf-saved-acts">' +
+        ['css', 'json', 'svg', 'png'].map(function (k) {
+          return '<button type="button" data-action="export" data-kind="' + k + '" data-id="' + esc(p.id) + '">导出 ' + k.toUpperCase() + '</button>';
+        }).join('') +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderSaved() {
+    var list = state.savedTab === 'favorites' ? state.favorites : state.history;
+    $('#pfSaved').innerHTML = list.length
+      ? '<div class="pf-saved-list">' + list.map(savedItem).join('') + '</div>'
+      : '<p class="pf-empty">' + (state.savedTab === 'favorites' ? '还没有收藏，点击方案卡片右上角的星标即可收藏。' : '生成方案后会自动记录历史。') + '</p>';
+  }
+
+  function renderAll() {
+    renderControls();
+    renderPalettes();
+    renderPreview();
+    renderAccess();
+    renderSaved();
+  }
+
+  /* ---------- 操作 ---------- */
+  var toastTimer = null;
+  function toast(msg) {
+    var el = document.querySelector('.pf-toast');
+    if (!el) { el = document.createElement('div'); el.className = 'pf-toast'; document.body.appendChild(el); }
+    el.textContent = msg;
+    requestAnimationFrame(function () { el.classList.add('is-show'); });
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove('is-show'); }, 1600);
+  }
+  function copyText(text, okMsg) {
+    var done = function () { toast(okMsg || '已复制'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
+    } else {
+      fallbackCopy(text, done);
+    }
+  }
+  function fallbackCopy(text, done) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) { toast('复制失败，请手动复制'); }
+    ta.remove();
+  }
+
+  function doGenerate() {
+    state.palettes = generate(3);
+    state.activePaletteId = state.palettes[0].id;
+    state.palettes.forEach(pushHistory);
+    saveHistory();
+    renderAll();
+  }
+
+  function applyColorInput() {
+    var input = $('#pfColorInput');
+    var err = $('#pfError');
+    var raw = input.value.trim();
+    var parsed = null;
+    if (state.colorFormat === 'HEX') {
+      if (/^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(raw)) parsed = normalizeHex(raw);
+    } else if (state.colorFormat === 'RGB') {
+      var mr = raw.match(/^(\d{1,3})\s*[,，]\s*(\d{1,3})\s*[,，]\s*(\d{1,3})$/);
+      if (mr && +mr[1] <= 255 && +mr[2] <= 255 && +mr[3] <= 255) {
+        parsed = rgbToHex({ r: +mr[1], g: +mr[2], b: +mr[3] });
+      }
+    } else {
+      var mh = raw.match(/^(\d{1,3})\s*[,，]\s*(\d{1,3})\s*[,，]\s*(\d{1,3})$/);
+      if (mh && +mh[1] <= 360 && +mh[2] <= 100 && +mh[3] <= 100) {
+        parsed = hslToHex({ h: +mh[1], s: +mh[2], l: +mh[3] });
+      }
+    }
+    if (parsed) {
+      err.textContent = '';
+      state.baseColor = parsed;
+      state.imageColors = [];
+      renderControls();
+      doGenerate();
+    } else {
+      err.textContent = '格式不正确';
+    }
+  }
+
+  function extractColors(img) {
+    var n = 64;
+    var cv = document.createElement('canvas');
+    cv.width = n; cv.height = n;
+    var ctx = cv.getContext('2d');
+    if (!ctx) return [];
+    ctx.drawImage(img, 0, 0, n, n);
+    var data = ctx.getImageData(0, 0, n, n).data;
+    var map = new Map();
+    for (var i = 0; i < data.length; i += 4) {
+      if (data[i + 3] < 128) continue;
+      var r = data[i], g = data[i + 1], b = data[i + 2];
+      var hsl = rgbToHsl({ r: r, g: g, b: b });
+      var key = hsl.s <= 10 ? 'gray-' + Math.round(hsl.l / 25) : 'h' + Math.round(hsl.h / 15) + '-' + Math.round(hsl.l / 30);
+      var cur = map.get(key) || { r: 0, g: 0, b: 0, n: 0 };
+      cur.r += r; cur.g += g; cur.b += b; cur.n += 1;
+      map.set(key, cur);
+    }
+    var sorted = Array.from(map.values()).sort(function (a, b) { return b.n - a.n; });
+    var out = [];
+    for (var k = 0; k < sorted.length; k++) {
+      var v = sorted[k];
+      var hex = rgbToHex({ r: v.r / v.n, g: v.g / v.n, b: v.b / v.n });
+      if (!out.some(function (x) { return rgbDistance(x, hex) < 40; })) {
+        out.push(hex);
+        if (out.length >= 5) break;
+      }
+    }
+    return out;
+  }
+  function pickBaseFrom(colors) {
+    var scored = colors.map(function (hex) {
+      var hsl = hexToHsl(hex);
+      return { hex: hex, score: 2 * hsl.s + Math.abs(hsl.l - 50) };
+    }).sort(function (a, b) { return b.score - a.score; });
+    return scored.length ? scored[0].hex : '#4A6CF7';
+  }
+
+  function applyFix() {
+    var p = current();
+    if (!p) return;
+    var bg = (p.colors.find(function (c) { return c.role === '背景'; }) || {}).hex;
+    if (!bg) return;
+    state.locked = Object.assign({}, state.locked, { '背景': bg });
+    p.colors.forEach(function (c) {
+      if (c.role === '背景') return;
+      var target = c.role === '文字' ? 4.5 : 3;
+      if (contrast(c.hex, bg) < target) state.locked[c.role] = fixContrast(c.hex, bg, target);
+    });
+    doGenerate();
+    toast('已自动修复对比度');
+  }
+
+  /* ---------- 分享 ---------- */
+  function shareUrl(p) {
+    var payload = {
+      n: p.customName || p.name,
+      s: p.scene,
+      st: p.style,
+      m: p.mood,
+      h: p.type || '',
+      c: p.colors.map(function (c) { return [c.role, c.hex]; })
+    };
+    var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+    b64 = b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    return location.origin + location.pathname + '?palette=' + b64;
+  }
+  function readShare() {
+    var q = new URLSearchParams(location.search).get('palette');
+    if (!q) return null;
+    try {
+      var s = q.replace(/-/g, '+').replace(/_/g, '/');
+      while (s.length % 4) s += '=';
+      var json = decodeURIComponent(escape(atob(s)));
+      var data = JSON.parse(json);
+      if (!data || !Array.isArray(data.c)) return null;
+      var colors = data.c.map(function (pair) {
+        var role = pair[0], hex = normalizeHex(pair[1]);
+        return { role: role, hex: hex, name: colorName(hex), ratio: ROLE_RATIO[role] || 0 };
+      });
+      var p = {
+        id: 'p_share_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        name: data.n || '分享的配色方案',
+        customName: data.n || '',
+        type: data.h || '',
+        scene: data.s || '',
+        style: data.st || '',
+        mood: data.m || '',
+        colors: colors
+      };
+      p.description = buildDescription(p);
+      p.accessibility = buildAccess(p);
+      return p;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /* ---------- 导出 ---------- */
+  function download(name, blob) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+  }
+  function cssText(p) {
+    var names = { '主色': 'primary', '辅助色': 'secondary', '强调色': 'accent', '背景': 'bg', '文字': 'text' };
+    return ':root {\n' + p.colors.map(function (c) {
+      return '  --color-' + (names[c.role] || c.role) + ': ' + c.hex + '; /* ' + c.role + ' ' + c.name + ' */';
+    }).join('\n') + '\n}\n';
+  }
+  function svgText(p) {
+    var W = 900, H = 520, bw = 820 / 5;
+    var name = displayName(p);
+    var acc = p.accessibility || buildAccess(p);
+    var s = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">';
+    s += '<rect width="' + W + '" height="' + H + '" fill="#FFFFFF"/>';
+    s += '<text x="40" y="60" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="32" font-weight="600" fill="#111111">' + esc(name) + '</text>';
+    p.colors.forEach(function (c, i) {
+      var x = 40 + i * bw;
+      s += '<rect x="' + x + '" y="100" width="' + (bw - 12) + '" height="180" fill="' + c.hex + '"/>';
+      s += '<text x="' + x + '" y="312" font-family="system-ui,sans-serif" font-size="20" fill="#111111">' + esc(c.name + ' ' + c.role) + '</text>';
+      s += '<text x="' + x + '" y="338" font-family="ui-monospace,monospace" font-size="16" fill="#666666">' + c.hex + '</text>';
+    });
+    s += '<rect x="40" y="362" width="24" height="24" fill="' + (p.colors[0] || {}).hex + '"/>';
+    s += '<text x="74" y="381" font-family="system-ui,sans-serif" font-size="18" fill="#111111">文字/背景对比度 ' + acc.text.toFixed(2) + ':1  WCAG ' + (acc.text >= 7 ? 'AAA' : (acc.text >= 4.5 ? 'AA' : '未通过')) + '</text>';
+    s += '<text x="40" y="470" font-family="system-ui,sans-serif" font-size="14" fill="#999999">配色工坊 · ' + esc([p.scene, p.style || '通用'].filter(Boolean).join(' · ')) + '</text>';
+    s += '</svg>';
+    return s;
+  }
+  function exportAs(kind, p) {
+    var base = '配色工坊-' + p.id;
+    if (kind === 'css') {
+      download(base + '.css', new Blob([cssText(p)], { type: 'text/css;charset=utf-8' }));
+    } else if (kind === 'json') {
+      download(base + '.json', new Blob([JSON.stringify(p, null, 2)], { type: 'application/json;charset=utf-8' }));
+    } else if (kind === 'svg') {
+      download(base + '.svg', new Blob([svgText(p)], { type: 'image/svg+xml;charset=utf-8' }));
+    } else {
+      var cv = document.createElement('canvas');
+      cv.width = 900; cv.height = 520;
+      var ctx = cv.getContext('2d');
+      if (!ctx) return;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, 900, 520);
+      ctx.fillStyle = '#111111';
+      ctx.font = '600 32px system-ui, sans-serif';
+      ctx.fillText(displayName(p), 40, 60);
+      var bw = 820 / p.colors.length;
+      p.colors.forEach(function (c, i) {
+        var x = 40 + i * bw;
+        ctx.fillStyle = c.hex;
+        ctx.fillRect(x, 100, bw - 12, 180);
+        ctx.fillStyle = '#111111';
+        ctx.font = '20px system-ui, sans-serif';
+        ctx.fillText(c.name + ' ' + c.role, x, 312);
+        ctx.fillStyle = '#666666';
+        ctx.font = '16px ui-monospace, monospace';
+        ctx.fillText(c.hex, x, 338);
+      });
+      var acc = p.accessibility || buildAccess(p);
+      ctx.fillStyle = '#111111';
+      ctx.font = '18px system-ui, sans-serif';
+      ctx.fillText('文字/背景对比度 ' + acc.text.toFixed(2) + ':1  WCAG ' + (acc.text >= 7 ? 'AAA' : (acc.text >= 4.5 ? 'AA' : '未通过')), 40, 380);
+      ctx.fillStyle = '#999999';
+      ctx.font = '14px system-ui, sans-serif';
+      ctx.fillText('配色工坊 · ' + [p.scene, p.style || '通用'].filter(Boolean).join(' · '), 40, 470);
+      cv.toBlob(function (blob) {
+        if (blob) download(base + '.png', blob);
+      }, 'image/png');
+    }
+  }
+
+  /* ---------- 事件 ---------- */
+  root.addEventListener('click', function (e) {
+    var target = e.target.closest('[data-action]');
+    if (!target) return;
+    var action = target.getAttribute('data-action');
+    var value = target.getAttribute('data-value');
+    var id = target.getAttribute('data-id');
+
+    if (action === 'select') {
+      if (e.target.closest('input, textarea')) return;
+      state.activePaletteId = id;
+      renderPalettes();
+      renderPreview();
+      renderAccess();
+      return;
+    }
+    if (action === 'copy') {
+      copyText(target.getAttribute('data-hex'), '已复制 ' + target.getAttribute('data-hex'));
+      return;
+    }
+    if (action === 'format') { state.colorFormat = value; renderControls(); return; }
+    if (action === 'scene') { state.scene = value; renderControls(); return; }
+    if (action === 'style') { state.style = value; renderControls(); return; }
+    if (action === 'mood') { state.mood = value; renderControls(); return; }
+    if (action === 'harmony') { state.harmonyType = value; renderControls(); return; }
+    if (action === 'lock') {
+      if (state.locked[value]) delete state.locked[value];
+      else {
+        var cp = current();
+        if (cp) {
+          var c = cp.colors.find(function (x) { return x.role === value; });
+          if (c) state.locked[value] = c.hex;
+        }
+      }
+      renderControls();
+      return;
+    }
+    if (action === 'pick-image-color') {
+      state.baseColor = normalizeHex(value);
+      renderControls();
+      doGenerate();
+      return;
+    }
+    if (action === 'fav') {
+      var p = byId(id);
+      if (!p) return;
+      var idx = state.favorites.findIndex(function (x) { return x.id === id; });
+      if (idx > -1) { state.favorites.splice(idx, 1); toast('已取消收藏'); }
+      else { state.favorites.unshift(clone(p)); toast('已收藏'); }
+      saveFavorites();
+      renderPalettes();
+      renderControls();
+      renderSaved();
+      return;
+    }
+    if (action === 'share') {
+      var sp = byId(id);
+      if (!sp) return;
+      copyText(shareUrl(sp), '分享链接已复制');
+      return;
+    }
+    if (action === 'rename') {
+      state.renamingId = id;
+      renderPalettes();
+      return;
+    }
+    if (action === 'preview-style') { state.previewStyle = value; renderControls(); renderPreview(); return; }
+    if (action === 'blind-sim') { state.blindSim = value; renderControls(); renderPreview(); renderAccess(); return; }
+    if (action === 'saved-tab') { state.savedTab = value; renderControls(); renderSaved(); return; }
+    if (action === 'restore') {
+      var rp = byId(id);
+      if (!rp) return;
+      var restored = clone(rp);
+      state.palettes = [restored];
+      state.activePaletteId = restored.id;
+      state.baseColor = (restored.colors.find(function (c) { return c.role === '主色'; }) || {}).hex || state.baseColor;
+      pushHistory(restored);
+      renderAll();
+      toast('已恢复此方案');
+      return;
+    }
+    if (action === 'delete-fav') {
+      state.favorites = state.favorites.filter(function (x) { return x.id !== id; });
+      saveFavorites();
+      renderControls();
+      renderSaved();
+      return;
+    }
+    if (action === 'export') {
+      var ep = byId(id);
+      if (ep) exportAs(target.getAttribute('data-kind'), ep);
+      return;
+    }
+  });
+
+  root.addEventListener('keydown', function (e) {
+    var input = e.target;
+    if (!input || input.id !== 'pfRenameInput') return;
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      input.blur();
+    } else if (e.key === 'Escape') {
+      state.renamingId = '';
+      renderPalettes();
+    }
+  });
+  root.addEventListener('blur', function (e) {
+    var input = e.target;
+    if (!input || input.id !== 'pfRenameInput') return;
+    var id = state.renamingId;
+    if (!id) return;
+    var name = input.value.trim();
+    var p = byId(id);
+    if (p) {
+      p.customName = name;
+      ['favorites', 'history'].forEach(function (key) {
+        state[key].forEach(function (x) { if (x.id === id) x.customName = name; });
+      });
+      if (p.id === state.activePaletteId) p.customName = name;
+      saveFavorites();
+      saveHistory();
+    }
+    state.renamingId = '';
+    renderPalettes();
+    renderSaved();
+  }, true);
+
+  $('#pfSwatch').addEventListener('click', function () { $('#pfPicker').click(); });
+  $('#pfPicker').addEventListener('input', function () {
+    state.baseColor = normalizeHex(this.value);
+    renderControls();
+  });
+  $('#pfPicker').addEventListener('change', function () { doGenerate(); });
+  $('#pfApply').addEventListener('click', applyColorInput);
+  $('#pfColorInput').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); applyColorInput(); } });
+  $('#pfHue').addEventListener('input', function () {
+    var hsl = hexToHsl(state.baseColor);
+    state.baseColor = hslToHex({ h: +this.value, s: hsl.s, l: hsl.l });
+    renderControls();
+  });
+  $('#pfHue').addEventListener('change', function () { doGenerate(); });
+  $('#pfGenerate').addEventListener('click', function () { doGenerate(); });
+  $('#pfFix').addEventListener('click', applyFix);
+  $('#pfUpload').addEventListener('click', function () { $('#pfFile').click(); });
+  $('#pfFile').addEventListener('change', function () {
+    var file = this.files && this.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      var img = new Image();
+      img.onload = function () {
+        var colors = extractColors(img);
+        if (colors.length >= 3) {
+          state.imageColors = colors;
+          state.baseColor = pickBaseFrom(colors);
+          renderControls();
+          doGenerate();
+          toast('已提取 ' + colors.length + ' 个主色');
+        } else {
+          toast('未能从图片中提取到足够颜色');
+        }
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+    this.value = '';
+  });
+
+  /* ---------- 初始化 ---------- */
+  var shared = readShare();
+  if (shared) {
+    state.palettes = [shared];
+    state.activePaletteId = shared.id;
+    state.baseColor = (shared.colors.find(function (c) { return c.role === '主色'; }) || {}).hex || state.baseColor;
+    pushHistory(shared);
+    renderAll();
+  } else {
+    state.palettes = generate(3);
+    state.activePaletteId = state.palettes[0].id;
+    state.palettes.forEach(pushHistory);
+    saveHistory();
+    renderAll();
+  }
+})();
+</script>
