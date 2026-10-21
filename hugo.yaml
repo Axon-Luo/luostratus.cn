@@ -32,7 +32,7 @@ outputs:
 params:
   # 首页信息
   homeInfoParams:
-    Title: 你好，我是洛云
+    Title: 你好，我是LuoStratus
     Content: |
       欢迎来到我的个人站点
 
