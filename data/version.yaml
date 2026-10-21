@@ -1,0 +1,9 @@
+# 站点版本号（唯一来源）
+# 格式：V{year}.{major}.{patch}，例如 V26.10.0
+# 维护规则：
+#   - S 级 / A 级更新：major + 1，patch 归零
+#   - B 级 / C 级 / D 级更新：patch + 1
+#   - 跨年：year 更新为新年后两位，major 与 patch 继续累积
+year: 26
+major: 10
+patch: 0
