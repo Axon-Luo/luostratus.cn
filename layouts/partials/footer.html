@@ -21,6 +21,7 @@
     </span>
 
     <br>
+    {{/* 版本号规则：major（BB）由用户明确决定，日常更新只递增 patch（CC）；详见 data/version.yaml */}}
     <span style="font-size: 0.78rem; color: var(--secondary);">
         Last Updated: {{ (now.Add 28800000000000).Format "2006-01-02 15:04:05" }} (UTC+8){{ with site.Data.version }} · <span class="site-version" title="站点版本号">Version V{{ .year }}.{{ .major }}.{{ .patch }}</span>{{ end }}
     </span>
