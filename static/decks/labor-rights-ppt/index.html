@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>个人劳动权益重要法律知识整理 · 放映厅</title>
+<style>
+  :root{
+    --bg:#0d0d0f;
+    --panel:#16161a;
+    --ink:#f4f3ef;
+    --muted:#8c8a86;
+    --line:#2a2a2e;
+    --accent:#a12b24;
+    --accent-soft:rgba(161,43,36,.18);
+    --sans:"Inter","Helvetica Neue","Segoe UI",system-ui,-apple-system,"PingFang SC","Microsoft YaHei UI","Microsoft YaHei",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);color:var(--ink);
+    font-family:var(--sans);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* 顶部信息条 */
+  .bar{
+    position:fixed;top:0;left:0;right:0;z-index:30;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:14px 22px;
+    font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);pointer-events:none;
+  }
+  .bar strong{color:var(--ink);font-weight:600;letter-spacing:.08em;text-transform:none;font-size:.86rem}
+  .bar .right{display:flex;align-items:center;gap:14px;font-variant-numeric:tabular-nums}
+  .dot{width:6px;height:6px;background:var(--accent);display:inline-block;margin-right:8px}
+
+  /* 舞台 */
+  .stage{
+    position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:min(94vw, calc(94vh * 16 / 9));
+    aspect-ratio:16 / 9;
+    background:#fafaf8;
+    box-shadow:0 30px 90px rgba(0,0,0,.55);
+    z-index:10;
+    overflow:hidden;
+  }
+  .stage img{
+    width:100%;height:100%;object-fit:contain;display:block;
+    user-select:none;-webkit-user-drag:none;
+  }
+  /* 点击热区 */
+  .zone{position:absolute;top:0;bottom:0;width:26%;z-index:12;cursor:pointer;background:transparent;border:0}
+  .zone.prev{left:0}
+  .zone.next{right:0}
+  .zone:focus-visible{outline:2px solid var(--accent);outline-offset:-6px}
+  /* 翻页覆盖按钮（触屏可见） */
+  .navbtn{
+    position:fixed;top:50%;transform:translateY(-50%);z-index:20;
+    width:46px;height:76px;border:1px solid var(--line);background:rgba(22,22,26,.72);
+    color:var(--ink);cursor:pointer;display:grid;place-items:center;
+    transition:border-color .2s,background .2s,opacity .2s;
+  }
+  .navbtn:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .navbtn:disabled{opacity:.22;cursor:default}
+  .navbtn.prev{left:14px}
+  .navbtn.next{right:14px}
+  .navbtn svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.6;fill:none}
+  /* 底部进度 */
+  .foot{
+    position:fixed;left:0;right:0;bottom:0;z-index:30;
+    padding:16px 22px 14px;
+    display:flex;align-items:center;gap:18px;
+    color:var(--muted);font-size:.76rem;letter-spacing:.08em;
+    pointer-events:none;
+  }
+  .track{flex:1;height:2px;background:var(--line);position:relative;overflow:hidden}
+  .fill{position:absolute;inset:0 auto 0 0;width:0;background:var(--accent);transition:width .35s cubic-bezier(.25,.8,.25,1)}
+  .hint{white-space:nowrap;letter-spacing:.1em}
+  .hint kbd{
+    font-family:inherit;font-size:.72rem;color:var(--ink);
+    border:1px solid var(--line);padding:1px 5px;margin:0 2px;
+  }
+  /* 索引页 */
+  .overview{
+    position:fixed;inset:0;z-index:40;background:rgba(13,13,15,.96);
+    display:none;overflow-y:auto;padding:76px 4vw 48px;
+  }
+  .overview.open{display:block}
+  .ov-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:22px}
+  .ov-head h2{font-size:1rem;font-weight:600;letter-spacing:.02em}
+  .ov-head span{font-size:.78rem;color:var(--muted)}
+  .ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
+  .ov-item{background:var(--panel);border:1px solid var(--line);cursor:pointer;text-align:left;padding:0;color:inherit;transition:border-color .2s,transform .2s}
+  .ov-item:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .ov-item img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#fff}
+  .ov-item figcaption{display:flex;justify-content:space-between;gap:8px;padding:9px 11px;font-size:.78rem;color:var(--muted)}
+  .ov-item figcaption b{color:var(--ink);font-weight:500;font-size:.8rem}
+  .ov-item.current{outline:2px solid var(--accent);outline-offset:-2px}
+  /* 全屏模式隐藏外壳 */
+  body.clean .bar,body.clean .foot,body.clean .navbtn{opacity:0;pointer-events:none}
+  @media (max-width:720px){
+    .bar{padding:10px 14px;font-size:.7rem}
+    .bar .hint{display:none}
+    .foot{padding:12px 14px;font-size:.7rem}
+    .foot .hint{display:none}
+    .navbtn{width:38px;height:64px}
+    .navbtn.prev{left:6px}.navbtn.next{right:6px}
+  }
+  @media (prefers-reduced-motion:reduce){.fill{transition:none}}
+</style>
+</head>
+<body>
+  <header class="bar">
+    <div><span class="dot"></span><strong>个人劳动权益重要法律知识整理</strong></div>
+    <div class="right">
+      <span id="counter">01 / 15</span>
+      <span class="hint"><kbd>←</kbd><kbd>→</kbd> 翻页 · <kbd>F</kbd> 全屏 · <kbd>ESC</kbd> 索引</span>
+    </div>
+  </header>
+
+  <main class="stage" id="stage">
+    <img id="slideImg" src="images/slide-01.png" alt="第 1 页：劳动权益重要法律知识">
+    <button class="zone prev" id="zonePrev" aria-label="上一页"></button>
+    <button class="zone next" id="zoneNext" aria-label="下一页"></button>
+  </main>
+
+  <button class="navbtn prev" id="btnPrev" aria-label="上一页" title="上一页（←）">
+    <svg viewBox="0 0 24 24"><path d="M15 5 8 12l7 7"/></svg>
+  </button>
+  <button class="navbtn next" id="btnNext" aria-label="下一页" title="下一页（→）">
+    <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+  </button>
+
+  <footer class="foot">
+    <span id="countFoot">01 / 15</span>
+    <span class="track"><span class="fill" id="progress"></span></span>
+    <span class="hint">滚轮 / 触屏滑动也可翻页</span>
+  </footer>
+
+  <section class="overview" id="overview" aria-label="幻灯片索引">
+    <div class="ov-head">
+      <h2>幻灯片索引</h2>
+      <span>点击任意一页跳转 · ESC 关闭</span>
+    </div>
+    <div class="ov-grid" id="ovGrid"></div>
+  </section>
+
+<script>
+(function () {
+  var TITLES = [
+    '封面 · 劳动权益重要法律知识',
+    '什么算重要？三条可检验的标准',
+    '一张表看完整条链路',
+    '入职 · 劳动关系认定',
+    '入职 · 书面合同与二倍工资',
+    '在职 · 加班与工时',
+    '在职 · 年休假 5/10/15 天',
+    '在职 · 社保与「自愿放弃」',
+    '在职 · 工伤认定',
+    '在职 · 「三期」保护',
+    '离职 · 经济补偿 N',
+    '离职 · 违法解除 2N 与 N+1',
+    '救济 · 仲裁时效与举证',
+    '场景检验 · 自愿放弃社保后工伤',
+    '小结 · 风险不在法条，而在证据与时效'
+  ];
+  var TOTAL = TITLES.length;
+  var i = 0;
+  var img = document.getElementById('slideImg');
+  var counter = document.getElementById('counter');
+  var footCount = document.getElementById('countFoot');
+  var progress = document.getElementById('progress');
+  var overview = document.getElementById('overview');
+  var ovGrid = document.getElementById('ovGrid');
+  var btnPrev = document.getElementById('btnPrev');
+  var btnNext = document.getElementById('btnNext');
+
+  function pad(n) { return n < 10 ? '0' + n : String(n); }
+  function src(n) { return 'images/slide-' + pad(n) + '.png'; }
+
+  function render() {
+    img.src = src(i + 1);
+    img.alt = '第 ' + (i + 1) + ' 页：' + TITLES[i];
+    counter.textContent = pad(i + 1) + ' / ' + TOTAL;
+    footCount.textContent = pad(i + 1) + ' / ' + TOTAL;
+    progress.style.width = ((i) / (TOTAL - 1) * 100) + '%';
+    btnPrev.disabled = i === 0;
+    btnNext.disabled = i === TOTAL - 1;
+    if (location.hash !== '#' + (i + 1)) {
+      history.replaceState(null, '', '#' + (i + 1));
+    }
+    document.title = '第 ' + (i + 1) + ' 页 · 个人劳动权益重要法律知识整理';
+    var items = ovGrid.children;
+    for (var k = 0; k < items.length; k++) {
+      items[k].classList.toggle('current', k === i);
+    }
+  }
+
+  function go(n) {
+    i = Math.max(0, Math.min(TOTAL - 1, n));
+    render();
+  }
+
+  // 索引页
+  for (var k = 1; k <= TOTAL; k++) {
+    var btn = document.createElement('button');
+    btn.className = 'ov-item';
+    btn.type = 'button';
+    btn.innerHTML = '<img src="' + src(k) + '" alt="" loading="lazy"><figcaption><b>' +
+      pad(k) + '</b><span>' + TITLES[k - 1] + '</span></figcaption>';
+    (function (idx) { btn.addEventListener('click', function () { closeOverview(); go(idx); }); })(k - 1);
+    ovGrid.appendChild(btn);
+  }
+
+  function openOverview() { overview.classList.add('open'); }
+  function closeOverview() { overview.classList.remove('open'); }
+  function toggleOverview() { overview.classList.toggle('open'); }
+
+  // 预加载
+  for (var p = 1; p <= TOTAL; p++) { var pre = new Image(); pre.src = src(p); }
+
+  // 按钮 / 热区
+  btnPrev.addEventListener('click', function () { go(i - 1); });
+  btnNext.addEventListener('click', function () { go(i + 1); });
+  document.getElementById('zonePrev').addEventListener('click', function () { go(i - 1); });
+  document.getElementById('zoneNext').addEventListener('click', function () { go(i + 1); });
+
+  // 键盘
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); go(i + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(i - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); go(0); }
+    else if (e.key === 'End') { e.preventDefault(); go(TOTAL - 1); }
+    else if (e.key === 'Escape') { toggleOverview(); }
+    else if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) { (document.documentElement.requestFullscreen || function () {}).call(document.documentElement); }
+      else { document.exitFullscreen(); }
+    }
+  });
+
+  // 滚轮（节流）
+  var lock = false;
+  window.addEventListener('wheel', function (e) {
+    if (overview.classList.contains('open')) return;
+    if (lock) return;
+    if (Math.abs(e.deltaY) < 18) return;
+    lock = true;
+    go(i + (e.deltaY > 0 ? 1 : -1));
+    setTimeout(function () { lock = false; }, 420);
+  }, { passive: true });
+
+  // 触屏滑动
+  var sx = null, sy = null;
+  document.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1) return;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', function (e) {
+    if (sx === null) return;
+    var dx = e.changedTouches[0].clientX - sx;
+    var dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > 46 && Math.abs(dx) > Math.abs(dy)) { go(i + (dx < 0 ? 1 : -1)); }
+    sx = null; sy = null;
+  }, { passive: true });
+
+  // 点击背景（索引打开时关闭）
+  overview.addEventListener('click', function (e) { if (e.target === overview) closeOverview(); });
+
+  // 初始页码
+  var start = parseInt((location.hash || '').replace('#', ''), 10);
+  if (!isNaN(start) && start >= 1 && start <= TOTAL) { i = start - 1; }
+  render();
+  window.addEventListener('hashchange', function () {
+    var n = parseInt((location.hash || '').replace('#', ''), 10);
+    if (!isNaN(n) && n >= 1 && n <= TOTAL && n - 1 !== i) { i = n - 1; render(); }
+  });
+})();
+</script>
+</body>
+</html>
