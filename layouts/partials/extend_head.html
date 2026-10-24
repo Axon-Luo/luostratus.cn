@@ -549,7 +549,7 @@ body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea
     position: fixed;
     left: 12px !important;
     right: 12px !important;
-    top: 68px;
+    top: calc(var(--header-height) + 20px);
     width: auto;
     transform: none;
   }
@@ -632,6 +632,8 @@ body::before{
 
 /* ---------- 头部 / 导航 ---------- */
 .header{
+  position:relative;
+  z-index:50;
   background:color-mix(in srgb, var(--theme) 78%, transparent);
   -webkit-backdrop-filter:saturate(150%) blur(16px);
   backdrop-filter:saturate(150%) blur(16px);
