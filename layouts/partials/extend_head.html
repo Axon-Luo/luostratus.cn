@@ -980,7 +980,12 @@ body:has(.first-entry.f-hero) .main{max-width:var(--f-maxw)}
   letter-spacing:.12em;color:var(--f-accent);
 }
 .tools-grid{counter-reset:fitool}
-.tool-card{counter-increment:fitool;position:relative;padding-right:56px}
+.tool-card{
+  counter-increment:fitool;
+  position:relative;
+  padding-right:56px;
+  overflow:hidden;
+}
 .tool-card::after{
   content:counter(fitool,decimal-leading-zero);
   position:absolute;top:18px;right:18px;
@@ -990,9 +995,9 @@ body:has(.first-entry.f-hero) .main{max-width:var(--f-maxw)}
 }
 .tool-card::before{
   content:"";
-  position:absolute;left:0;right:0;top:0;height:2px;
-  border-radius:12px 12px 0 0;
-  background:linear-gradient(90deg, var(--f-accent), transparent 65%);
+  position:absolute;left:16px;right:16px;top:1px;height:2px;
+  border-radius:999px;
+  background:linear-gradient(90deg, var(--f-accent), color-mix(in srgb, var(--f-accent) 30%, transparent));
   opacity:0;transition:opacity .25s ease;
 }
 .tool-card:hover::before{opacity:1}
