@@ -3,7 +3,7 @@
   <div class="f-hero-copy">
     <div class="f-kicker">LUOSTRATUS · PERSONAL SITE</div>
     <header class="entry-header">
-      <h1>{{ .Title | markdownify }}</h1>
+      <h1>{{ .Title | markdownify | replaceRE "LuoStratus" "<span class=\"f-hero-name\">LuoStratus</span>" | safeHTML }}</h1>
     </header>
     <div class="entry-content md-content f-hero-lede">
       {{ $opts := dict "display" "block" }}
