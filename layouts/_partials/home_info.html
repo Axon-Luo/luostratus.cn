@@ -19,15 +19,20 @@
   </div>
   <div class="f-hero-showcase" aria-hidden="true">
     <div class="f-window">
-      <div class="f-window-bar"><i></i><i></i><i></i></div>
-      {{- $cinema := site.GetPage "/cinema" }}
-      {{- $deck := false }}
-      {{- with $cinema }}{{ with .Pages }}{{ $deck = index (sort . "Date" "desc") 0 }}{{ end }}{{ end }}
-      {{- if $deck }}{{ $cover := $deck.Resources.GetMatch "cover.*" }}{{ with $cover }}
-      <a class="f-window-media" href="{{ $deck.RelPermalink }}" tabindex="-1">
-        <img src="{{ .RelPermalink }}" alt="{{ $deck.Title }}" loading="eager">
-      </a>
-      {{- end }}{{ end }}
+      <div class="f-window-bar">
+        <i></i><i></i><i></i>
+        <span class="f-window-title">LuoStratus · 放映厅</span>
+      </div>
+      <div class="f-window-body">
+        {{- $cinema := site.GetPage "/cinema" }}
+        {{- $deck := false }}
+        {{- with $cinema }}{{ with .Pages }}{{ $deck = index (sort . "Date" "desc") 0 }}{{ end }}{{ end }}
+        {{- if $deck }}{{ $cover := $deck.Resources.GetMatch "cover.*" }}{{ with $cover }}
+        <a class="f-window-media" href="{{ $deck.RelPermalink }}" tabindex="-1">
+          <img src="{{ .RelPermalink }}" alt="{{ $deck.Title }}" loading="eager">
+        </a>
+        {{- end }}{{ end }}
+      </div>
     </div>
   </div>
 </article>
