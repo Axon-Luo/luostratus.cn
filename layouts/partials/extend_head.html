@@ -705,7 +705,22 @@ body:has(.first-entry.f-hero) .main{max-width:var(--f-maxw)}
   margin:0;
   color:var(--primary);
 }
-.f-hero .f-hero-name{color:var(--f-accent)}
+@font-face{
+  font-family:"F Hand";
+  src:url("/fonts/Pacifico-Regular.ttf") format("truetype");
+  font-weight:400;
+  font-style:normal;
+  font-display:swap;
+}
+.f-hero .f-hero-name{
+  color:var(--f-accent);
+  font-family:"F Hand","Segoe Script","Bradley Hand","Snell Roundhand","Apple Chancery",cursive;
+  font-weight:400;
+  font-size:.94em;
+  line-height:1.12;
+  letter-spacing:.005em;
+  display:inline-block;
+}
 .f-hero .f-hero-lede{
   margin-top:22px;
   max-width:46ch;
