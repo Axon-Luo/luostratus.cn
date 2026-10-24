@@ -1,0 +1,26 @@
+{{- define "main" }}
+
+<header class="page-header f-page-hero f-section-search">
+  <div class="f-kicker">SEARCH · 全站检索</div>
+  <h1>{{- (printf "%s&nbsp;" .Title ) | htmlUnescape -}}
+    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+  </h1>
+  {{- if .Description }}
+  <div class="post-description">
+      {{ .Description }}
+  </div>
+  {{- end }}
+</header>
+
+<div id="searchbox" class="searchbox f-searchbox">
+  <p class="f-search-hint">输入关键词：标题与正文都会参与匹配，支持实时结果。</p>
+  <input id="searchInput" disabled placeholder="{{ .Params.placeholder | default "搜索标题或正文…" }}"
+      aria-label="search" type="search" autocomplete="off" maxlength="64">
+  <ul id="searchResults" class="searchResults" aria-label="search results"></ul>
+</div>
+
+{{- end }}{{/* end main */}}

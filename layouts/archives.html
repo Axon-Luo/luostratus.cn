@@ -1,6 +1,8 @@
 {{- define "main" }}
 
-<header class="page-header">
+{{- $pages := where site.RegularPages "Section" "posts" }}
+<header class="page-header f-page-hero f-section-archives">
+  <div class="f-kicker">ARCHIVE · 全部文章</div>
   <h1>
     {{ .Title }}
     {{- if (.Param "ShowRssButtonInSectionTermList") }}
@@ -25,9 +27,13 @@
     {{ .Description }}
   </div>
   {{- end }}
+  <div class="f-stat-row">
+    <div class="f-stat"><b>{{ len $pages }}</b><span>篇文章</span></div>
+    <div class="f-stat"><b>{{ len ($pages.GroupByPublishDate "2006") }}</b><span>个年份</span></div>
+  </div>
 </header>
 
-{{- $pages := where site.RegularPages "Section" "posts" }}
+{{- /* $pages 已在上方声明 */}}
 
 {{- range $pages.GroupByPublishDate "2006" }}
 {{- if ne .Key "0001" }}
@@ -39,7 +45,7 @@
     </a>
     <sup class="archive-count">&nbsp;{{ len .Pages }}</sup>
   </h2>
-  {{- range .Pages.GroupByDate "January" }}
+  {{- range .Pages.GroupByDate "2006年1月" }}
   <div class="archive-month">
     <h3 class="archive-month-header" id="{{ $year }}-{{ .Key }}">
       <a class="archive-header-link" href="#{{ $year }}-{{ .Key }}">

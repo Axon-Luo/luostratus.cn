@@ -1,21 +1,28 @@
 {{ define "main" }}
-<header class="page-header">
+{{ $decks := sort .Pages "Date" "desc" }}
+
+<header class="page-header f-page-hero f-section-cinema">
+  <div class="f-kicker">SCREENING ROOM · 放映厅</div>
   <h1>{{ .Title }}</h1>
   {{ with .Description }}<p class="page-description">{{ . }}</p>{{ end }}
+  <div class="f-stat-row">
+    <div class="f-stat"><b>{{ len $decks }}</b><span>部放映作品</span></div>
+    <div class="f-stat"><b>HTML</b><span>键盘 / 触屏翻页</span></div>
+  </div>
 </header>
 
-{{ $decks := sort .Pages "Date" "desc" }}
 {{ if $decks }}
 <div class="cinema-grid">
-  {{ range $deck := $decks }}
+  {{ range $i, $deck := $decks }}
     {{ $cover := $deck.Resources.GetMatch "cover.*" }}
-    <a class="deck-card" href="{{ $deck.RelPermalink }}">
+    <a class="deck-card{{ if eq $i 0 }} is-featured{{ end }}" href="{{ $deck.RelPermalink }}">
       <span class="deck-cover">
         {{ with $cover }}
           <img src="{{ .RelPermalink }}" alt="{{ $deck.Title }}" loading="lazy">
         {{ end }}
       </span>
       <span class="deck-info">
+        {{ if eq $i 0 }}<span class="deck-badge">LATEST · 最新放映</span>{{ end }}
         <time datetime="{{ $deck.Date.Format "2006-01-02" }}">{{ $deck.Date.Format "2006-01-02" }} · {{ $deck.Params.slides | default "?" }} 页</time>
         <h2>{{ $deck.Title }}</h2>
         <p>{{ $deck.Description | default $deck.Summary | plainify }}</p>
@@ -32,15 +39,22 @@
 .post-content { max-width: min(1120px, 82vw); }
 .page-description { color: var(--secondary); font-size: 1.1rem; }
 .cinema-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 28px; margin-top: 32px; }
-.deck-card { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--border); border-radius: 8px; color: inherit; text-decoration: none !important; background: var(--code-bg); transition: transform .25s ease, box-shadow .25s ease; }
-.deck-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,.14); }
-.deck-cover { display: block; aspect-ratio: 16 / 9; overflow: hidden; background: #fafaf8; }
-.deck-cover img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+.deck-card { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--border); border-radius: 16px; color: inherit; text-decoration: none !important; background: var(--entry); transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; position: relative; }
+.deck-card:hover { transform: translateY(-4px); box-shadow: 0 22px 56px rgba(0,0,0,.42); border-color: color-mix(in srgb, var(--f-accent) 55%, var(--border)); }
+.deck-card.is-featured { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); align-items: stretch; }
+.deck-card.is-featured .deck-cover { aspect-ratio: auto; min-height: 320px; }
+.deck-card.is-featured .deck-info { padding: 40px 40px 34px; display: flex; flex-direction: column; justify-content: center; }
+.deck-card.is-featured .deck-info h2 { font-size: 1.9rem; letter-spacing: -.02em; margin-top: 4px; }
+.deck-badge { align-self: flex-start; margin-bottom: 14px; padding: 4px 10px; border-radius: 999px; background: color-mix(in srgb, var(--f-accent) 16%, transparent); border: 1px solid color-mix(in srgb, var(--f-accent) 45%, transparent); color: var(--f-accent); font: 600 .66rem/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .14em; }
+.deck-cover { display: block; aspect-ratio: 16 / 9; overflow: hidden; background: var(--code-bg); }
+.deck-cover img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; transition: transform .5s ease; }
+.deck-card:hover .deck-cover img { transform: scale(1.02); }
 .deck-info { display: block; padding: 20px; }
-.deck-info time { display: block; margin-bottom: 8px; font-size: .84rem; color: var(--secondary); }
+.deck-info time { display: block; margin-bottom: 8px; font-size: .78rem; color: var(--secondary); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .03em; }
 .deck-info h2 { margin: 0 0 8px; font-size: 1.18rem; line-height: 1.4; }
 .deck-info p { margin: 0; color: var(--secondary); font-size: .94rem; line-height: 1.65; }
 .cinema-empty { margin-top: 48px; text-align: center; color: var(--secondary); }
+@media (max-width: 860px) { .deck-card.is-featured { grid-template-columns: 1fr; } .deck-card.is-featured .deck-cover { min-height: 0; aspect-ratio: 16/9; } .deck-card.is-featured .deck-info { padding: 26px 22px; } .deck-card.is-featured .deck-info h2 { font-size: 1.5rem; } }
 @media (max-width: 480px) { .main { max-width: calc(100vw - 32px); } .cinema-grid { gap: 20px; } }
 </style>
 {{ end }}

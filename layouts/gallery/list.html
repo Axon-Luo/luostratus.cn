@@ -1,10 +1,16 @@
 {{ define "main" }}
-<header class="page-header">
+{{ $images := .Resources.ByType "image" }}
+
+<header class="page-header f-page-hero f-section-gallery">
+  <div class="f-kicker">GALLERY · 画廊</div>
   <h1>{{ .Title }}</h1>
   {{ with .Description }}<p class="page-description">{{ . }}</p>{{ end }}
+  <div class="f-stat-row">
+    <div class="f-stat"><b>{{ len $images }}</b><span>张照片</span></div>
+    <div class="f-stat"><b>ON</b><span>点击图片放大</span></div>
+  </div>
 </header>
 
-{{ $images := .Resources.ByType "image" }}
 {{ if $images }}
 
 {{ $galleryThumbWidth := 800 }}
@@ -164,10 +170,11 @@
   height: auto;
   display: block;
   cursor: zoom-in;
-  border-radius: 8px;
-  transition: opacity 0.2s;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  transition: opacity 0.2s, transform 0.4s ease, box-shadow 0.4s ease;
 }
-.gallery-item img:hover { opacity: 0.9; }
+.gallery-item img:hover { opacity: 0.96; transform: scale(1.012); box-shadow: 0 18px 44px rgba(0,0,0,.32); }
 
 .gallery-item img.zoomed {
   position: fixed;
@@ -181,8 +188,21 @@
   box-shadow: 0 0 0 2000px rgba(0,0,0,0.8);
 }
 
-.gallery-item figcaption { padding: 4px 0 0 0; }
-.gallery-item time { font-size: 0.8rem; color: var(--secondary); }
+.gallery-item figcaption { display: flex; align-items: center; gap: 8px; padding: 8px 2px 0 2px; }
+.gallery-item time { font-size: 0.76rem; color: var(--secondary); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .04em; }
+.gallery-item { position: relative; }
+.gallery-item::before {
+  content: "◳";
+  position: absolute;
+  top: 10px; right: 12px;
+  z-index: 2;
+  color: rgba(255,255,255,.72);
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity .25s ease;
+  pointer-events: none;
+}
+.gallery-item:hover::before { opacity: 1; }
 
 .page-description { color: var(--secondary); font-size: 1.1rem; }
 .gallery-empty { text-align: center; color: var(--secondary); padding: 60px 0; font-size: 1.1rem; }

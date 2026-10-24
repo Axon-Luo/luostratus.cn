@@ -1,9 +1,4 @@
 {{ define "main" }}
-<header class="page-header">
-  <h1>{{ .Title }}</h1>
-  {{ with .Description }}<p class="page-description">{{ . }}</p>{{ end }}
-</header>
-
 {{ $games := slice
   (dict "slug" "snake" "icon" "🐍" "name" "贪吃蛇" "desc" "经典街机游戏，控制蛇吃掉食物不断变长。多种难度和自定义选项。")
   (dict "slug" "tetris" "icon" "🧱" "name" "俄罗斯方块" "desc" "消除下落方块获取高分。SRS旋转系统，速度随等级提升。")
@@ -73,6 +68,17 @@
   (dict "href" "/virtual/express-label-generator/" "name" "快递面单工坊" "desc" "制作国内、国际、双语、赛博、复古与潮牌六种风格的虚构快递面单。")
   (dict "href" "/virtual/oc-card-lab-generator/" "name" "设定卡工坊" "desc" "制作档案、杂志、RPG 与手帐四种风格的角色设定卡。")
 }}
+
+<header class="page-header f-page-hero f-section-tools">
+  <div class="f-kicker">PLAYGROUND · 小功能</div>
+  <h1>{{ .Title }}</h1>
+  {{ with .Description }}<p class="page-description">{{ . }}</p>{{ end }}
+  <div class="f-stat-row">
+    <div class="f-stat"><b>{{ len $utils }}</b><span>实用工具</span></div>
+    <div class="f-stat"><b>{{ len $games }}</b><span>游戏</span></div>
+    <div class="f-stat"><b>{{ len $virtual }}</b><span>虚拟生成器</span></div>
+  </div>
+</header>
 
 <style>
 .tools-section { margin-top: 56px; }
