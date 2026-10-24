@@ -1,0 +1,34 @@
+{{- with site.Params.homeInfoParams }}
+<article class="first-entry home-info f-hero">
+  <div class="f-hero-copy">
+    <div class="f-kicker">LUOSTRATUS · PERSONAL SITE</div>
+    <header class="entry-header">
+      <h1>{{ .Title | markdownify }}</h1>
+    </header>
+    <div class="entry-content md-content f-hero-lede">
+      {{ $opts := dict "display" "block" }}
+      {{ .Content | $.Page.RenderString $opts }}
+    </div>
+    <div class="f-hero-actions">
+      <a class="f-btn f-btn-primary" href="{{ "posts/" | absLangURL }}">开始浏览</a>
+      <a class="f-btn" href="{{ "tools/" | absLangURL }}">看看小功能</a>
+    </div>
+    <footer class="entry-footer">
+      {{ partial "social_icons.html" (dict "align" site.Params.homeInfoParams.AlignSocialIconsTo) }}
+    </footer>
+  </div>
+  <div class="f-hero-showcase" aria-hidden="true">
+    <div class="f-window">
+      <div class="f-window-bar"><i></i><i></i><i></i></div>
+      {{- $cinema := site.GetPage "/cinema" }}
+      {{- $deck := false }}
+      {{- with $cinema }}{{ with .Pages }}{{ $deck = index (sort . "Date" "desc") 0 }}{{ end }}{{ end }}
+      {{- if $deck }}{{ $cover := $deck.Resources.GetMatch "cover.*" }}{{ with $cover }}
+      <a class="f-window-media" href="{{ $deck.RelPermalink }}" tabindex="-1">
+        <img src="{{ .RelPermalink }}" alt="{{ $deck.Title }}" loading="eager">
+      </a>
+      {{- end }}{{ end }}
+    </div>
+  </div>
+</article>
+{{- end -}}

@@ -237,7 +237,7 @@ function buildTextColorPicker() {
   const syncMode = () => {
     let mode;
     try { mode = localStorage.getItem('pref-theme'); } catch (e) {}
-    mode = mode === 'light' || mode === 'dark' ? mode : 'auto';
+    mode = mode === 'light' || mode === 'dark' || mode === 'auto' ? mode : 'dark';
     modeButtons.forEach(button => button.classList.toggle('active', button.dataset.mode === mode));
   };
   const sync = prefs => {
@@ -302,7 +302,7 @@ function buildTextColorPicker() {
   modeButtons.forEach(button => button.addEventListener('click', () => {
     const mode = button.dataset.mode;
     try {
-      if (mode === 'auto') localStorage.removeItem('pref-theme');
+      if (mode === 'auto') localStorage.setItem('pref-theme', 'auto');
       else localStorage.setItem('pref-theme', mode);
     } catch (e) {}
     const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -346,7 +346,7 @@ function buildTextColorPicker() {
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
     let mode;
     try { mode = localStorage.getItem('pref-theme'); } catch (e) {}
-    if (mode === 'light' || mode === 'dark') return;
+    if (mode !== 'auto') return;
     document.documentElement.dataset.theme = event.matches ? 'dark' : 'light';
     applyPrefs(readPrefs(), false);
   });
