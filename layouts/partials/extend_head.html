@@ -340,9 +340,39 @@ body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea
   border-color: var(--menu-text, var(--primary));
   font-weight: 600;
 }
+.side-nav-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-left: auto;
+  padding: 0;
+  border-radius: 10px;
+  background: var(--entry);
+  border: 1px solid var(--border);
+  color: var(--secondary);
+  cursor: pointer;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.side-nav-toggle:hover {
+  color: var(--menu-text, var(--primary));
+  border-color: color-mix(in srgb, var(--menu-text, var(--primary)) 55%, var(--border));
+  background: var(--entry);
+}
+.side-nav-toggle svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.25s ease;
+}
+#side-nav.collapsed { gap: 0; }
+#side-nav.collapsed a { display: none; }
+#side-nav.collapsed .side-nav-toggle svg { transform: rotate(180deg); }
 @media (max-width: 768px) {
   #side-nav { right: 8px; gap: 4px; }
   #side-nav a { min-width: 48px; height: 32px; padding: 0 10px; font-size: 0.75rem; }
+  .side-nav-toggle { width: 32px; height: 32px; }
 }
 
 /* === 外观设置面板 === */

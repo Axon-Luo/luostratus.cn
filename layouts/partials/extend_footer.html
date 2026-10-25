@@ -2,7 +2,11 @@
 <nav id="article-toc" aria-label="文章目录"></nav>
 
 <!-- 侧边快捷导航（滚动后出现，替代顶部导航） -->
-<nav id="side-nav" aria-label="快捷导航"></nav>
+<nav id="side-nav" aria-label="快捷导航">
+  <button id="side-nav-toggle" class="side-nav-toggle" type="button" aria-expanded="true" aria-label="收起侧边导航" title="收起侧边导航">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg>
+  </button>
+</nav>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -26,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* === 侧边快捷导航 === */
   buildSideNav();
+  initSideNavCollapse();
 
   /* === 导航文字颜色选择 === */
   buildTextColorPicker();
@@ -159,6 +164,31 @@ function buildSideNav() {
     }
   };
   window.addEventListener('scroll', onScroll, { passive: true });
+}
+
+function initSideNavCollapse() {
+  const sideNav = document.getElementById('side-nav');
+  const toggle = document.getElementById('side-nav-toggle');
+  if (!sideNav || !toggle) return;
+
+  const KEY = 'side-nav-collapsed';
+  const apply = collapsed => {
+    sideNav.classList.toggle('collapsed', collapsed);
+    toggle.setAttribute('aria-expanded', String(!collapsed));
+    const label = collapsed ? '展开侧边导航' : '收起侧边导航';
+    toggle.setAttribute('aria-label', label);
+    toggle.title = label;
+  };
+
+  let collapsed = false;
+  try { collapsed = localStorage.getItem(KEY) === '1'; } catch (e) {}
+  apply(collapsed);
+
+  toggle.addEventListener('click', () => {
+    const next = !sideNav.classList.contains('collapsed');
+    apply(next);
+    try { localStorage.setItem(KEY, next ? '1' : '0'); } catch (e) {}
+  });
 }
 
 function buildTextColorPicker() {
