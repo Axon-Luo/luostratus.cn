@@ -178,6 +178,10 @@ function initSideNavCollapse() {
     const label = collapsed ? '展开侧边导航' : '收起侧边导航';
     toggle.setAttribute('aria-label', label);
     toggle.title = label;
+    sideNav.querySelectorAll('a').forEach(link => {
+      if (collapsed) link.setAttribute('tabindex', '-1');
+      else link.removeAttribute('tabindex');
+    });
   };
 
   let collapsed = false;

@@ -302,7 +302,7 @@ body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea
   gap: 6px;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.35s ease;
+  transition: opacity 0.35s ease, gap 0.28s ease;
 }
 #side-nav.visible {
   opacity: 1;
@@ -325,7 +325,16 @@ body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea
   text-decoration: none !important;
   background-image: none !important;
   background-size: unset !important;
-  transition: color 0.2s, background 0.2s, transform 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+  transition:
+    color 0.2s,
+    background 0.2s,
+    transform 0.28s ease,
+    box-shadow 0.2s,
+    height 0.28s ease,
+    opacity 0.22s ease,
+    padding 0.28s ease,
+    border-width 0.2s ease;
   box-shadow: 0 1px 6px rgba(0,0,0,0.06);
 }
 #side-nav a:hover {
@@ -367,7 +376,17 @@ body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea
   transition: transform 0.25s ease;
 }
 #side-nav.collapsed { gap: 0; }
-#side-nav.collapsed a { display: none; }
+#side-nav.collapsed a {
+  height: 0;
+  min-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-width: 0;
+  opacity: 0;
+  transform: translateX(12px);
+  box-shadow: none;
+  pointer-events: none;
+}
 #side-nav.collapsed .side-nav-toggle svg { transform: rotate(180deg); }
 @media (max-width: 768px) {
   #side-nav { right: 8px; gap: 4px; }
