@@ -577,6 +577,36 @@ body, .main, .post-entry, .gallery-item, a, button, pre, input, select, textarea
   color: var(--secondary);
   cursor: pointer;
 }
+.tcp-styles {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+.tcp-style {
+  flex: 1;
+  padding: 8px 6px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--secondary);
+  font-size: .78rem;
+  cursor: pointer;
+  transition: color .2s ease, border-color .2s ease, background .2s ease;
+}
+.tcp-style:hover {
+  color: var(--primary);
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
+}
+.tcp-style.active {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+.tcp-preview.is-dots {
+  background-image:
+    radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--primary) 22%, transparent) 1px, transparent 1.5px);
+  background-size: 10px 10px;
+}
 .tcp-reset {
   width: 100%;
   padding: 8px 0;
@@ -677,6 +707,28 @@ body::before{
     radial-gradient(680px 420px at 6% 4%, color-mix(in srgb, var(--f-accent) 9%, transparent), transparent 60%);
 }
 :root:not([data-theme="dark"]) body::before{opacity:.55}
+/* 渐变网点背景风格（外观设置可切换） */
+html[data-bg-style="dots"] body,
+html[data-bg-style="dots"] body.list{
+  background-color:var(--theme);
+  background-image:
+    linear-gradient(150deg, transparent 0%, transparent 28%, color-mix(in srgb, var(--theme) 45%, transparent) 52%, var(--theme) 76%),
+    radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--f-accent) 30%, transparent) 1px, transparent 1.7px),
+    radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--primary) 14%, transparent) 1px, transparent 1.7px);
+  background-size:100% 100%, 24px 24px, 12px 12px;
+  background-position:0 0, 0 0, 6px 6px;
+  background-attachment:fixed;
+}
+:root:not([data-theme="dark"])[data-bg-style="dots"] body,
+:root:not([data-theme="dark"])[data-bg-style="dots"] body.list{
+  background-image:
+    linear-gradient(150deg, transparent 0%, transparent 28%, color-mix(in srgb, var(--theme) 45%, transparent) 52%, var(--theme) 76%),
+    radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--f-accent) 28%, transparent) 1px, transparent 1.7px),
+    radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--primary) 14%, transparent) 1px, transparent 1.7px);
+  background-size:100% 100%, 24px 24px, 12px 12px;
+  background-position:0 0, 0 0, 6px 6px;
+  background-attachment:fixed;
+}
 ::selection{background:color-mix(in srgb, var(--f-accent) 45%, transparent);color:#fff}
 
 /* ---------- 头部 / 导航 ---------- */
@@ -1343,6 +1395,7 @@ body.list .main > .post-entry:first-of-type::before{
         ['text', 'background', 'card'].forEach(function (key) {
           if (typeof raw[key] === 'string' && raw[key]) prefs[key] = raw[key];
         });
+        if (raw.style === 'dots' || raw.style === 'plain') prefs.style = raw.style;
       }
     } catch (e) {}
     if (!prefs.text) {
@@ -1354,6 +1407,7 @@ body.list .main > .post-entry:first-of-type::before{
   window.__applyAppearance = function (prefs) {
     prefs = prefs || {};
     var root = document.documentElement;
+    root.dataset.bgStyle = prefs.style === 'plain' ? 'plain' : 'dots';
     var theme = prefs.background || window.__appearanceDefault('--theme');
     var entry = prefs.card || window.__appearanceDefault('--entry');
     var surfaces = window.__surfacePalette(theme, entry);
