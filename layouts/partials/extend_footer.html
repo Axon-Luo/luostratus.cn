@@ -243,7 +243,7 @@ function buildTextColorPicker() {
     '<button type="button" class="tcp-tab" data-panel="card">卡片</button>',
     '</div>',
     '<section class="tcp-panel active" data-panel="text"><p class="tcp-group-label">文字颜色</p><div class="tcp-swatches" data-kind="text"></div><div class="tcp-custom"><input type="color" data-kind-input="text" value="#4a90d9" aria-label="自定义文字颜色"><label>自定义文字</label></div></section>',
-    '<section class="tcp-panel" data-panel="background"><p class="tcp-group-label">网页背景</p><div class="tcp-swatches" data-kind="background"></div><div class="tcp-custom"><input type="color" data-kind-input="background" value="#f7f4ee" aria-label="自定义网页背景"><label>自定义背景</label></div><p class="tcp-group-label">背景风格</p><div class="tcp-styles"><button type="button" class="tcp-style" data-style="plain">纯色</button><button type="button" class="tcp-style" data-style="dots">渐变网点</button></div></section>',
+    '<section class="tcp-panel" data-panel="background"><p class="tcp-group-label">网页背景</p><div class="tcp-swatches" data-kind="background"></div><div class="tcp-custom"><input type="color" data-kind-input="background" value="#f7f4ee" aria-label="自定义网页背景"><label>自定义背景</label></div></section>',
     '<section class="tcp-panel" data-panel="card"><p class="tcp-group-label">卡片颜色</p><div class="tcp-swatches" data-kind="card"></div><div class="tcp-custom"><input type="color" data-kind-input="card" value="#ffffff" aria-label="自定义卡片颜色"><label>自定义卡片</label></div></section>',
     '<button type="button" class="tcp-reset">全部恢复默认</button>'
   ].join('');
@@ -256,7 +256,6 @@ function buildTextColorPicker() {
   const modeButtons = [...pop.querySelectorAll('[data-mode]')];
   const tabButtons = [...pop.querySelectorAll('.tcp-tab')];
   const panels = [...pop.querySelectorAll('.tcp-panel')];
-  const styleButtons = [...pop.querySelectorAll('.tcp-style')];
   const resetButton = pop.querySelector('.tcp-reset');
   const DEFAULT_COLORS = { text: '#4a90d9', background: '#f7f4ee', card: '#ffffff' };
   const PRESET_GROUPS = { text: TEXT_PRESETS, background: BACKGROUND_PRESETS, card: CARD_PRESETS };
@@ -290,9 +289,6 @@ function buildTextColorPicker() {
     customInputs.forEach(input => {
       input.value = prefs[input.dataset.kindInput] || DEFAULT_COLORS[input.dataset.kindInput];
     });
-    const style = prefs.style === 'plain' ? 'plain' : 'dots';
-    styleButtons.forEach(button => button.classList.toggle('active', button.dataset.style === style));
-    pop.querySelector('.tcp-preview').classList.toggle('is-dots', style === 'dots');
   };
   const applyPrefs = (prefs, persist = true) => {
     const clean = {};
@@ -300,7 +296,6 @@ function buildTextColorPicker() {
       const color = window.__normalizeColor ? window.__normalizeColor(prefs[kind]) : prefs[kind];
       if (color) clean[kind] = color;
     });
-    if (prefs.style === 'dots' || prefs.style === 'plain') clean.style = prefs.style;
     if (window.__applyAppearance) window.__applyAppearance(clean);
     if (persist) savePrefs(clean);
     sync(clean);
@@ -336,10 +331,6 @@ function buildTextColorPicker() {
 
   customInputs.forEach(input => {
     input.addEventListener('input', () => applyPrefs({ ...readPrefs(), [input.dataset.kindInput]: input.value }));
-  });
-
-  styleButtons.forEach(button => {
-    button.addEventListener('click', () => applyPrefs({ ...readPrefs(), style: button.dataset.style }));
   });
 
   modeButtons.forEach(button => button.addEventListener('click', () => {
