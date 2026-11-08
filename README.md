@@ -2,15 +2,13 @@
   <img src="docs/readme-banner.svg" alt="LuoStratus — 你好，我是 LuoStratus" width="100%">
   <br><br>
   <a href="https://luostratus.cn/"><img src="https://img.shields.io/badge/LIVE-luostratus.cn-5B7BFF?style=flat-square&amp;labelColor=0A0A0B" alt="Live Site"></a>
-  <img src="https://img.shields.io/badge/VERSION-V26.14.13-5B7BFF?style=flat-square&amp;labelColor=0A0A0B" alt="Version">
+  <img src="https://img.shields.io/badge/VERSION-V26.14.14-5B7BFF?style=flat-square&amp;labelColor=0A0A0B" alt="Version">
   <img src="https://img.shields.io/badge/HUGO-0.164-5B7BFF?style=flat-square&amp;labelColor=0A0A0B" alt="Hugo">
   <img src="https://img.shields.io/badge/PAPERMOD-MIT-5B7BFF?style=flat-square&amp;labelColor=0A0A0B" alt="PaperMod">
   <img src="https://img.shields.io/badge/CLOUDFLARE-WORKERS-5B7BFF?style=flat-square&amp;labelColor=0A0A0B" alt="Cloudflare Workers">
 
-  <p>
-    <b>用 Hugo + PaperMod 构建、部署在 Cloudflare Workers 上的中文个人网站。</b><br>
-    <sub>文章 · 画廊 · 小功能 · 放映厅 · 搜索 · 标签 · 归档 · 关于</sub>
-  </p>
+  <h2>用 Hugo + PaperMod 构建、部署在 Cloudflare Workers 上的中文个人网站。</h2>
+  <p><sub>文章 · 画廊 · 小功能 · 放映厅 · 搜索 · 标签 · 归档 · 关于</sub></p>
 </div>
 
 > [!NOTE]
@@ -444,10 +442,10 @@ Windows 本地 Hugo 可执行文件示例：
 ```yaml
 year: 26
 major: 14
-patch: 13
+patch: 14
 ```
 
-页脚显示 `Version V26.14.13`。
+页脚显示 `Version V26.14.14`。
 
 | 位 | 规则 |
 | --- | --- |
