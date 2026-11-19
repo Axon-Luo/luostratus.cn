@@ -435,10 +435,10 @@ Windows 本地 Hugo 可执行文件示例：
 ```yaml
 year: 26
 major: 15
-patch: 7
+patch: 8
 ```
 
-页脚显示 `Version V26.15.7`。
+页脚显示 `Version V26.15.8`。
 
 | 位 | 规则 |
 | --- | --- |

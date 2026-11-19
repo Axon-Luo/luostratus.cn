@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 90" role="img" aria-label="LuoStratus">
+  <g transform="translate(32,15) scale(0.62)">
+    <path d="M50 23 L81.18 77 L18.82 77 Z"
+          fill="none" stroke="#0A0A0B" stroke-width="11" stroke-linejoin="round"/>
+  </g>
+  <text x="100" y="45" font-family="Inter, 'Segoe UI', system-ui, sans-serif"
+        font-size="34" font-weight="700" fill="#0A0A0B"
+        dominant-baseline="middle" letter-spacing="-1">LuoStratus</text>
+</svg>
