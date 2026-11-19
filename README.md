@@ -88,7 +88,7 @@
 
 ### 小功能（Playground）
 
-入口在 `content/tools/`，页面实现统一放在 `layouts/partials/tools/`，列表页在 `layouts/tools/list.html`。
+入口在 `content/tools/`；除**配色工坊**为独立静态 SPA（`static/tools/color-palette/`，`content/tools/color-palette.md` 用 `build.render: never` 让位）外，页面实现统一放在 `layouts/partials/tools/`，列表页在 `layouts/tools/list.html`。
 
 列表页统计：**23 个实用工具 + 25 个游戏 + 13 个虚拟生成器 = 61 个工具**（`_index.md` 不计入）。
 
@@ -108,7 +108,7 @@
 重点工具：
 
 - **法律查阅**：`layouts/tools/law-search.html` 加载 `static/laws/app.css` 与 `static/laws/app.js`；`static/laws/index.json` 为检索索引；`static/laws/` 下共 520 个文件（`data/` 与 `search/` 中的 517 个 JSON 分片 + `index.json` + 前端资源）。支持宪法与法律查阅、全文检索、多版本切换、生效时间轴。
-- **配色工坊**：`layouts/partials/tools/color-palette.html`，单文件原生 JS。支持从一个颜色或一张图片生成 3 套配色、实时预览、WCAG 对比度检测与一键修复、色弱模拟、收藏/历史（localStorage）、导出 CSS/JSON/SVG/PNG、URL 参数分享。
+- **配色工坊**：v2.0.0 独立静态 SPA，源码构建产物在 `static/tools/color-palette/`（Vite + Preact + signals），线上路由仍为 `/tools/color-palette/`。26 个功能、16 个 hash 路由、PWA 离线；取材支持图片 / 屏幕吸管 / 摄像头 / 情绪板，生活任务覆盖穿搭、房间、贺卡、打印，专业工具覆盖色阶、渐变、主题、对比度（WCAG 2.2 + APCA）与 CMYK 近似；支持 3:4 / 9:16 / 16:9 分享卡、CSS/JSON/SVG/PNG 导出、链接分享，所有数据只留本地。
 - **摩斯电码**：文字与电码双向转换，支持播放摩斯音、调节 WPM。
 - **番茄钟 / 秒表 / 节拍器 / 白噪音**：使用 Web Audio 或计时器 API，无外部音频文件依赖（白噪音为程序化生成）。
 
@@ -264,6 +264,7 @@
 | 托管 | Cloudflare Workers 静态资源 | `wrangler.jsonc` 的 `assets.directory = public` |
 | 版本控制 | Git / GitHub | push `master` 自动部署 |
 | 字体 | Pacifico（自托管，OFL） | 仅用于首页名字 |
+| 配色工坊 | Vite + Preact + signals（预构建静态 SPA） | 26 个功能 / 16 个 hash 路由 / PWA 离线 |
 
 没有 `package.json` 构建依赖；站点构建只依赖 Hugo。Node.js 仅在需要手动执行 `wrangler` 时使用。
 
@@ -275,7 +276,7 @@
 - **无运行时**：没有服务端、数据库或 API；Cloudflare Worker 只做静态资源托管，没有 Worker 业务脚本。
 - **不 fork 主题**：PaperMod 保持 submodule 原样，所有定制通过 `extend_head.html`（CSS）与 `extend_footer.html`（JS）注入，升级主题成本低。
 - **设计 token 化**：颜色、圆角、尺寸都收敛到 CSS 变量；外观设置通过内联变量覆盖 token，而不是替换整套样式。
-- **工具隔离**：每个小工具是独立的 `layouts/partials/tools/<slug>.html`，自带样式与脚本，互不继承、互不污染；列表页只负责入口与分组。
+- **工具隔离**：每个小工具是独立的 `layouts/partials/tools/<slug>.html`，自带样式与脚本，互不继承、互不污染；列表页只负责入口与分组。配色工坊是唯一例外：它用独立构建的静态 SPA 接管 `/tools/color-palette/`。
 - **虚拟生成器独立**：13 个生成器是 `static/virtual/` 下的独立 HTML 页面，通过 redirect 入口接入站点，共享 `static/virtual/shared/` 的主题、导出与图片存储逻辑。
 - **搜索静态化**：Hugo 构建时生成 `/index.json`，浏览器端用 Fuse.js 检索，不依赖外部搜索服务。
 - **放映器自包含**：每部 deck 是一个独立的 `static/decks/<slug>/index.html`，键盘/滚轮/触屏/索引/全屏/hash 同步全部在单文件内实现。
@@ -289,10 +290,11 @@
 | 文章 | 7 篇 |
 | 画廊图片 | 35 张 |
 | 小功能 | 61 个（25 游戏 + 23 实用工具 + 13 虚拟生成器） |
+| 配色工坊 | 26 个功能 · 16 个 hash 路由 · PWA 离线 |
 | 放映作品 | 4 部 |
 | 法律数据 | 520 个文件（517 个 JSON 分片 + 前端） |
 | 自托管字体 | 2 个文件（Pacifico + OFL） |
-| 页面构建 | 134 pages（0 ERROR 基准） |
+| 页面构建 | 133 pages（0 ERROR 基准；配色工坊静态页不计入 Hugo 页面数） |
 
 ---
 
@@ -329,7 +331,7 @@ luostratus.cn/
 │   │   ├── extend_head.html   # 全站 CSS（含 F 主题、外观面板、响应式、动效）
 │   │   ├── extend_footer.html # 全站 JS（目录、侧栏、外观、主题等）
 │   │   ├── footer.html        # 页脚（Last Updated + Version + 返回顶部）
-│   │   └── tools/             # 61 个工具实现（每个工具一个独立 HTML/CSS/JS）
+│   │   └── tools/             # 60 个工具实现（配色工坊为独立 SPA，见 static/tools/color-palette/）
 │   ├── gallery/
 │   │   ├── list.html          # 瀑布流、日期解析、缩略图、点击放大
 │   │   └── single.html
@@ -343,6 +345,7 @@ luostratus.cn/
 │       └── redirect.html      # 虚拟生成器跳转页
 ├── static/
 │   ├── decks/                 # 4 部放映作品（自包含 HTML + 封面/PPTX）
+│   ├── tools/color-palette/   # 配色工坊 v2 独立 SPA（index/assets/icons/sw/manifest）
 │   ├── virtual/               # 13 个虚拟生成器 + shared 共享资源
 │   ├── laws/                  # 法律查阅前端 + 517 个 JSON 数据分片
 │   ├── fonts/                 # Pacifico-Regular.ttf + OFL 许可证
@@ -432,10 +435,10 @@ Windows 本地 Hugo 可执行文件示例：
 ```yaml
 year: 26
 major: 14
-patch: 15
+patch: 16
 ```
 
-页脚显示 `Version V26.14.15`。
+页脚显示 `Version V26.14.16`。
 
 | 位 | 规则 |
 | --- | --- |
