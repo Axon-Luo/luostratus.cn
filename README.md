@@ -108,7 +108,7 @@
 重点工具：
 
 - **法律查阅**：`layouts/tools/law-search.html` 加载 `static/laws/app.css` 与 `static/laws/app.js`；`static/laws/index.json` 为检索索引；`static/laws/` 下共 520 个文件（`data/` 与 `search/` 中的 517 个 JSON 分片 + `index.json` + 前端资源）。支持宪法与法律查阅、全文检索、多版本切换、生效时间轴。
-- **配色工坊**：v2.0.0 独立静态 SPA，源码构建产物在 `static/tools/color-palette/`（Vite + Preact + signals），线上路由仍为 `/tools/color-palette/`。26 个功能、16 个 hash 路由、PWA 离线；取材支持图片 / 屏幕吸管 / 摄像头 / 情绪板，生活任务覆盖穿搭、房间、贺卡、打印，专业工具覆盖色阶、渐变、主题、对比度（WCAG 2.2 + APCA）与 CMYK 近似；支持 3:4 / 9:16 / 16:9 分享卡、CSS/JSON/SVG/PNG 导出、链接分享，所有数据只留本地。
+- **配色工坊**：v2.0.0 独立静态 SPA，源码构建产物在 `static/tools/color-palette/`（Vite + Preact + signals），线上路由仍为 `/tools/color-palette/`。独立源码快照备份在 `projects/color-palette/`（来源提交 `7a1f681`），只作备份与查阅，不参与 Hugo 构建。26 个功能、16 个 hash 路由、PWA 离线；取材支持图片 / 屏幕吸管 / 摄像头 / 情绪板，生活任务覆盖穿搭、房间、贺卡、打印，专业工具覆盖色阶、渐变、主题、对比度（WCAG 2.2 + APCA）与 CMYK 近似；支持 3:4 / 9:16 / 16:9 分享卡、CSS/JSON/SVG/PNG 导出、链接分享，所有数据只留本地。
 - **摩斯电码**：文字与电码双向转换，支持播放摩斯音、调节 WPM。
 - **番茄钟 / 秒表 / 节拍器 / 白噪音**：使用 Web Audio 或计时器 API，无外部音频文件依赖（白噪音为程序化生成）。
 
@@ -343,6 +343,8 @@ luostratus.cn/
 │       ├── single.html        # 按文件名加载 partial
 │       ├── law-search.html    # 法律查阅专用页面
 │       └── redirect.html      # 虚拟生成器跳转页
+├── projects/
+│   └── color-palette/          # 配色工坊独立源码快照（仅备份，不参与 Hugo 构建）
 ├── static/
 │   ├── decks/                 # 4 部放映作品（自包含 HTML + 封面/PPTX）
 │   ├── tools/color-palette/   # 配色工坊 v2 独立 SPA（index/assets/icons/sw/manifest）
@@ -435,10 +437,10 @@ Windows 本地 Hugo 可执行文件示例：
 ```yaml
 year: 26
 major: 15
-patch: 8
+patch: 9
 ```
 
-页脚显示 `Version V26.15.8`。
+页脚显示 `Version V26.15.9`。
 
 | 位 | 规则 |
 | --- | --- |

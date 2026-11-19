@@ -1,0 +1,35 @@
+{
+  "name": "colorlife-workshop",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "description": "配色工坊 · 生活调色盘：拍一张生活里的图，一键得到能直接用的配色，可预览、可检查、可带走。",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "check": "tsc --noEmit && vitest run",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "shots": "node scripts/screenshots.mjs",
+    "release": "pnpm build && node scripts/package-release.mjs",
+    "standalone": "node scripts/standalone.mjs",
+    "icons": "node scripts/icons.mjs"
+  },
+  "dependencies": {
+    "@preact/signals": "^2.11.4",
+    "preact": "^11.2.0",
+    "qrcode-generator": "^2.0.4"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.65.1",
+    "@preact/preset-vite": "^2.10.6",
+    "@types/node": "^26.6.6",
+    "jsdom": "^31.0.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  }
+}

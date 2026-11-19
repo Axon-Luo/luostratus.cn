@@ -1,0 +1,8 @@
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
+
+# Windows 批处理必须保持 GBK + CRLF，禁止 Git 换行归一化
+*.bat -text

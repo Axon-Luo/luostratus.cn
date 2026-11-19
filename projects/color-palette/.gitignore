@@ -1,0 +1,15 @@
+node_modules/
+dist/
+release/
+test-results/
+playwright-report/
+blob-report/
+.tmp/
+.tmp-*/
+*.local
+.DS_Store
+*.zip
+
+# 生成的交付包
+配色工坊 v*/
+发布包/
