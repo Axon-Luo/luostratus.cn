@@ -1,5 +1,5 @@
-﻿/* 配色工坊 Service Worker：离线可用、无第三方请求 */
-const CACHE = 'cf-cache-v6';
+/* 配色工坊 Service Worker：离线可用、无第三方请求 */
+const CACHE = 'cf-cache-v7';
 const CORE = ['./', './index.html'];
 
 async function precache() {
