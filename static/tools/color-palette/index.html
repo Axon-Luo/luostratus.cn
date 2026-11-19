@@ -94,7 +94,7 @@
     <div id="app"></div>
     <script>
       (function () {
-        var SITE_VERSION = 'V26.15.5';
+        var SITE_VERSION = 'V26.15.6';
         var pad = function (n) { return String(n).padStart(2, '0'); };
         var updated = (function () {
           var raw = document.lastModified;
@@ -159,6 +159,20 @@
         function currentTheme() {
           return document.documentElement.getAttribute('data-theme');
         }
+        function primeStoredTheme() {
+          var want = wantedTheme();
+          try { document.documentElement.setAttribute('data-theme', want); } catch (e) {}
+          try {
+            var raw = localStorage.getItem('cf.v2');
+            if (!raw) return;
+            var data = JSON.parse(raw);
+            if (!data.settings) data.settings = {};
+            if (data.settings.theme !== want) {
+              data.settings.theme = want;
+              localStorage.setItem('cf.v2', JSON.stringify(data));
+            }
+          } catch (e) {}
+        }
         function toggleButton() {
           return document.querySelector('.theme-toggle');
         }
@@ -215,6 +229,7 @@
             });
           }
         }
+        primeStoredTheme();
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
         else init();
       })();
