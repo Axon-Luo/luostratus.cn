@@ -63,12 +63,18 @@
         footer.footer.cf-site-footer .cf-footer-line { font-size: 12px; }
         footer.footer.cf-site-footer .cf-footer-meta { font-size: 11.5px; }
       }
-      /* 返回小工具：固定左下角，离开工具页最直接的出口 */
+      /* 返回小工具：顶部左侧，离开工具页最直接的出口 */
+      .cf-back-strip {
+        padding: 10px 16px 0;
+        background: #000;
+        position: relative;
+        z-index: 41;
+      }
+      .cf-back-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
       .cf-tool-back {
-        position: fixed;
-        left: 18px;
-        bottom: 18px;
-        z-index: 9999;
         display: inline-flex;
         align-items: center;
         gap: 6px;
@@ -89,16 +95,21 @@
         transform: translateY(-2px);
       }
       @media (max-width: 600px) {
-        .cf-tool-back { left: 12px; bottom: 12px; padding: 7px 12px; font-size: 11.5px; }
+        .cf-back-strip { padding: 8px 12px 0; }
+        .cf-tool-back { padding: 7px 12px; font-size: 11.5px; }
       }
     </style>
   </head>
   <body>
+    <div class="cf-back-strip">
+      <div class="cf-back-inner">
+        <a class="cf-tool-back" href="/tools/" aria-label="返回小工具">返回小工具</a>
+      </div>
+    </div>
     <div id="app"></div>
-    <a class="cf-tool-back" href="/tools/" aria-label="返回小工具"><span aria-hidden="true">←</span> 返回小工具</a>
     <script>
       (function () {
-        var SITE_VERSION = 'V26.15.1';
+        var SITE_VERSION = 'V26.15.2';
         var pad = function (n) { return String(n).padStart(2, '0'); };
         var updated = (function () {
           var raw = document.lastModified;
