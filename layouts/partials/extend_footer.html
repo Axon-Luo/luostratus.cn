@@ -384,6 +384,16 @@ function buildTextColorPicker() {
     document.documentElement.dataset.theme = event.matches ? 'dark' : 'light';
     applyPrefs(readPrefs(), false);
   });
+
+  window.addEventListener('storage', event => {
+    if (event.key !== 'pref-theme') return;
+    const mode = event.newValue;
+    if (mode !== 'light' && mode !== 'dark' && mode !== 'auto') return;
+    document.documentElement.dataset.theme = mode === 'auto'
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : mode;
+    applyPrefs(readPrefs(), false);
+  });
   sync(readPrefs());
 }
 </script>

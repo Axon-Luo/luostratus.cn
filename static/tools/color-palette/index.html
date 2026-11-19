@@ -94,7 +94,7 @@
     <div id="app"></div>
     <script>
       (function () {
-        var SITE_VERSION = 'V26.15.4';
+        var SITE_VERSION = 'V26.15.5';
         var pad = function (n) { return String(n).padStart(2, '0'); };
         var updated = (function () {
           var raw = document.lastModified;
@@ -135,6 +135,88 @@
         };
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
         else boot();
+      })();
+    </script>
+    <script>
+      (function () {
+        var KEY = 'pref-theme';
+        var ready = false;
+        var applying = false;
+        var tries = 0;
+        var observer = null;
+
+        function readSiteMode() {
+          try { return localStorage.getItem(KEY) || 'dark'; } catch (e) { return 'dark'; }
+        }
+        function systemTheme() {
+          return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        function wantedTheme() {
+          var mode = readSiteMode();
+          if (mode === 'auto') return systemTheme();
+          return mode === 'light' ? 'light' : 'dark';
+        }
+        function currentTheme() {
+          return document.documentElement.getAttribute('data-theme');
+        }
+        function toggleButton() {
+          return document.querySelector('.theme-toggle');
+        }
+        function observeApp() {
+          if (observer) return;
+          observer = new MutationObserver(function () {
+            if (!ready || applying) return;
+            var cur = currentTheme();
+            if (cur !== 'light' && cur !== 'dark') return;
+            try { localStorage.setItem(KEY, cur); } catch (e) {}
+          });
+          observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+        }
+        function init() {
+          if (ready) return;
+          if (++tries > 60) return;
+          var btn = toggleButton();
+          var cur = currentTheme();
+          if (!btn || (cur !== 'light' && cur !== 'dark')) {
+            setTimeout(init, 200);
+            return;
+          }
+          var want = wantedTheme();
+          if (cur !== want) {
+            if (applying) {
+              setTimeout(init, 120);
+              return;
+            }
+            applying = true;
+            btn.click();
+            setTimeout(function () {
+              applying = false;
+              setTimeout(init, 80);
+            }, 140);
+            return;
+          }
+          ready = true;
+          observeApp();
+        }
+        function reapply() {
+          ready = false;
+          tries = 0;
+          init();
+        }
+
+        window.addEventListener('storage', function (e) {
+          if (e.key === KEY || e.key === null) reapply();
+        });
+        if (window.matchMedia) {
+          var mq = window.matchMedia('(prefers-color-scheme: dark)');
+          if (mq.addEventListener) {
+            mq.addEventListener('change', function () {
+              if (readSiteMode() === 'auto') reapply();
+            });
+          }
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+        else init();
       })();
     </script>
   </body>
