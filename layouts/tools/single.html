@@ -9,6 +9,7 @@
 @media (max-width: 720px) { .tool-page-header h1 { font-size: 1.75rem; } }
 </style>
 <header class="tool-page-header f-tool-hero">
+  {{ partial "tools/back-link.html" . }}
   <div class="f-kicker">PLAYGROUND · TOOL</div>
   <h1>{{ .Title }}</h1>
   {{ with .Description }}<p>{{ . }}</p>{{ end }}

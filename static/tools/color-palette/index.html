@@ -63,13 +63,42 @@
         footer.footer.cf-site-footer .cf-footer-line { font-size: 12px; }
         footer.footer.cf-site-footer .cf-footer-meta { font-size: 11.5px; }
       }
+      /* 返回小工具：固定左下角，离开工具页最直接的出口 */
+      .cf-tool-back {
+        position: fixed;
+        left: 18px;
+        bottom: 18px;
+        z-index: 9999;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border: 1px solid #26262D;
+        border-radius: 999px;
+        background: #141419;
+        color: #A1A1A6;
+        font-size: 12px;
+        line-height: 1;
+        text-decoration: none;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, .35);
+        transition: color .2s ease, border-color .2s ease, transform .2s ease;
+      }
+      .cf-tool-back:hover {
+        color: #F5F5F7;
+        border-color: #5B7BFF;
+        transform: translateY(-2px);
+      }
+      @media (max-width: 600px) {
+        .cf-tool-back { left: 12px; bottom: 12px; padding: 7px 12px; font-size: 11.5px; }
+      }
     </style>
   </head>
   <body>
     <div id="app"></div>
+    <a class="cf-tool-back" href="/tools/" aria-label="返回小工具"><span aria-hidden="true">←</span> 返回小工具</a>
     <script>
       (function () {
-        var SITE_VERSION = 'V26.15.0';
+        var SITE_VERSION = 'V26.15.1';
         var pad = function (n) { return String(n).padStart(2, '0'); };
         var updated = (function () {
           var raw = document.lastModified;

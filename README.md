@@ -90,7 +90,7 @@
 
 入口在 `content/tools/`；除**配色工坊**为独立静态 SPA（`static/tools/color-palette/`，`content/tools/color-palette.md` 用 `build.render: never` 让位）外，页面实现统一放在 `layouts/partials/tools/`，列表页在 `layouts/tools/list.html`。
 
-列表页统计：**23 个实用工具 + 25 个游戏 + 13 个虚拟生成器 = 61 个工具**（`_index.md` 不计入）。
+列表页统计：**23 个实用工具 + 25 个游戏 + 13 个虚拟生成器 = 61 个工具**（`_index.md` 不计入）。所有非虚拟生成器工具页都提供「← 返回小工具」按钮（普通工具在页头，配色工坊在左下角固定）。
 
 #### 实用工具（23）
 
@@ -435,10 +435,10 @@ Windows 本地 Hugo 可执行文件示例：
 ```yaml
 year: 26
 major: 15
-patch: 0
+patch: 1
 ```
 
-页脚显示 `Version V26.15.0`。
+页脚显示 `Version V26.15.1`。
 
 | 位 | 规则 |
 | --- | --- |

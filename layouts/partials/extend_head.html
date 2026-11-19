@@ -1188,6 +1188,34 @@ body.list .main > .post-entry:first-of-type::before{
   padding-bottom:20px;
   border-bottom:1px solid var(--border);
 }
+.tool-back{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin:0 0 18px;
+  padding:6px 14px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:var(--entry);
+  color:var(--secondary);
+  font-size:.8rem;
+  font-weight:500;
+  line-height:1.2;
+  text-decoration:none !important;
+  background-image:none !important;
+  transition:color .2s ease, border-color .2s ease, transform .2s ease;
+}
+.tool-back:hover{
+  color:var(--primary);
+  border-color:color-mix(in srgb, var(--f-accent) 55%, var(--border));
+  transform:translateX(-2px);
+}
+.tool-back-arrow{font-size:1rem;line-height:1}
+.tool-back-row{
+  max-width:min(1120px, 88vw);
+  margin:16px auto 0;
+  text-align:left;
+}
 
 /* 404 */
 .not-found.f-404{
