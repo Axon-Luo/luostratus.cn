@@ -84,6 +84,16 @@
         border-color: #5B7BFF;
         transform: translateY(-1px);
       }
+      html[data-theme="light"] .cf-tool-back {
+        background: var(--card, #fff);
+        border-color: var(--line, rgba(8, 8, 10, .12));
+        color: #5d5d68;
+        box-shadow: 0 6px 20px rgba(8, 8, 10, .08);
+      }
+      html[data-theme="light"] .cf-tool-back:hover {
+        color: var(--accent, #4d5bf5);
+        border-color: var(--accent, #4d5bf5);
+      }
       @media (max-width: 600px) {
         .topbar-inner { gap: 10px; }
         .cf-tool-back { padding: 6px 9px; font-size: 11px; }
@@ -94,7 +104,7 @@
     <div id="app"></div>
     <script>
       (function () {
-        var SITE_VERSION = 'V26.15.6';
+        var SITE_VERSION = 'V26.15.7';
         var pad = function (n) { return String(n).padStart(2, '0'); };
         var updated = (function () {
           var raw = document.lastModified;
