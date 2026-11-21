@@ -53,6 +53,9 @@
   (dict "slug" "white-noise" "icon" "🌊" "name" "白噪音" "desc" "雨声、海浪、风扇等环境音。")
 }}
 
+{{ $featured := first 2 $utils }}
+{{ $utilsRest := after 2 $utils }}
+
 {{ $virtual := slice
   (dict "href" "/virtual/oc-timeline-generator/" "name" "时间线" "desc" "制作人物生平、架空历史与世界观编年史长图。")
   (dict "href" "/virtual/player/" "name" "歌词与播放列表" "desc" "整理歌词节点、歌曲信息与角色播放列表。")
@@ -128,6 +131,81 @@
   gap: 16px;
   margin-bottom: 32px;
 }
+.tools-grid.utils-grid {
+  counter-reset: fitool 2;
+}
+.tools-featured-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0 0 18px;
+}
+.tool-featured-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 260px;
+  padding: 26px 26px 22px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--f-accent) 34%, var(--border));
+  background:
+    radial-gradient(480px 190px at 94% -16%, color-mix(in srgb, var(--f-accent) 20%, transparent), transparent 70%),
+    var(--entry);
+  text-decoration: none !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.tool-featured-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--f-accent) 60%, var(--border));
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
+}
+.tool-featured-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.tool-featured-badge {
+  display: inline-block;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--f-accent) 42%, transparent);
+  background: color-mix(in srgb, var(--f-accent) 16%, transparent);
+  color: var(--f-accent);
+  font: 600 0.64rem/1.4 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: 0.18em;
+}
+.tool-featured-index {
+  color: color-mix(in srgb, var(--secondary) 55%, transparent);
+  font: 600 0.78rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: 0.1em;
+}
+.tool-featured-name {
+  color: var(--primary);
+  font-size: clamp(1.5rem, 2.4vw, 1.9rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+.tool-featured-desc {
+  margin: 10px 0 0;
+  max-width: 44ch;
+  color: var(--secondary);
+  font-size: 0.92rem;
+  line-height: 1.68;
+}
+.tool-featured-cta {
+  margin-top: auto;
+  padding-top: 22px;
+  color: var(--f-accent);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+@media (max-width: 900px) {
+  .tools-featured-grid { grid-template-columns: 1fr; }
+  .tool-featured-card { min-height: 0; }
+}
 @media (min-width: 1280px) {
   .page-header,
   .tools-section {
@@ -169,9 +247,25 @@
 </style>
 
 <section class="tools-section">
-  <h2>实用工具</h2>
-  <div class="tools-grid">
-    {{ range $utils }}
+  <div class="section-title-row">
+    <h2>实用工具</h2>
+    <span class="section-hint">重点展示 · 法律查阅 / 配色工坊</span>
+  </div>
+  <div class="tools-featured-grid">
+    {{ range $i, $tool := $featured }}
+    <a href="/tools/{{ $tool.slug }}/" class="tool-featured-card">
+      <div class="tool-featured-top">
+        <span class="tool-featured-badge">FEATURED</span>
+        <span class="tool-featured-index">{{ if eq $i 0 }}01{{ else }}02{{ end }}</span>
+      </div>
+      <div class="tool-featured-name">{{ $tool.name }}</div>
+      <p class="tool-featured-desc">{{ $tool.desc }}</p>
+      <span class="tool-featured-cta">打开工具 <span aria-hidden="true">↗</span></span>
+    </a>
+    {{ end }}
+  </div>
+  <div class="tools-grid utils-grid">
+    {{ range $utilsRest }}
     <a href="/tools/{{ .slug }}/" class="tool-card">
       <div class="tool-name">{{ .name }}</div>
       <div class="tool-desc">{{ .desc }}</div>
