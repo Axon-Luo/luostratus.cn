@@ -232,9 +232,12 @@
 }
 .tool-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-  border-color: var(--primary);
+  border-color: var(--f-accent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--f-accent) 80%, transparent),
+    0 8px 24px rgba(0,0,0,0.08);
 }
+.tool-card:hover::before { opacity: 0; }
 .tool-card .tool-name { font-size: 1.3rem; font-weight: 700; color: var(--primary); margin-bottom: 6px; line-height: 1.35; }
 .tool-card .tool-desc { font-size: 0.85rem; color: var(--secondary); line-height: 1.5; }
 .page-description { color: var(--secondary); font-size: 1.1rem; }
