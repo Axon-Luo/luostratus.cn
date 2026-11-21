@@ -63,7 +63,7 @@
         footer.footer.cf-site-footer .cf-footer-line { font-size: 12px; }
         footer.footer.cf-site-footer .cf-footer-meta { font-size: 11.5px; }
       }
-      /* 返回小工具：放在配色工坊 logo 正左边 */
+      /* 返回小功能：放在配色工坊 logo 正左边 */
       .cf-tool-back {
         display: inline-flex;
         align-items: center;
@@ -104,7 +104,7 @@
     <div id="app"></div>
     <script>
       (function () {
-        var SITE_VERSION = 'V26.15.9';
+        var SITE_VERSION = 'V26.15.10';
         var pad = function (n) { return String(n).padStart(2, '0'); };
         var updated = (function () {
           var raw = document.lastModified;
@@ -133,8 +133,8 @@
           var link = document.createElement('a');
           link.className = 'cf-tool-back';
           link.href = '/tools/';
-          link.setAttribute('aria-label', '返回小工具');
-          link.textContent = '返回小工具';
+          link.setAttribute('aria-label', '返回小功能');
+          link.textContent = '返回小功能';
           if (brand) inner.insertBefore(link, brand);
           else inner.prepend(link);
         };
